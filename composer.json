@@ -1,0 +1,164 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "bambamboole/saas-starter-kit",
+    "type": "project",
+    "description": "A batteries-included SaaS starter kit — Laravel + Inertia + React with Lattice server-driven UI.",
+    "keywords": [
+        "laravel",
+        "inertia",
+        "react",
+        "lattice"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "bambamboole/laravel-i18next": "^0.6.0",
+        "bambamboole/laravel-oidc": "^0.22.0",
+        "inertiajs/inertia-laravel": "^3.3.3",
+        "laravel/cashier-paddle": "^2.8.1",
+        "laravel/framework": "^13.31.0",
+        "laravel/passport": "^13.7.6",
+        "laravel/reverb": "^1.11.1",
+        "laravel/tinker": "^3.0.2",
+        "lattice-php/lattice": "^0.75.0",
+        "spatie/laravel-activitylog": "^5.1.1"
+    },
+    "require-dev": {
+        "driftingly/rector-laravel": "^2.6.2",
+        "fakerphp/faker": "^1.24.1",
+        "larastan/larastan": "^3.11",
+        "laravel/boost": "^2.8.0",
+        "laravel/pail": "^1.2.7",
+        "laravel/pao": "^1.1.5",
+        "laravel/pint": "^1.31.1",
+        "mockery/mockery": "^1.6.15",
+        "nunomaduro/collision": "^8.9.5",
+        "pestphp/pest": "^5.1.4",
+        "pestphp/pest-plugin-browser": "^5.0.1",
+        "pestphp/pest-plugin-laravel": "^5.0.1",
+        "pestphp/pest-plugin-phpstan": "^5.2.1",
+        "pestphp/pest-plugin-rector": "^5.0.4",
+        "rector/rector": "^2.6.6",
+        "spatie/laravel-typescript-transformer": "^3.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php -r \"file_exists('storage/oauth-private.key') || passthru('php artisan passport:keys --no-interaction');\"",
+            "@php artisan migrate --force",
+            "@php artisan migrate --path=database/data-migrations --force",
+            "@php artisan oidc:rotate-keys --if-missing --ansi",
+            "npm install",
+            "npm run build"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan dev"
+        ],
+        "lint": [
+            "pint --parallel"
+        ],
+        "lint:check": [
+            "pint --parallel --test"
+        ],
+        "ci:check": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run lint:check",
+            "npm run format:check",
+            "npm run types:check",
+            "@phpstan",
+            "@rector:check",
+            "@test"
+        ],
+        "check:full": [
+            "Composer\\Config::disableProcessTimeout",
+            "@ci:check",
+            "npm run build"
+        ],
+        "phpstan": [
+            "vendor/bin/phpstan analyse"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@lint:check",
+            "@php artisan test --compact --parallel --exclude-testsuite Browser"
+        ],
+        "test:browser": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php artisan test tests/Browser --compact"
+        ],
+        "fresh": [
+            "@php artisan migrate:fresh --seed"
+        ],
+        "rector:check": [
+            "vendor/bin/rector process --config=rector.php --dry-run"
+        ],
+        "rector:fix": [
+            "vendor/bin/rector process --config=rector.php"
+        ],
+        "hooks:install": "git config core.hooksPath .githooks 2>/dev/null || true",
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-install-cmd": [
+            "@hooks:install"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan boost:update --ansi",
+            "@hooks:install"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi",
+            "@php artisan migrate --path=database/data-migrations --graceful --ansi",
+            "@php artisan app:install"
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [],
+            "installer": {
+                "post-create-project": []
+            }
+        },
+        "lattice": {
+            "discover": [
+                "app"
+            ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Auth\Models\User;
+use App\Tenants\Enums\TenantPermission;
+use App\Tenants\Models\Role;
+
+test('a member gets the union of permissions from all their tenant roles', function () {
+    $user = User::factory()->create();
+    $tenant = $user->currentTenant()->sole();
+
+    $billing = Role::factory()->create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Billing',
+    ]);
+    $billing->syncPermissions([TenantPermission::ManageBilling->value]);
+
+    $auditor = Role::factory()->create([
+        'tenant_id' => $tenant->id,
+        'name' => 'Auditor',
+    ]);
+    $auditor->syncPermissions([TenantPermission::ViewAudit->value]);
+
+    $member = User::factory()->create();
+    $tenant->members()->attach($member);
+    $member->roles()->attach([$billing->id, $auditor->id]);
+
+    expect($member->hasTenantPermission($tenant, TenantPermission::ManageBilling))->toBeTrue()
+        ->and($member->hasTenantPermission($tenant, TenantPermission::ViewAudit))->toBeTrue()
+        ->and($member->hasTenantPermission($tenant, TenantPermission::DeleteTenant))->toBeFalse();
+});

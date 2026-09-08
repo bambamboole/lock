@@ -1,0 +1,51 @@
+<?php
+
+namespace Illuminate\Foundation\Testing\Concerns;
+
+use Illuminate\Testing\PendingCommand;
+
+/**
+ * Our test suite never calls withoutMockingConsoleOutput(), so artisan()
+ * always returns PendingCommand here — the vendor signature's `int` branch
+ * (taken only when mockConsoleOutput is false) is dead in this app.
+ */
+trait InteractsWithConsole
+{
+    /**
+     * @param  array|string  $command
+     * @param  array  $parameters
+     */
+    public function artisan($command, $parameters = []): PendingCommand {}
+}
+
+namespace Laravel\Paddle\Concerns;
+
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Laravel\Paddle\Subscription;
+
+/**
+ * Vendor return type is the bare, ungenericized MorphMany, so ->create()
+ * on the relation resolves to the base Model instead of Subscription.
+ */
+trait ManagesSubscriptions
+{
+    /**
+     * @return MorphMany<Subscription, static>
+     */
+    public function subscriptions() {}
+}
+
+namespace Laravel\Passport;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Both are `Attribute` accessors without generic annotations, so the model's
+ * schema-derived property types are shadowed by an untyped accessor.
+ *
+ * @property array<int, string> $grant_types
+ * @property array<int, string> $redirect_uris
+ */
+class Client extends Model
+{
+}

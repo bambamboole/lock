@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+
+use App\Auth\Models\User;
+
+it('sends unverified users to the verification prompt instead of a missing route', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertRedirect(route('identity.verification.notice'));
+});

@@ -1,0 +1,72 @@
+<?php
+
+declare(strict_types=1);
+
+use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Auth\Models\User;
+use App\Shared\Ui\Layouts\AppLayout;
+use Lattice\Core\Facades\Lattice;
+use Lattice\Support\Testing\ComponentNode;
+use Lattice\Ui\Components\MenuItem;
+use Lattice\Ui\PageSchema;
+
+use function Tests\Helpers\grantGlobalRole;
+use function Tests\Helpers\menuItemHrefs;
+
+function appLayoutSchema(User $user): ComponentNode
+{
+    auth()->setUser($user);
+
+    $request = request();
+    $request->setUserResolver(fn (): User => $user);
+
+    $renderable = (new AppLayout)->schema(PageSchema::make(), $request)->renderable();
+    $schema = json_decode(json_encode($renderable, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
+
+    return ComponentNode::root($schema);
+}
+
+/**
+ * @return array<int, mixed>
+ */
+function userMenuHrefs(User $user): array
+{
+    return menuItemHrefs(appLayoutSchema($user)->firstOfTypeOrFail('dropdown', 'user-menu'));
+}
+
+it('adds an admin entry to the user menu only for admins', function () {
+    (new GlobalRoleSeeder)->run();
+
+    $user = User::factory()->create();
+    $hrefsBefore = userMenuHrefs($user);
+
+    grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
+    $hrefsAfter = userMenuHrefs($user->refresh());
+
+    expect($hrefsBefore)->toBe(['/profile', '/logout'])
+        ->and($hrefsAfter)->toBe(['/profile', '/admin', '/logout']);
+});
+
+it('lets a module add its own sidebar entry through the app.navigation slot', function () {
+    $user = User::factory()->create();
+    $sidebarHrefs = fn (): array => menuItemHrefs(appLayoutSchema($user)->firstOfTypeOrFail('menu', 'sidebar'));
+
+    $before = $sidebarHrefs();
+
+    Lattice::extend('app.navigation', static fn (): MenuItem => MenuItem::make('Reports')->href('/reports'));
+
+    expect($sidebarHrefs())->toBe([...$before, '/reports']);
+});
+
+it('carries one tenant switcher per breakpoint, under distinct keys', function () {
+    $switchers = appLayoutSchema(User::factory()->create())
+        ->findAll(fn (ComponentNode $node): bool => $node->type() === 'dropdown' && $node->prop('placement') !== null);
+
+    $byKey = collect($switchers)
+        ->mapWithKeys(fn (ComponentNode $node): array => [
+            (string) $node->key() => [$node->prop('visibleFrom'), $node->prop('hiddenFrom')],
+        ]);
+
+    expect($byKey->get('tenant-switcher'))->toBe(['md', null])
+        ->and($byKey->get('tenant-switcher-mobile'))->toBe([null, 'md']);
+});
