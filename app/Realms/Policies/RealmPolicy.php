@@ -4,14 +4,14 @@ declare(strict_types=1);
 namespace App\Realms\Policies;
 
 use App\Auth\Models\User;
-use App\Auth\Support\PermissionRepository;
 use App\Realms\Enums\RealmPermission;
 use App\Realms\Models\Realm;
+use App\Shared\Auth\Contracts\PermissionCatalog;
 use Illuminate\Support\Str;
 
 final readonly class RealmPolicy
 {
-    public function __construct(private PermissionRepository $permissions) {}
+    public function __construct(private PermissionCatalog $permissions) {}
 
     public function view(User $user, Realm $realm): bool
     {

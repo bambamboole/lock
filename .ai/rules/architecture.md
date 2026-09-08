@@ -17,8 +17,10 @@ The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
 may depend on (`app/Shared/Auth/Contracts/PermissionEnum`, `app/Shared/Auth/Attributes/AsPermission`,
 `app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — settings, the audit trail — is a whole
 module there (`app/Shared/Settings`, `app/Shared/Audit`). It imports nothing from `app/{Domain}/`; the domain provider binds each
-contract to its implementation. `App\Auth\Models\User` and `App\Realms\Models\Realm` are the shared kernel and
-may be imported anywhere — relations, route bindings, and policies need the concrete class. Everything else crossing a
+contract to its implementation. `App\Auth\Models\User`, `App\Realms\Models\Realm`, and `App\Realms\Models\Role` are the shared kernel and
+may be imported anywhere — relations, route bindings, and policies need the concrete class. Behaviour a neighbour
+needs is a contract there (`App\Shared\Auth\Contracts\PermissionCatalog`, `App\Shared\Realms\Contracts\RealmMemberDirectory`),
+bound to its implementation in the owning domain's provider. Everything else crossing a
 domain line is a violation. `tests/Feature/ArchitectureTest.php` enforces this; the classes still listed in its
 `architectureDomainBoundaryBaseline()` are the remaining debt, and that list only shrinks.
 

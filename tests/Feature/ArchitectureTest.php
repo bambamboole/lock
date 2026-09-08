@@ -1,21 +1,12 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Console\Commands\GrantAdminCommand;
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
-use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
-use App\Admin\Ui\Pages\RealmDetailPage;
-use App\Admin\Ui\Pages\UserDetailPage;
-use App\Admin\Ui\Tables\AdminRealmsTable;
-use App\Auth\Console\Commands\SyncPermissionsCommand;
 use App\Auth\Models\User;
-use App\Auth\Support\PermissionRepository;
 use App\Realms\Actions\RemoveMember;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
 use App\Realms\Observers\RealmInvitationObserver;
-use App\Realms\Policies\RealmPolicy;
-use App\Realms\Ui\Forms\RoleForm;
+use App\Shared\Auth\Contracts\PermissionCatalog;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -166,7 +157,7 @@ function architectureDomains(): array
 
 /**
  * The identity models every domain speaks in. Relations, route bindings and
- * policies need the concrete Eloquent class, so these two may be imported
+ * policies need the concrete Eloquent class, so these three may be imported
  * across domain lines; every other cross-domain dependency goes through a
  * contract or DTO in App\Shared\{Domain}. pest-arch's ignoring() drops a
  * class on both sides, so the kernel models are also exempt as sources.
@@ -178,6 +169,7 @@ function architectureSharedKernel(): array
     return [
         User::class,
         Realm::class,
+        Role::class,
     ];
 }
 
@@ -189,18 +181,7 @@ function architectureSharedKernel(): array
  */
 function architectureDomainBoundaryBaseline(): array
 {
-    return [
-        GrantAdminCommand::class,
-        GlobalRoleSeeder::class,
-        UpdateUserGlobalRoles::class,
-        RealmDetailPage::class,
-        UserDetailPage::class,
-        AdminRealmsTable::class,
-        SyncPermissionsCommand::class,
-        Role::class,
-        RealmPolicy::class,
-        RoleForm::class,
-    ];
+    return [];
 }
 
 /**
@@ -298,7 +279,7 @@ it('keeps every concrete app class final', function () {
 });
 
 it('keeps every permission value kebab-cased with a :view verb, never :read, so manage implies view', function () {
-    foreach (app(PermissionRepository::class)->values() as $value) {
+    foreach (app(PermissionCatalog::class)->values() as $value) {
         expect($value)->toMatch('/^[a-z][a-z-]*(:[a-z][a-z-]*)+$/')
             ->and(Str::afterLast($value, ':'))->not->toBeIn(['read', 'list', 'show']);
     }

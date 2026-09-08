@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace App\Realms\Models;
 
-use App\Auth\Models\Permission;
 use App\Auth\Models\User;
-use App\Auth\Support\PermissionRepository;
 use App\Realms\Enums\RealmPermission;
 use App\Realms\Enums\RolePreset;
+use App\Shared\Auth\Contracts\PermissionCatalog;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -112,7 +111,7 @@ final class Role extends Model
      */
     public function syncPermissions(array $values): void
     {
-        $repository = app(PermissionRepository::class);
+        $repository = app(PermissionCatalog::class);
 
         foreach ($values as $value) {
             $permission = $repository->get($value);

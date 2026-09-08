@@ -13,6 +13,8 @@ use Database\Factories\RealmFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
+use Illuminate\Database\Eloquent\Attributes\Scope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -84,6 +86,26 @@ final class Realm extends Model implements ProvidesSettings
     public function isMaster(): bool
     {
         return $this->slug === config('realm.master_slug');
+    }
+
+    /**
+     * Selects the owner's name as `owner_name` without loading members.
+     *
+     * @param  Builder<Realm>  $query
+     * @return Builder<Realm>
+     */
+    #[Scope]
+    protected function withOwnerName(Builder $query): Builder
+    {
+        return $query->addSelect([
+            'owner_name' => User::query()
+                ->select('users.name')
+                ->join('user_role', 'user_role.user_id', '=', 'users.id')
+                ->join('roles', 'roles.id', '=', 'user_role.role_id')
+                ->whereColumn('roles.realm_id', 'realms.id')
+                ->where('roles.preset', RolePreset::Owner->value)
+                ->limit(1),
+        ]);
     }
 
     public static function fromContext(): ?self

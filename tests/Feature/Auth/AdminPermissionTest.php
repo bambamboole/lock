@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminPermission;
-use App\Auth\Models\Permission;
 use App\Auth\Models\User;
 use App\Realms\Enums\RealmPermission;
+use App\Realms\Models\Permission;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
 

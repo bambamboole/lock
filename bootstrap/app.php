@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
-use App\Auth\Console\Commands\SyncPermissionsCommand;
+use App\Admin\Console\Commands\SyncPermissionsCommand;
 use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingRealmContext;

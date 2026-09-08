@@ -2,8 +2,8 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminPermission;
-use App\Auth\Models\Permission;
 use App\Realms\Enums\RolePreset;
+use App\Realms\Models\Permission;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
 

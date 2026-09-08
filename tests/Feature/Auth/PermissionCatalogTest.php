@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminPermission;
-use App\Auth\Models\Permission;
 use App\Auth\Support\OidcScopeCatalog;
 use App\Auth\Support\PermissionRepository;
 use App\Realms\Enums\RealmPermission;
+use App\Realms\Models\Permission;
 use App\Realms\Models\Role;
 use App\Shared\Auth\Data\PermissionDefinition;
 use Illuminate\Support\Facades\Cache;
