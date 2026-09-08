@@ -3,14 +3,14 @@ declare(strict_types=1);
 
 namespace App\Realms\Ui\Forms;
 
-use App\Auth\Support\PermissionDefinition;
-use App\Auth\Support\PermissionRepository;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Enums\RealmPermission;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
-use App\Realms\Support\Audit;
 use App\Realms\Ui\Concerns\ActivatesRealmContext;
+use App\Shared\Audit\Audit;
+use App\Shared\Auth\Contracts\PermissionCatalog;
+use App\Shared\Auth\Data\PermissionDefinition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -31,7 +31,7 @@ final class RoleForm extends FormDefinition
 {
     use ActivatesRealmContext;
 
-    public function __construct(private readonly PermissionRepository $permissions) {}
+    public function __construct(private readonly PermissionCatalog $permissions) {}
 
     public function definition(FormComponent $form, Request $request): FormComponent
     {

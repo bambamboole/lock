@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Realms\Models\Activity;
+use App\Shared\Audit\Models\Activity;
 
 // Only the keys this app changes from the package defaults live here.
 return [

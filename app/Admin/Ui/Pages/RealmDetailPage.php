@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Pages;
 
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
-use App\Realms\Support\RealmMemberRoles;
+use App\Shared\Realms\Contracts\RealmMemberDirectory;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Support\Collection;
 use Lattice\Core\Attributes\AsPage;
@@ -30,7 +30,7 @@ final class RealmDetailPage extends AdminPage
         return $this->realm?->name;
     }
 
-    public function render(PageSchema $schema, Realm $realm, RealmMemberRoles $memberRoles): PageSchema
+    public function render(PageSchema $schema, Realm $realm, RealmMemberDirectory $memberRoles): PageSchema
     {
         $this->realm = $realm;
 

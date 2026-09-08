@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Enums\RolePreset;
-use App\Realms\Models\Activity;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Ui\Actions\CancelInvitation;
 use App\Realms\Ui\Actions\RemoveMember;
 use App\Realms\Ui\Actions\UpdateMemberRole;
 use App\Realms\Ui\Forms\InviteRealmMemberForm;
 use App\Realms\Ui\Forms\UpdateRealmForm;
+use App\Shared\Audit\Models\Activity;
 
 use function Tests\Helpers\addMember;
 use function Tests\Helpers\realmMember;

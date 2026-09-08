@@ -6,10 +6,10 @@ namespace App\Realms\Ui\Tables;
 
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Enums\RealmPermission;
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Concerns\ActivatesRealmContext;
 use App\Realms\Ui\Fragments\ActivityChangesFragment;
+use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;

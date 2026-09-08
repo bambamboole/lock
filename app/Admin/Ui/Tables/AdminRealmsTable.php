@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
-use App\Auth\Models\User;
-use App\Realms\Enums\RolePreset;
 use App\Realms\Models\Realm;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Facades\Effects;
@@ -31,15 +29,7 @@ final class AdminRealmsTable extends EloquentTableDefinition
     {
         $builder = Realm::query()
             ->withCount('users')
-            ->addSelect([
-                'owner_name' => User::query()
-                    ->select('users.name')
-                    ->join('user_role', 'user_role.user_id', '=', 'users.id')
-                    ->join('roles', 'roles.id', '=', 'user_role.role_id')
-                    ->whereColumn('roles.realm_id', 'realms.id')
-                    ->where('roles.preset', RolePreset::Owner->value)
-                    ->limit(1),
-            ]);
+            ->withOwnerName();
 
         if ($query->sorts === []) {
             $builder->latest('id');

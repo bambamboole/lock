@@ -10,7 +10,7 @@ use App\Realms\Enums\RolePreset;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Models\Role;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

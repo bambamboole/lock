@@ -11,6 +11,19 @@ Every concern (models, enums, UI, HTTP, policies, actions) lives under `app/{Dom
 only within that module — never a shared top-level technical folder (`app/Models`, `app/Http`, …) for domain code.
 The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
 
+## A domain reaches another domain only through app/Shared/{Domain}
+
+`app/Shared/{Domain}/` is the public surface of a domain: the contracts, attributes, traits, and DTOs other modules
+may depend on (`app/Shared/Auth/Contracts/PermissionEnum`, `app/Shared/Auth/Attributes/AsPermission`,
+`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — settings, the audit trail — is a whole
+module there (`app/Shared/Settings`, `app/Shared/Audit`). It imports nothing from `app/{Domain}/`; the domain provider binds each
+contract to its implementation. `App\Auth\Models\User`, `App\Realms\Models\Realm`, and `App\Realms\Models\Role` are the shared kernel and
+may be imported anywhere — relations, route bindings, and policies need the concrete class. Behaviour a neighbour
+needs is a contract there (`App\Shared\Auth\Contracts\PermissionCatalog`, `App\Shared\Realms\Contracts\RealmMemberDirectory`),
+bound to its implementation in the owning domain's provider. Everything else crossing a
+domain line is a violation. `tests/Feature/ArchitectureTest.php` enforces this; the classes still listed in its
+`architectureDomainBoundaryBaseline()` are the remaining debt, and that list only shrinks.
+
 ## Multi-step writes always run inside a transaction
 
 `DB::transaction(fn () => ...)` is the default; the manual `beginTransaction()`/`commit()`/`rollBack()` form is

@@ -1,9 +1,12 @@
 <?php
 
 declare(strict_types=1);
-use App\Auth\Support\PermissionRepository;
+use App\Auth\Models\User;
 use App\Realms\Actions\RemoveMember;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
 use App\Realms\Observers\RealmInvitationObserver;
+use App\Shared\Auth\Contracts\PermissionCatalog;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -17,7 +20,7 @@ use Illuminate\Support\Str;
  */
 function architectureDomainNamespaces(): array
 {
-    $slices = '{Actions,Concerns,Console,Contracts,Data,Database,Enums,Events,Http,Models,Notifications,Observers,Policies,Services,Settings,Support}';
+    $slices = '{Actions,Attributes,Concerns,Console,Contracts,Data,Database,Enums,Events,Http,Models,Notifications,Observers,Policies,Services,Settings,Support}';
     $appPath = dirname(__DIR__, 2).'/app';
 
     return collect([
@@ -136,6 +139,52 @@ function architectureSanctionedLatticeConsumers(): array
 }
 
 /**
+ * Domain modules under app/, i.e. everything except the Shared layer.
+ *
+ * @return array<int, string>
+ */
+function architectureDomains(): array
+{
+    $appPath = dirname(__DIR__, 2).'/app';
+
+    return collect(glob("{$appPath}/*", GLOB_ONLYDIR) ?: [])
+        ->map(fn (string $path): string => basename($path))
+        ->reject(fn (string $domain): bool => $domain === 'Shared')
+        ->sort()
+        ->values()
+        ->all();
+}
+
+/**
+ * The identity models every domain speaks in. Relations, route bindings and
+ * policies need the concrete Eloquent class, so these three may be imported
+ * across domain lines; every other cross-domain dependency goes through a
+ * contract or DTO in App\Shared\{Domain}. pest-arch's ignoring() drops a
+ * class on both sides, so the kernel models are also exempt as sources.
+ *
+ * @return array<int, class-string>
+ */
+function architectureSharedKernel(): array
+{
+    return [
+        User::class,
+        Realm::class,
+        Role::class,
+    ];
+}
+
+/**
+ * Classes still reaching into a neighbouring domain directly. This list only
+ * shrinks: route the dependency through App\Shared and delete the entry.
+ *
+ * @return array<int, class-string>
+ */
+function architectureDomainBoundaryBaseline(): array
+{
+    return [];
+}
+
+/**
  * @param  ReflectionClass<Model>  $class
  */
 function architectureExtendsVendorModel(ReflectionClass $class): bool
@@ -163,6 +212,24 @@ foreach (architectureDomainNamespaces() as $namespace) {
         ->not->toUse(architectureLatticeNamespaces())
         ->ignoring(architectureSanctionedLatticeConsumers());
 }
+
+foreach (architectureDomains() as $domain) {
+    $neighbours = collect(architectureDomains())
+        ->reject(fn (string $other): bool => $other === $domain)
+        ->map(fn (string $other): string => "App\\{$other}")
+        ->values()
+        ->all();
+
+    arch("App\\{$domain} reaches other domains only through App\\Shared")
+        ->expect("App\\{$domain}")
+        ->not->toUse($neighbours)
+        ->ignoring([...architectureSharedKernel(), ...architectureDomainBoundaryBaseline()]);
+}
+
+arch('App\Shared does not depend on a domain')
+    ->expect('App\Shared')
+    ->not->toUse(array_map(fn (string $domain): string => "App\\{$domain}", architectureDomains()))
+    ->ignoring([...architectureSharedKernel(), ...architectureDomainBoundaryBaseline()]);
 
 it('uses uuid primary keys on all domain models', function () {
     $models = architectureDomainModels();
@@ -212,7 +279,7 @@ it('keeps every concrete app class final', function () {
 });
 
 it('keeps every permission value kebab-cased with a :view verb, never :read, so manage implies view', function () {
-    foreach (app(PermissionRepository::class)->values() as $value) {
+    foreach (app(PermissionCatalog::class)->values() as $value) {
         expect($value)->toMatch('/^[a-z][a-z-]*(:[a-z][a-z-]*)+$/')
             ->and(Str::afterLast($value, ':'))->not->toBeIn(['read', 'list', 'show']);
     }

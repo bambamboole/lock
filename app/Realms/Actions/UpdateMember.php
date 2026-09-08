@@ -6,7 +6,7 @@ namespace App\Realms\Actions;
 use App\Auth\Models\User;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

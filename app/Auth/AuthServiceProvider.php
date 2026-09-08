@@ -9,6 +9,7 @@ use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Models\User;
 use App\Auth\Support\PermissionRepository;
 use App\Auth\Ui\Pages\DevLoginPage;
+use App\Shared\Auth\Contracts\PermissionCatalog;
 use Bambamboole\LaravelOidc\Server\Auth\UserActionManager;
 use Bambamboole\LaravelOidc\Server\Auth\Views\LoginView;
 use Illuminate\Support\Facades\Gate;
@@ -24,6 +25,7 @@ final class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(PermissionRepository::class);
+        $this->app->alias(PermissionRepository::class, PermissionCatalog::class);
 
         if ($this->app->environment('local')) {
             $this->app->bind(LoginView::class, DevLoginPage::class);

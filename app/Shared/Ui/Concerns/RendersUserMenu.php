@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Shared\Ui\Concerns;
 
 use App\Auth\Models\User;
-use App\Auth\Ui\Pages\ProfilePage;
 use Lattice\Core\Enums\Breakpoint;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Core\Support\Affix;
@@ -13,6 +12,7 @@ use Lattice\Ui\Components\Dropdown;
 use Lattice\Ui\Components\MenuItem;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
+use Lattice\Ui\Contracts\SchemaEntry;
 use Lattice\Ui\Enums\Align;
 use Lattice\Ui\Enums\AvatarShape;
 use Lattice\Ui\Enums\Gap;
@@ -25,7 +25,7 @@ use Lattice\Ui\Enums\Width;
 trait RendersUserMenu
 {
     /**
-     * @param  array<int, MenuItem>  $items
+     * @param  array<int, SchemaEntry>  $items
      */
     private function userMenu(User $user, array $items): Dropdown
     {
@@ -59,8 +59,8 @@ trait RendersUserMenu
 
     private function profileMenuItem(): MenuItem
     {
-        return MenuItem::fromPage(ProfilePage::class)
-            ->label(__('navigation.profile'))
+        return MenuItem::make(__('navigation.profile'))
+            ->href(route('profile.edit', absolute: false))
             ->prefix(Affix::icon('circle-user'));
     }
 

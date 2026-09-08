@@ -8,7 +8,7 @@ use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Role;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;

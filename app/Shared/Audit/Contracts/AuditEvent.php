@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Contracts;
+namespace App\Shared\Audit\Contracts;
 
-use App\Shared\Concerns\IsAuditEvent;
+use App\Shared\Audit\Concerns\IsAuditEvent;
 
 /**
  * A typed audit-log event. Implemented by per-domain string-backed enums via

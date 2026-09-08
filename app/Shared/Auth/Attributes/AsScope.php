@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Auth\Attributes;
+namespace App\Shared\Auth\Attributes;
 
 use Attribute;
 

@@ -58,6 +58,14 @@ it('lets a module add its own sidebar entry through the app.navigation slot', fu
     expect($sidebarHrefs())->toBe([...$before, '/reports']);
 });
 
+it('lets a module add its own entry to the user menu through the app.user-menu slot', function () {
+    $user = User::factory()->create();
+
+    Lattice::extend('app.user-menu', static fn (): MenuItem => MenuItem::make('Reports')->href('/reports'));
+
+    expect(userMenuHrefs($user))->toBe(['/profile', '/reports', '/logout']);
+});
+
 it('names the realm once per breakpoint, under distinct keys', function () {
     $user = User::factory()->create();
 

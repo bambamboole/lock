@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace App\Auth\Support;
 
-use App\Auth\Attributes\AsPermission;
-use App\Auth\Attributes\AsScope;
-use App\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Attributes\AsPermission;
+use App\Shared\Auth\Attributes\AsScope;
+use App\Shared\Auth\Contracts\PermissionCatalog;
+use App\Shared\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Data\PermissionDefinition;
 use BackedEnum;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
@@ -16,7 +18,7 @@ use Spatie\StructureDiscoverer\Discover;
 use Spatie\StructureDiscoverer\Enums\Sort;
 use Throwable;
 
-final class PermissionRepository
+final class PermissionRepository implements PermissionCatalog
 {
     public const string CACHE_KEY = 'auth.permissions';
 
@@ -89,6 +91,15 @@ final class PermissionRepository
         }
 
         return $scopes;
+    }
+
+    public function rebuild(): int
+    {
+        Cache::forget(self::CACHE_KEY);
+        $this->definitions = null;
+        $this->byValue = null;
+
+        return count($this->values());
     }
 
     /**

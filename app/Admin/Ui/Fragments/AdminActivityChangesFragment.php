@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Fragments;
 
 use App\Admin\Enums\AdminPermission;
-use App\Realms\Models\Activity;
+use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Fragments\ActivityChangesFragment;
 use Lattice\Core\Attributes\AsFragment;
 

@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
+use App\Shared\Audit\Models\Activity;
 use App\Shared\Database\Scopes\RealmScope;
 use App\Shared\Exceptions\MissingRealmContext;
 use Illuminate\Support\Facades\Context;

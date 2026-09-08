@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Auth\Concerns;
+namespace App\Shared\Auth\Concerns;
 
 use Illuminate\Support\Str;
 

@@ -6,16 +6,12 @@ namespace App\Realms\Support;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
+use App\Shared\Realms\Contracts\RealmMemberDirectory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
-final class RealmMemberRoles
+final class RealmMemberRoles implements RealmMemberDirectory
 {
-    /**
-     * Members with their role labels, owner first and then alphabetically by name.
-     *
-     * @return Collection<int, array{id: string, name: string, email: string, role_labels: string, is_owner: bool}>
-     */
     public function rows(Realm $realm, string $search = ''): Collection
     {
         $members = $realm->users()

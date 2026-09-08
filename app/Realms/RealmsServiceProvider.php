@@ -5,21 +5,28 @@ declare(strict_types=1);
 namespace App\Realms;
 
 use App\Auth\Models\User;
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Models\Role;
+use App\Realms\Support\RealmMemberRoles;
 use App\Realms\Ui\Settings\ActivityTab;
 use App\Realms\Ui\Settings\DangerTab;
 use App\Realms\Ui\Settings\GeneralTab;
 use App\Realms\Ui\Settings\MembersTab;
 use App\Realms\Ui\Settings\RolesTab;
+use App\Shared\Audit\Models\Activity;
+use App\Shared\Realms\Contracts\RealmMemberDirectory;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Core\Services\ContextResolutions;
 
 final class RealmsServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(RealmMemberDirectory::class, RealmMemberRoles::class);
+    }
+
     public function boot(): void
     {
         /*

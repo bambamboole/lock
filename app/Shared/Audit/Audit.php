@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Realms\Support;
+namespace App\Shared\Audit;
 
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
-use App\Shared\Contracts\AuditEvent;
+use App\Shared\Audit\Contracts\AuditEvent;
+use App\Shared\Audit\Models\Activity;
 use Illuminate\Database\Eloquent\Model;
 
 final class Audit

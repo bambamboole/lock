@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Enums;
 
-use App\Shared\Concerns\IsAuditEvent;
-use App\Shared\Contracts\AuditEvent;
+use App\Shared\Audit\Concerns\IsAuditEvent;
+use App\Shared\Audit\Contracts\AuditEvent;
 
 enum AdminAuditEvent: string implements AuditEvent
 {

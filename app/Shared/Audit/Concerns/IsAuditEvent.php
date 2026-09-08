@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Concerns;
+namespace App\Shared\Audit\Concerns;
 
 trait IsAuditEvent
 {
