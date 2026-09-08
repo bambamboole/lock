@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Realms\Enums;
 
-use App\Auth\Attributes\AsPermission;
-use App\Auth\Attributes\AsScope;
-use App\Auth\Concerns\HasPermissionLabel;
-use App\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Attributes\AsPermission;
+use App\Shared\Auth\Attributes\AsScope;
+use App\Shared\Auth\Concerns\HasPermissionLabel;
+use App\Shared\Auth\Contracts\PermissionEnum;
 
 #[AsPermission('navigation.realm-settings')]
 enum RealmPermission: string implements PermissionEnum

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Realms\Ui\Forms;
 
-use App\Auth\Support\PermissionDefinition;
 use App\Auth\Support\PermissionRepository;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Enums\RealmPermission;
@@ -11,6 +10,7 @@ use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
 use App\Realms\Support\Audit;
 use App\Realms\Ui\Concerns\ActivatesRealmContext;
+use App\Shared\Auth\Data\PermissionDefinition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;

@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Admin\Enums;
 
-use App\Auth\Attributes\AsPermission;
-use App\Auth\Concerns\HasPermissionLabel;
-use App\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Attributes\AsPermission;
+use App\Shared\Auth\Concerns\HasPermissionLabel;
+use App\Shared\Auth\Contracts\PermissionEnum;
 
 #[AsPermission('navigation.admin', global: true)]
 enum AdminPermission: string implements PermissionEnum

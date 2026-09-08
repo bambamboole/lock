@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Auth\Support;
+namespace App\Shared\Auth\Data;
 
-use App\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Contracts\PermissionEnum;
 
 final readonly class PermissionDefinition
 {

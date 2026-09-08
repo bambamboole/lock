@@ -3,9 +3,10 @@ declare(strict_types=1);
 
 namespace App\Auth\Support;
 
-use App\Auth\Attributes\AsPermission;
-use App\Auth\Attributes\AsScope;
-use App\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Attributes\AsPermission;
+use App\Shared\Auth\Attributes\AsScope;
+use App\Shared\Auth\Contracts\PermissionEnum;
+use App\Shared\Auth\Data\PermissionDefinition;
 use BackedEnum;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;

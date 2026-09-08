@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Auth\Models;
 
-use App\Auth\Contracts\PermissionEnum;
 use App\Auth\Support\PermissionRepository;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
+use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\Concerns\HasAuthenticationFactors;

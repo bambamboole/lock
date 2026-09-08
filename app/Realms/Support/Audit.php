@@ -5,7 +5,7 @@ namespace App\Realms\Support;
 
 use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
-use App\Shared\Contracts\AuditEvent;
+use App\Shared\Audit\Contracts\AuditEvent;
 use Illuminate\Database\Eloquent\Model;
 
 final class Audit

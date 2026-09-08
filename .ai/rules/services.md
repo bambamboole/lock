@@ -14,8 +14,8 @@ name it for what it does.
 `Support/` stays for the smaller helpers that are not services and not data: pure functions over their arguments,
 static registries, string manglers, and thin adapters a config entry names by class-string rather than the container
 injecting. `App\Realms\Support\Audit`, `App\Realms\Support\RealmMemberRoles`, and `App\Auth\Support\OidcScopeCatalog`
-(wired through `config('oidc.scopes')`) are the shape that belongs there. The permission plumbing
-(`PermissionRepository`, `PermissionDefinition`) also lives under `Support/` — a one-class `Services/` or `Data/` directory next to `Support/` is not worth the extra slice.
+(wired through `config('oidc.scopes')`) are the shape that belongs there. `PermissionRepository` also lives under `Support/` — a one-class `Services/` directory next to `Support/` is not worth
+the extra slice. Its `PermissionDefinition` DTO sits in `app/Shared/Auth/Data/` because other domains consume it.
 
 ## Value objects that carry data between layers live in Data/
 
