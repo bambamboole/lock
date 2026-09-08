@@ -6,11 +6,10 @@ namespace App\Auth\Models;
 
 use App\Auth\Contracts\PermissionEnum;
 use App\Auth\Support\PermissionRepository;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
-use App\Tenants\Models\Membership;
-use App\Tenants\Models\Role;
-use App\Tenants\Models\Tenant;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\Concerns\HasAuthenticationFactors;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
@@ -42,24 +41,21 @@ use Laravel\Passport\HasApiTokens;
  * @property string|null $remember_token
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property string|null $current_tenant_id
+ * @property string $realm_id
  * @property string|null $locale
  * @property string|null $timezone
- * @property-read Tenant|null $currentTenant
+ * @property-read Realm $realm
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @property-read Collection<int, Passkey> $passkeys
  * @property-read int|null $passkeys_count
- * @property-read Membership|null $pivot
- * @property-read Collection<int, Tenant> $tenants
- * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereCurrentTenantId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRealmId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereEmailVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereId($value)
@@ -70,7 +66,7 @@ use Laravel\Passport\HasApiTokens;
  *
  * @mixin \Eloquent
  */
-#[Fillable(['name', 'email', 'password', 'current_tenant_id', 'locale', 'timezone'])]
+#[Fillable(['name', 'email', 'password', 'realm_id', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
 final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser, ProvidesSettings
 {
@@ -78,20 +74,14 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     use HasApiTokens, HasAuthenticationFactors, HasFactory, HasSettings, HasUuids, Notifiable;
 
     /**
-     * @return BelongsToMany<Tenant, $this>
+     * The one realm this user exists in. Identity does not cross realms: two
+     * rows with the same email in different realms are two unrelated people.
+     *
+     * @return BelongsTo<Realm, $this>
      */
-    public function tenants(): BelongsToMany
+    public function realm(): BelongsTo
     {
-        return $this->belongsToMany(Tenant::class, 'tenant_members', 'user_id', 'tenant_id')
-            ->withTimestamps();
-    }
-
-    /**
-     * @return BelongsTo<Tenant, $this>
-     */
-    public function currentTenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'current_tenant_id');
+        return $this->belongsTo(Realm::class);
     }
 
     /**
@@ -107,67 +97,41 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
      */
     public function globalRoles(): BelongsToMany
     {
-        return $this->roles()->whereNull('roles.tenant_id');
+        return $this->roles()->whereNull('roles.realm_id');
     }
 
     /**
+     * Roles this user holds in the given realm. A realm other than the user's
+     * own yields nothing — the caller passes a realm so the guard is explicit
+     * at the call site rather than assumed.
+     *
      * @return Collection<int, Role>
      */
-    public function rolesFor(Tenant $tenant): Collection
+    public function rolesFor(Realm $realm): Collection
     {
-        return $this->roles()->where('roles.tenant_id', $tenant->id)->get();
-    }
-
-    public function personalTenant(): ?Tenant
-    {
-        return $this->tenants()
-            ->where('is_personal', true)
-            ->first();
-    }
-
-    public function switchTenant(Tenant $tenant): bool
-    {
-        if (! $this->belongsToTenant($tenant)) {
-            return false;
+        if (! $this->belongsToRealm($realm)) {
+            return new Collection;
         }
 
-        $this->update(['current_tenant_id' => $tenant->id]);
-        $this->setRelation('currentTenant', $tenant);
-
-        $tenant->makeCurrent();
-
-        return true;
+        return $this->roles()->where('roles.realm_id', $realm->id)->get();
     }
 
-    public function belongsToTenant(Tenant $tenant): bool
+    public function belongsToRealm(Realm $realm): bool
     {
-        return $this->tenants()->where('tenants.id', $tenant->id)->exists();
+        return $this->realm_id === $realm->id;
     }
 
-    public function isCurrentTenant(Tenant $tenant): bool
+    public function ownsRealm(Realm $realm): bool
     {
-        return $this->current_tenant_id === $tenant->id;
-    }
-
-    public function ownsTenant(Tenant $tenant): bool
-    {
-        return $this->rolesFor($tenant)->contains(fn (Role $role) => $role->isOwner());
-    }
-
-    public function fallbackTenant(?Tenant $excluding = null): ?Tenant
-    {
-        return $this->tenants()
-            ->when($excluding, fn ($query, Tenant $excluding) => $query->where('tenants.id', '!=', $excluding->id))
-            ->orderByRaw('LOWER(tenants.name)')
-            ->first();
+        return $this->rolesFor($realm)->contains(fn (Role $role) => $role->isOwner());
     }
 
     /**
-     * The owner short-circuit grants every *tenant-scoped* permission, never a global
-     * one — owning a tenant is not an admin grant, so a global permission reached
-     * through a tenant role is refused outright.
+     * The owner short-circuit grants every *realm-scoped* permission, never a global
+     * one — owning a realm is not an admin grant, so a global permission reached
+     * through a realm role is refused outright.
      */
-    public function hasTenantPermission(Tenant $tenant, PermissionEnum $permission): bool
+    public function hasRealmPermission(Realm $realm, PermissionEnum $permission): bool
     {
         $value = (string) $permission->value;
 
@@ -175,7 +139,7 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
             return false;
         }
 
-        $roles = $this->rolesFor($tenant)->load('permissions');
+        $roles = $this->rolesFor($realm)->load('permissions');
 
         if ($roles->isEmpty()) {
             return false;

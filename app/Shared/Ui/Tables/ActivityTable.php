@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Ui\Tables;
 
-use App\Tenants\Models\Activity;
+use App\Realms\Models\Activity;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
 use Lattice\Table\Columns\BadgeColumn;

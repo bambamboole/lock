@@ -31,7 +31,7 @@ final class AdminUsersTable extends EloquentTableDefinition
      */
     public function builder(TableQuery $query): Builder
     {
-        $builder = User::query()->withCount('tenants')->withExists('globalRoles');
+        $builder = User::query()->with('realm')->withExists('globalRoles');
 
         if ($query->sorts === []) {
             $builder->latest('id');
@@ -51,7 +51,7 @@ final class AdminUsersTable extends EloquentTableDefinition
                     Text::bound('name'),
                     Text::bound('email')->color(ColorName::Muted)->size(Size::Sm),
                 ]),
-            TextColumn::make('tenants_count')->label(__('admin.users.columns.tenants')),
+            TextColumn::make('realm.name')->label(__('admin.users.columns.realm')),
             BooleanColumn::make('global_roles_exists')->label(__('admin.users.columns.admin')),
             TextColumn::make('created_at')->label(__('admin.users.columns.created-at'))->dateTime()->sortable(),
         ];

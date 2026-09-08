@@ -8,7 +8,7 @@ use Tests\TestCase;
 /*
  * Bindings only. Shared helpers live in tests/Helpers/*.php under the
  * Tests\Helpers namespace (Pest auto-loads that directory) and are imported per
- * file with `use function Tests\Helpers\tenantMember;`. A helper defined here
+ * file with `use function Tests\Helpers\realmMember;`. A helper defined here
  * would be a global function, and every test file shares one global function
  * table — reusing a name in a second file is a fatal redeclare, not an override.
  *

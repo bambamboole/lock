@@ -27,7 +27,7 @@ final class PermissionRepository
     private ?array $byValue = null;
 
     /** @return list<PermissionDefinition> */
-    public function tenant(): array
+    public function realm(): array
     {
         return array_values(array_filter($this->all(), fn (PermissionDefinition $permission): bool => ! $permission->global));
     }
@@ -74,7 +74,7 @@ final class PermissionRepository
     }
 
     /**
-     * API scope value => translated description, tenant-scoped `#[AsScope]`-tagged cases only.
+     * API scope value => translated description, realm-scoped `#[AsScope]`-tagged cases only.
      *
      * @return array<string, string>
      */
@@ -82,7 +82,7 @@ final class PermissionRepository
     {
         $scopes = [];
 
-        foreach ($this->tenant() as $permission) {
+        foreach ($this->realm() as $permission) {
             if ($permission->isScope) {
                 $scopes[$permission->value] = __($permission->descriptionKey);
             }

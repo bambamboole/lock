@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace Tests\Fixtures;
 
-use App\Shared\Concerns\BelongsToTenantOrGlobal;
-use App\Shared\Database\Scopes\GlobalOrTenantScope;
+use App\Shared\Concerns\BelongsToRealmOrGlobal;
+use App\Shared\Database\Scopes\GlobalOrRealmScope;
 use App\Shared\Models\BusinessModel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -17,21 +17,21 @@ use Illuminate\Support\Facades\Schema;
  * override is exercised.
  *
  * @property string $id
- * @property string|null $tenant_id
+ * @property string|null $realm_id
  * @property string $name
  */
-#[Fillable(['name', 'tenant_id'])]
-#[ScopedBy(GlobalOrTenantScope::class)]
+#[Fillable(['name', 'realm_id'])]
+#[ScopedBy(GlobalOrRealmScope::class)]
 #[Table(name: 'shared_records')]
 final class SharedRecord extends BusinessModel
 {
-    use BelongsToTenantOrGlobal;
+    use BelongsToRealmOrGlobal;
 
     public static function createTable(): void
     {
         Schema::create('shared_records', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tenant_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignUuid('realm_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();

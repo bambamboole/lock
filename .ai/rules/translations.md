@@ -8,7 +8,7 @@ paths:
 ## Kebab-case keys only
 
 All translation keys use lowercase letters and dashes. Never underscores or camelCase —
-`tenant.settings.members.invited`, not `tenant.settings.members_invited`.
+`realm.settings.members.invited`, not `realm.settings.members_invited`.
 
 ## Dot notation via nested arrays
 
@@ -34,7 +34,7 @@ Shared field labels (`common.field.email-address`), actions, and statuses live i
 
 ## File naming
 
-Translation files use kebab-case filenames matching the area (`user.php`, `tenant.php`, `auth.php`).
+Translation files use kebab-case filenames matching the area (`user.php`, `realm.php`, `auth.php`).
 
 ## Always update both locales
 

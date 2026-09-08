@@ -10,8 +10,8 @@ trait HasPermissionLabel
     /**
      * Translation key for this permission case's description: the enum's domain
      * (class basename minus the `Permission` suffix, kebab-cased) followed by
-     * the value with `:` turned into `.` — e.g. `TenantPermission::ViewAudit`
-     * => `tenant.permissions.audit.view`.
+     * the value with `:` turned into `.` — e.g. `RealmPermission::ViewAudit`
+     * => `realm.permissions.audit.view`.
      */
     public function getTranslationKey(): string
     {

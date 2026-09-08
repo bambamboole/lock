@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Auth\Models\User;
-use App\Tenants\Models\Tenant;
+use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\RecoveryCodeProvider;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\TotpFactorProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,6 +27,9 @@ final class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            // Every user needs a realm; unless the caller names one, the user
+            // gets a fresh realm of their own so tests stay isolated.
+            'realm_id' => Realm::factory(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
@@ -38,21 +41,6 @@ final class UserFactory extends Factory
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
         ];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function ($user) {
-            $tenant = Tenant::factory()->personal()->create([
-                'name' => $user->name."'s Tenant",
-            ]);
-
-            $tenant->members()->attach($user);
-
-            $user->roles()->attach($tenant->ownerRole());
-
-            $user->switchTenant($tenant);
-        });
     }
 
     public function unverified(): static

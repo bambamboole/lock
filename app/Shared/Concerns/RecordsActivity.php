@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Concerns;
 
-use App\Tenants\Models\Activity;
+use App\Realms\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -14,21 +14,21 @@ trait RecordsActivity
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->useLogName('tenant')
+            ->useLogName('realm')
             ->logAll()
-            ->logExcept(['id', 'tenant_id', 'created_at', 'updated_at', 'deleted_at', ...$this->activityLogExcept()])
+            ->logExcept(['id', 'realm_id', 'created_at', 'updated_at', 'deleted_at', ...$this->activityLogExcept()])
             ->logOnlyDirty()
             ->dontLogEmptyChanges()
             ->setDescriptionForEvent(fn (string $event): string => "audit.events.model.{$event}");
     }
 
     /**
-     * The tenant column is not part of the diff, but the audit trail is read per
-     * tenant — stamp it so a tenant's log never leaks another tenant's rows.
+     * The realm column is not part of the diff, but the audit trail is read per
+     * realm — stamp it so a realm's log never leaks another realm's rows.
      */
     public function beforeActivityLogged(Activity $activity, string $event): void
     {
-        $activity->tenant_id = $this->getAttribute('tenant_id');
+        $activity->realm_id = $this->getAttribute('realm_id');
     }
 
     /**

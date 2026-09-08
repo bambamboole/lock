@@ -6,9 +6,9 @@ namespace App\Admin\Console\Commands;
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
-use App\Auth\Models\User;
-use App\Tenants\Models\Role;
-use App\Tenants\Support\Audit;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
+use App\Realms\Support\Audit;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -22,15 +22,17 @@ final class GrantAdminCommand extends Command
         $emailArgument = $this->argument('email');
         $email = is_string($emailArgument) ? $emailArgument : '';
 
-        $user = User::query()->where('email', $email)->first();
+        // An address is only unique within a realm, and instance admins live
+        // in the master realm — so that is the only place worth looking.
+        $user = Realm::master()->users()->where('email', $email)->first();
 
         if ($user === null) {
-            $this->components->error("No user found for [{$email}].");
+            $this->components->error("No user found for [{$email}] in the master realm.");
 
             return self::FAILURE;
         }
 
-        $role = Role::query()->whereNull('tenant_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->first();
+        $role = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->first();
 
         if ($role === null) {
             $this->components->error('The Super Admin role is not seeded. Run db:seed or app install first.');

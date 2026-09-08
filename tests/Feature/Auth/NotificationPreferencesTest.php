@@ -9,12 +9,12 @@ it('saves an unchecked notification preference as false', function () {
 
     $this->actingAs($user)
         ->submitForm(NotificationPreferencesForm::class, [
-            'tenant-membership' => true,
+            'realm-membership' => true,
         ])
         ->assertRedirect(route('profile.edit'));
 
     $user->refresh();
 
-    expect($user->settings->get('notifications.tenant-invitations'))->toBeFalse()
-        ->and($user->settings->get('notifications.tenant-membership'))->toBeTrue();
+    expect($user->settings->get('notifications.realm-invitations'))->toBeFalse()
+        ->and($user->settings->get('notifications.realm-membership'))->toBeTrue();
 });

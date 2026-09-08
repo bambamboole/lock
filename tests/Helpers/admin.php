@@ -6,11 +6,16 @@ namespace Tests\Helpers;
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
-use App\Tenants\Models\Role;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
 
+/**
+ * Instance administrators live in the master realm — that is what makes them
+ * administrators of the others rather than members of their own.
+ */
 function globalAdmin(string $roleName = GlobalRoleSeeder::SUPER_ADMIN): User
 {
-    $admin = User::factory()->create();
+    $admin = User::factory()->for(Realm::master())->create();
 
     grantGlobalRole($admin, $roleName);
 
@@ -19,5 +24,5 @@ function globalAdmin(string $roleName = GlobalRoleSeeder::SUPER_ADMIN): User
 
 function grantGlobalRole(User $user, string $name): void
 {
-    $user->roles()->attach(Role::query()->whereNull('tenant_id')->where('name', $name)->sole());
+    $user->roles()->attach(Role::query()->whereNull('realm_id')->where('name', $name)->sole());
 }

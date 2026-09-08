@@ -5,7 +5,7 @@ namespace App\Auth\Actions;
 
 use App\Auth\Concerns\PasswordValidationRules;
 use App\Auth\Models\User;
-use App\Tenants\Actions\CreateTenant;
+use App\Realms\Models\Realm;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -14,29 +14,30 @@ final class CreateNewUser
 {
     use PasswordValidationRules;
 
-    public function __construct(private CreateTenant $createTenant) {}
-
     /**
      * @param  array<string, string>  $input
      */
     public function create(array $input): User
     {
+        // Self-service registration carries no realm of its own yet, so it
+        // lands in the configured default. Uniqueness follows the realm: the
+        // same address may already exist in a different one.
+        $realm = Realm::default();
+
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique(User::class)],
+            'email' => [
+                'required', 'string', 'email', 'max:255',
+                Rule::unique(User::class)->where('realm_id', $realm->id),
+            ],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return DB::transaction(function () use ($input) {
-            $user = User::create([
-                'name' => $input['name'],
-                'email' => $input['email'],
-                'password' => $input['password'],
-            ]);
-
-            $this->createTenant->handle($user, $user->name."'s Tenant", isPersonal: true);
-
-            return $user;
-        });
+        return DB::transaction(fn (): User => User::create([
+            'realm_id' => $realm->id,
+            'name' => $input['name'],
+            'email' => $input['email'],
+            'password' => $input['password'],
+        ]));
     }
 }

@@ -9,9 +9,8 @@ use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Auth\Models\User;
+use App\Realms\Models\Role;
 use App\Shared\Ui\Components\PageHeader;
-use App\Tenants\Models\Role;
-use App\Tenants\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -49,13 +48,13 @@ final class UserDetailPage extends AdminPage
     public function render(PageSchema $schema, User $user, Request $request): PageSchema
     {
         $this->user = $user;
-        $user->load('tenants');
+        $user->load('realm');
         $currentUser = $request->user();
 
-        $roleLabelsByTenant = $user->roles()
-            ->whereNotNull('roles.tenant_id')
+        $roleLabelsByRealm = $user->roles()
+            ->whereNotNull('roles.realm_id')
             ->get()
-            ->groupBy('tenant_id')
+            ->groupBy('realm_id')
             ->map(fn (Collection $roles) => $roles->map(fn (Role $role) => $role->displayName())->implode(', '))
             ->all();
 
@@ -66,7 +65,7 @@ final class UserDetailPage extends AdminPage
                 ->schema([
                     PageHeader::make($user->name),
                     $this->summaryCard($user),
-                    $this->membershipsCard($user, $roleLabelsByTenant),
+                    $this->membershipsCard($user, $roleLabelsByRealm),
                     $this->adminRolesCard($user, $currentUser),
                     $this->accountActionsCard($user),
                 ]),
@@ -87,20 +86,20 @@ final class UserDetailPage extends AdminPage
     }
 
     /**
-     * @param  array<int, string>  $roleLabelsByTenant
+     * @param  array<int, string>  $roleLabelsByRealm
      */
-    private function membershipsCard(User $user, array $roleLabelsByTenant): Card
+    private function membershipsCard(User $user, array $roleLabelsByRealm): Card
     {
-        return Card::make(__('admin.users.detail.tenants.heading'))->schema([
-            DescriptionList::make('user-tenants')
+        return Card::make(__('admin.users.detail.realms.heading'))->schema([
+            DescriptionList::make('user-realms')
                 ->bleed()
-                ->emptyLabel(__('admin.users.detail.no-tenants'))
+                ->emptyLabel(__('admin.users.detail.no-realms'))
                 ->schema(
-                    $user->tenants
-                        ->map(fn (Tenant $tenant) => TextEntry::make('tenant-'.$tenant->id, $tenant->name)
-                            ->value($roleLabelsByTenant[$tenant->id] ?? null)
-                            ->placeholder(__('admin.users.detail.no-roles')))
-                        ->all(),
+                    [
+                        TextEntry::make('realm-'.$user->realm->id, $user->realm->name)
+                            ->value($roleLabelsByRealm[$user->realm->id] ?? null)
+                            ->placeholder(__('admin.users.detail.no-roles')),
+                    ],
                 ),
         ]);
     }

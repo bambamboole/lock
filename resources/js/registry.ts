@@ -19,5 +19,5 @@ export const i18nNamespaces = [
     DEFAULT_NAMESPACE,
     UI_NAMESPACE,
     ...plugins.flatMap((plugin) => plugin.i18n?.namespace ?? []),
-    "tenant",
+    "realm",
 ];

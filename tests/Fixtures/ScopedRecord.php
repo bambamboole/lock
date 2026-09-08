@@ -10,11 +10,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Stand-in for the tenant-owned domain models this app will add. It ships none
+ * Stand-in for the realm-owned domain models this app will add. It ships none
  * yet, so BusinessModel would otherwise go unexercised.
  *
  * @property string $id
- * @property string $tenant_id
+ * @property string $realm_id
  * @property string $name
  */
 #[Fillable(['name'])]
@@ -25,7 +25,7 @@ final class ScopedRecord extends BusinessModel
     {
         Schema::create('scoped_records', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->foreignUuid('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('realm_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();

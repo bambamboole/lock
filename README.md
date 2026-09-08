@@ -13,8 +13,8 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
   (self-SSO), so the account console runs on the same flows external clients use.
 - **Authentication** — registration, password reset, email verification, **two-factor** (TOTP,
   recovery codes) and **passkeys**, with the prebuilt Lattice auth UI from `laravel-oidc-ui`.
-- **Tenants** — multi-tenant workspaces with memberships, roles, permissions, and email invitations.
-  These are the basis for realm-scoped identity.
+- **Realms** — the identity boundary. A user belongs to exactly one realm, an address identifies a
+  different person in each, and roles, permissions and invitations are realm-local.
 - **Admin console** — global roles, user and tenant administration, and a cross-tenant activity view.
 - **Audit log** — a tenant-scoped activity trail via
   [spatie/laravel-activitylog](https://spatie.be/docs/laravel-activitylog).

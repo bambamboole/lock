@@ -32,12 +32,12 @@ Not for writing individual new tests — the Testing rule covers that bar direct
       helpers, model factories and their states, shared datasets.
     - Map package ownership before judging coverage. Generic behavior from a Lattice package or another
       vendor package belongs in that package's test suite. App-specific configuration and integration remain app-owned.
-    - Grep for inline duplication clusters: hand-rolled tenant/user setup that a factory state owns, repeated
+    - Grep for inline duplication clusters: hand-rolled realm/user setup that a factory state owns, repeated
       Passport client bootstrapping, copy-pasted context arrays for `submitForm`/`callAction`. 2+ definitions of the
       same concept is a consolidation finding.
 
 3. **Audit the tests.** Read every test file — grep alone misses most findings. At scale, fan out one read-only
-   subagent per domain (`tests/Feature/Auth`, `Admin`, `Shared`, `Tenants`, …); require
+   subagent per domain (`tests/Feature/Auth`, `Admin`, `Shared`, `Realms`, …); require
    each finding as `file:line` + test name + one-line justification + a verdict:
     - **DELETE** — fails the Testing guideline's bar (render-only, payload-existence, absence-only, tautology,
       obsolete pin, duplicate).

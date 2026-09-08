@@ -58,15 +58,17 @@ it('lets a module add its own sidebar entry through the app.navigation slot', fu
     expect($sidebarHrefs())->toBe([...$before, '/reports']);
 });
 
-it('carries one tenant switcher per breakpoint, under distinct keys', function () {
-    $switchers = appLayoutSchema(User::factory()->create())
-        ->findAll(fn (ComponentNode $node): bool => $node->type() === 'dropdown' && $node->prop('placement') !== null);
+it('names the realm once per breakpoint, under distinct keys', function () {
+    $user = User::factory()->create();
 
-    $byKey = collect($switchers)
+    $labels = appLayoutSchema($user)
+        ->findAll(fn (ComponentNode $node): bool => in_array($node->key(), ['realm-label', 'realm-label-mobile'], true));
+
+    $byKey = collect($labels)
         ->mapWithKeys(fn (ComponentNode $node): array => [
             (string) $node->key() => [$node->prop('visibleFrom'), $node->prop('hiddenFrom')],
         ]);
 
-    expect($byKey->get('tenant-switcher'))->toBe(['md', null])
-        ->and($byKey->get('tenant-switcher-mobile'))->toBe([null, 'md']);
+    expect($byKey->get('realm-label'))->toBe(['md', null])
+        ->and($byKey->get('realm-label-mobile'))->toBe([null, 'md']);
 });

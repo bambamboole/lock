@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 use App\Auth\Support\PermissionRepository;
-use App\Tenants\Actions\RemoveMember;
-use App\Tenants\Observers\TenantInvitationObserver;
+use App\Realms\Actions\RemoveMember;
+use App\Realms\Observers\RealmInvitationObserver;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -131,7 +131,7 @@ function architectureSanctionedLatticeConsumers(): array
 {
     return [
         RemoveMember::class,
-        TenantInvitationObserver::class,
+        RealmInvitationObserver::class,
     ];
 }
 

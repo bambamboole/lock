@@ -1,0 +1,191 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Realms\Models;
+
+use App\Auth\Models\User;
+use App\Realms\Enums\RolePreset;
+use App\Realms\Observers\RealmObserver;
+use App\Shared\Settings\Concerns\HasSettings;
+use App\Shared\Settings\Contracts\ProvidesSettings;
+use Carbon\CarbonImmutable;
+use Database\Factories\RealmFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Attributes\RouteKey;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Context;
+
+/**
+ * @property string $id
+ * @property string $name
+ * @property string $slug
+ * @property CarbonImmutable|null $created_at
+ * @property CarbonImmutable|null $updated_at
+ * @property CarbonImmutable|null $deleted_at
+ * @property-read Collection<int, RealmInvitation> $invitations
+ * @property-read int|null $invitations_count
+ * @property-read Collection<int, User> $users
+ * @property-read int|null $users_count
+ * @property-read Collection<int, Role> $roles
+ * @property-read int|null $roles_count
+ *
+ * @method static \Database\Factories\RealmFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereIsPersonal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm withoutTrashed()
+ *
+ * @mixin \Eloquent
+ */
+#[Fillable(['name', 'slug'])]
+#[ObservedBy(RealmObserver::class)]
+#[RouteKey('slug')]
+final class Realm extends Model implements ProvidesSettings
+{
+    /** @use HasFactory<RealmFactory> */
+    use HasFactory, HasSettings, HasUuids, SoftDeletes;
+
+    public function owner(): ?User
+    {
+        $ownerRole = $this->roles()->where('preset', RolePreset::Owner)->first();
+
+        if ($ownerRole === null) {
+            return null;
+        }
+
+        return $ownerRole->users()->first();
+    }
+
+    public static function master(): self
+    {
+        return self::where('slug', config('realm.master_slug'))->firstOrFail();
+    }
+
+    public static function default(): self
+    {
+        return self::where('slug', config('realm.default_slug'))->firstOrFail();
+    }
+
+    public function isMaster(): bool
+    {
+        return $this->slug === config('realm.master_slug');
+    }
+
+    public static function fromContext(): ?self
+    {
+        $realmId = Context::get('realm_id');
+
+        return is_string($realmId) || is_int($realmId) ? self::find($realmId) : null;
+    }
+
+    /**
+     * Context is dehydrated into queued jobs, so anything dispatched while this
+     * realm is current can resolve it later via Realm::fromContext().
+     */
+    public function makeCurrent(): void
+    {
+        Context::add('realm_id', $this->id);
+    }
+
+    /**
+     * Escape hatch for schedulers, queue workers and maintenance scripts that
+     * start without a request-bound realm. Restores the previous context, so
+     * nesting a run inside another realm's is safe.
+     */
+    public function runAsCurrent(callable $callback): mixed
+    {
+        $previousRealmId = Context::get('realm_id');
+        $this->makeCurrent();
+
+        try {
+            return $callback();
+        } finally {
+            if ($previousRealmId === null) {
+                Context::forget('realm_id');
+            } else {
+                Context::add('realm_id', $previousRealmId);
+            }
+        }
+    }
+
+    /**
+     * @return HasMany<User, $this>
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
+    /**
+     * @return HasMany<RealmInvitation, $this>
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(RealmInvitation::class);
+    }
+
+    /**
+     * @return HasMany<Role, $this>
+     */
+    public function roles(): HasMany
+    {
+        return $this->hasMany(Role::class);
+    }
+
+    public function ownerRole(): Role
+    {
+        return $this->roles()->where('preset', RolePreset::Owner)->firstOrFail();
+    }
+
+    public function memberRole(): Role
+    {
+        return $this->roles()->where('preset', RolePreset::Member)->firstOrFail();
+    }
+
+    /**
+     * @return Collection<int, Role>
+     */
+    public function assignableRoles(): Collection
+    {
+        return $this->roles()->where(fn ($query) => $query->whereNull('preset')->orWhere('preset', '!=', RolePreset::Owner))->orderBy('name')->get();
+    }
+
+    public function hasMemberOrPendingInvitation(string $email): bool
+    {
+        $email = strtolower($email);
+
+        if ($this->users()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
+            return true;
+        }
+
+        return $this->invitations()
+            ->whereRaw('LOWER(email) = ?', [$email])
+            ->whereNull('accepted_at')
+            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
+            ->exists();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+        ];
+    }
+}

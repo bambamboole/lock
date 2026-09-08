@@ -7,9 +7,9 @@ return [
     'back-to-app' => 'Back to app',
     'dashboard' => 'Dashboard',
     'profile' => 'Profile',
-    'tenant-settings' => 'Tenant settings',
-    'tenants' => 'Tenants',
-    'select-tenant' => 'Select tenant',
+    'realm-settings' => 'Realm settings',
+    'realms' => 'Realms',
+    'select-realm' => 'Select realm',
     'toggle-sidebar' => 'Toggle sidebar',
     'users' => 'Users',
 ];

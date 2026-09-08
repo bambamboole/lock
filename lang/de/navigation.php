@@ -7,9 +7,9 @@ return [
     'back-to-app' => 'Zurück zur App',
     'dashboard' => 'Dashboard',
     'profile' => 'Profil',
-    'tenant-settings' => 'Mandanten-Einstellungen',
-    'tenants' => 'Mandanten',
-    'select-tenant' => 'Mandanten auswählen',
+    'realm-settings' => 'Realm-Einstellungen',
+    'realms' => 'Realms',
+    'select-realm' => 'Realm auswählen',
     'toggle-sidebar' => 'Seitenleiste umschalten',
     'users' => 'Benutzer',
 ];

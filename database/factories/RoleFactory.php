@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Tenants\Models\Role;
-use App\Tenants\Models\Tenant;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +18,7 @@ final class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenant::factory(),
+            'realm_id' => Realm::factory(),
             'name' => fake()->unique()->jobTitle(),
             'preset' => null,
         ];
@@ -26,6 +26,6 @@ final class RoleFactory extends Factory
 
     public function global(): static
     {
-        return $this->state(['tenant_id' => null]);
+        return $this->state(['realm_id' => null]);
     }
 }

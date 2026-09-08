@@ -10,11 +10,11 @@ use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
 use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Auth\Models\User;
-use App\Tenants\Enums\TenantAuditEvent;
-use App\Tenants\Models\Activity;
-use App\Tenants\Models\Role;
-use App\Tenants\Models\Tenant;
-use App\Tenants\Support\Audit;
+use App\Realms\Enums\RealmAuditEvent;
+use App\Realms\Models\Activity;
+use App\Realms\Models\Realm;
+use App\Realms\Models\Role;
+use App\Realms\Support\Audit;
 use Illuminate\Support\Facades\Notification;
 use Lattice\Core\Attributes\AsFragment;
 use Lattice\Core\Contracts\SignsComponentReferences;
@@ -28,7 +28,7 @@ beforeEach(function () {
     (new GlobalRoleSeeder)->run();
 });
 
-test('a null tenant writes a global admin activity row', function () {
+test('a null realm writes a global admin activity row', function () {
     $target = User::factory()->create();
 
     Audit::record(AdminAuditEvent::GlobalRolesUpdated, $target, properties: ['key' => 'value']);
@@ -36,37 +36,37 @@ test('a null tenant writes a global admin activity row', function () {
     $activity = Activity::query()->sole();
 
     expect($activity->log_name)->toBe('admin')
-        ->and($activity->tenant_id)->toBeNull()
+        ->and($activity->realm_id)->toBeNull()
         ->and($activity->event)->toBe('admin.roles.updated')
         ->and($activity->description)->toBe(__('audit.events.admin.roles.updated'))
         ->and($activity->properties?->all())->toBe(['key' => 'value']);
 });
 
-test('a tenant still writes a tenant-scoped activity row', function () {
-    $tenant = Tenant::factory()->create();
+test('a realm still writes a realm-scoped activity row', function () {
+    $realm = Realm::factory()->create();
 
-    Audit::record(TenantAuditEvent::TenantUpdated, $tenant, $tenant);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
 
     $activity = Activity::query()->sole();
 
-    expect($activity->log_name)->toBe('tenant')
-        ->and($activity->tenant_id)->toBe($tenant->id);
+    expect($activity->log_name)->toBe('realm')
+        ->and($activity->realm_id)->toBe($realm->id);
 });
 
-test('the global scope returns only tenant-less admin rows', function () {
-    $tenant = Tenant::factory()->create();
+test('the global scope returns only realm-less admin rows', function () {
+    $realm = Realm::factory()->create();
     $target = User::factory()->create();
 
-    Audit::record(TenantAuditEvent::TenantUpdated, $tenant, $tenant);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
     Audit::record(AdminAuditEvent::GlobalRolesUpdated, $target);
 
     expect(Activity::global()->pluck('event')->all())->toBe(['admin.roles.updated']);
 });
 
 test('the actor name stays an em dash when nothing recorded an actor', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    Audit::record(TenantAuditEvent::TenantUpdated, $tenant, $tenant);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
 
     expect(Activity::query()->sole()->causer_name)->toBe('—');
 });
@@ -84,7 +84,7 @@ test('the actor name is the causing user when one is authenticated', function ()
 test('granting a global role is logged with the role diff', function () {
     $admin = globalAdmin();
     $target = User::factory()->create();
-    $superAdminRole = Role::query()->whereNull('tenant_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
@@ -141,7 +141,7 @@ test('a rejected verification resend is not logged', function () {
 });
 
 test('the grant command is logged with a system actor', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
 
     $this->artisan('admin:grant', ['email' => $user->email])->assertSuccessful();
 
@@ -157,7 +157,7 @@ test('the grant command is logged with a system actor', function () {
 });
 
 test('re-granting an existing admin is not logged twice', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
 
     $this->artisan('admin:grant', ['email' => $user->email])->assertSuccessful();
     $this->artisan('admin:grant', ['email' => $user->email])->assertSuccessful();
@@ -177,11 +177,11 @@ test('a non-admin cannot read the activity trail', function () {
     $this->actingAs(User::factory()->create())->loadDeniedTable(AdminActivityTable::class)->assertForbidden();
 });
 
-test('the activity table shows admin rows and hides tenant rows', function () {
+test('the activity table shows admin rows and hides realm rows', function () {
     $admin = globalAdmin();
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    Audit::record(TenantAuditEvent::TenantUpdated, $tenant, $tenant);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
     Audit::record(AdminAuditEvent::GlobalRolesUpdated, User::factory()->create());
 
     $rows = $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk()->json('data');
@@ -214,11 +214,11 @@ test('a non-admin cannot read an activity row detail', function () {
         ->assertForbidden();
 });
 
-test('a tenant-scoped activity row is not readable through the admin fragment', function () {
+test('a realm-scoped activity row is not readable through the admin fragment', function () {
     $admin = globalAdmin();
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    Audit::record(TenantAuditEvent::TenantUpdated, $tenant, $tenant, ['secret' => 'value']);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['secret' => 'value']);
 
     $activity = Activity::query()->sole();
 

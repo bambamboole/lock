@@ -99,11 +99,11 @@ only for a pivot row that has no factory relationship of its own.
 ## Shared helpers live in tests/Helpers
 
 Shared helper functions are namespaced `Tests\Helpers` in `tests/Helpers/*.php` (Pest auto-loads the directory) and
-imported per file with `use function Tests\Helpers\tenantMember;`. `tests/Pest.php` holds only the
+imported per file with `use function Tests\Helpers\realmMember;`. `tests/Pest.php` holds only the
 `pest()->extend()` bindings. Never define a new global (unnamespaced) shared helper: every file-local test helper
 shares one global function table across the suite, so a name reused in a second file is a fatal redeclare.
-`tenantMember()` and `addMember()` are the shared fixtures — reuse them instead of
-hand-rolling tenant and membership setup.
+`realmMember()` and `addMember()` are the shared fixtures — reuse them instead of
+hand-rolling realm and role setup.
 
 ## Browser tests for client-only behavior
 

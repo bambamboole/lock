@@ -7,9 +7,9 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Realms\Models\Role;
+use App\Realms\Support\Audit;
 use App\Shared\Concerns\ResolvesCurrentUser;
-use App\Tenants\Models\Role;
-use App\Tenants\Support\Audit;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -37,7 +37,7 @@ final class UpdateUserGlobalRoles extends ActionDefinition
             ->form([
                 CheckboxGroup::make('role_ids', __('admin.users.detail.roles.field.label'))
                     ->options(
-                        Role::query()->whereNull('tenant_id')
+                        Role::query()->whereNull('realm_id')
                             ->get()
                             ->map(fn (Role $role) => CheckboxGroup::option($role->displayName(), (string) $role->id))
                             ->all(),
@@ -59,17 +59,17 @@ final class UpdateUserGlobalRoles extends ActionDefinition
         /** @var User $target */
         $target = $this->contextModel('user');
 
-        $globalRoleIds = Role::query()->whereNull('tenant_id')
+        $globalRoleIds = Role::query()->whereNull('realm_id')
             ->whereIn('id', array_map(strval(...), (array) ($data['role_ids'] ?? [])))
             ->pluck('id');
 
         $before = $target->globalRoles()->get();
-        $after = Role::query()->whereNull('tenant_id')->whereIn('id', $globalRoleIds)->get();
+        $after = Role::query()->whereNull('realm_id')->whereIn('id', $globalRoleIds)->get();
 
         $added = $after->whereNotIn('id', $before->pluck('id'))->map(fn (Role $role) => $role->displayName())->values()->all();
         $removed = $before->whereNotIn('id', $after->pluck('id'))->map(fn (Role $role) => $role->displayName())->values()->all();
 
-        $target->roles()->detach(Role::query()->whereNull('tenant_id')->pluck('id'));
+        $target->roles()->detach(Role::query()->whereNull('realm_id')->pluck('id'));
         $target->roles()->attach($globalRoleIds);
 
         if ($added !== [] || $removed !== []) {

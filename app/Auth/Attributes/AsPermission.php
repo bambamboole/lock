@@ -10,7 +10,7 @@ final readonly class AsPermission
 {
     /**
      * @param  string  $label  Translation key for the group heading the enum's cases are listed under.
-     * @param  bool  $global  Whether the enum's cases grant application-wide capabilities instead of tenant-scoped ones.
+     * @param  bool  $global  Whether the enum's cases grant application-wide capabilities instead of realm-scoped ones.
      */
     public function __construct(
         public string $label,

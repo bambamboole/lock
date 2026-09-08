@@ -5,7 +5,7 @@ namespace App\Auth\Console\Commands;
 
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Support\PermissionRepository;
-use App\Tenants\Models\Role;
+use App\Realms\Models\Role;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -30,7 +30,7 @@ final class SyncPermissionsCommand extends Command
         DB::transaction(function (): void {
             foreach (GlobalRoles::grants() as $name => $permissions) {
                 Role::query()
-                    ->firstOrCreate(['tenant_id' => null, 'name' => $name])
+                    ->firstOrCreate(['realm_id' => null, 'name' => $name])
                     ->syncPermissions($permissions);
             }
         });

@@ -72,7 +72,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $registry = $this->app->make(SettingsRegistry::class);
 
-        $registry->define('notifications.tenant-invitations')->boolean()->default(true);
-        $registry->define('notifications.tenant-membership')->boolean()->default(true);
+        $registry->define('notifications.realm-invitations')->boolean()->default(true);
+        $registry->define('notifications.realm-membership')->boolean()->default(true);
     }
 }

@@ -19,14 +19,14 @@ final class NotificationPreferencesForm extends ProfileForm
 
         return $this->profileForm($form)
             ->fill([
-                'tenant-invitations' => $user->settings->boolean('notifications.tenant-invitations', true),
-                'tenant-membership' => $user->settings->boolean('notifications.tenant-membership', true),
+                'realm-invitations' => $user->settings->boolean('notifications.realm-invitations', true),
+                'realm-membership' => $user->settings->boolean('notifications.realm-membership', true),
             ])
             ->schema([
-                Checkbox::make('tenant-invitations', __('user.preferences.notifications.tenant-invitations.label'))
-                    ->helperText(__('user.preferences.notifications.tenant-invitations.help-text')),
-                Checkbox::make('tenant-membership', __('user.preferences.notifications.tenant-membership.label'))
-                    ->helperText(__('user.preferences.notifications.tenant-membership.help-text')),
+                Checkbox::make('realm-invitations', __('user.preferences.notifications.realm-invitations.label'))
+                    ->helperText(__('user.preferences.notifications.realm-invitations.help-text')),
+                Checkbox::make('realm-membership', __('user.preferences.notifications.realm-membership.label'))
+                    ->helperText(__('user.preferences.notifications.realm-membership.help-text')),
             ]);
     }
 
@@ -34,8 +34,8 @@ final class NotificationPreferencesForm extends ProfileForm
     {
         $user = $this->currentUser();
 
-        $user->settings->set('notifications.tenant-invitations', $data->boolean('tenant-invitations'));
-        $user->settings->set('notifications.tenant-membership', $data->boolean('tenant-membership'));
+        $user->settings->set('notifications.realm-invitations', $data->boolean('realm-invitations'));
+        $user->settings->set('notifications.realm-membership', $data->boolean('realm-membership'));
 
         return $this->saved(__('user.preferences.updated'));
     }

@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\PageHeader;
-use App\Tenants\Models\Tenant;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\Grid;
@@ -32,7 +32,7 @@ final class AdminDashboardPage extends AdminPage
                         ->columns(3)
                         ->schema([
                             Card::make(__('admin.dashboard.cards.users.title'), (string) User::query()->count()),
-                            Card::make(__('admin.dashboard.cards.tenants.title'), (string) Tenant::query()->count()),
+                            Card::make(__('admin.dashboard.cards.realms.title'), (string) Realm::query()->count()),
                             Card::make(__('admin.dashboard.cards.admins.title'), (string) User::query()->whereHas('globalRoles')->count()),
                         ]),
                 ]),

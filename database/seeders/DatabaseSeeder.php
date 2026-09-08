@@ -5,6 +5,7 @@ namespace Database\Seeders;
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Laravel\Passport\Passport;
@@ -16,7 +17,10 @@ final class DatabaseSeeder extends Seeder
     {
         Artisan::call('migrate', ['--path' => 'database/data-migrations', '--force' => true]);
 
-        User::factory()->create([
+        $master = $this->firstOrCreateRealm(config('realm.master_slug'), 'Master');
+        $this->firstOrCreateRealm(config('realm.default_slug'), 'Default');
+
+        User::factory()->for($master)->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
@@ -26,6 +30,11 @@ final class DatabaseSeeder extends Seeder
         Artisan::call('admin:grant', ['email' => 'test@example.com']);
 
         $this->ensureSelfSsoClient();
+    }
+
+    private function firstOrCreateRealm(string $slug, string $name): Realm
+    {
+        return Realm::firstOrCreate(['slug' => $slug], ['name' => $name]);
     }
 
     /**
