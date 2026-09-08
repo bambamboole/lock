@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Enums\RolePreset;
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Ui\Tables\RealmMembersTable;
+use App\Shared\Audit\Models\Activity;
 use Illuminate\Support\Facades\Context;
 use Lattice\Core\Services\ContextResolutions;
 use Lattice\Core\Services\ContextResolvers;

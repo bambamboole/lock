@@ -6,7 +6,7 @@ namespace App\Realms\Actions;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 
 final class CancelInvitation
 {

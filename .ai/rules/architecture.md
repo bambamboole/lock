@@ -15,7 +15,8 @@ The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
 
 `app/Shared/{Domain}/` is the public surface of a domain: the contracts, attributes, traits, and DTOs other modules
 may depend on (`app/Shared/Auth/Contracts/PermissionEnum`, `app/Shared/Auth/Attributes/AsPermission`,
-`app/Shared/Audit/Contracts/AuditEvent`). It imports nothing from `app/{Domain}/`; the domain provider binds each
+`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — settings, the audit trail — is a whole
+module there (`app/Shared/Settings`, `app/Shared/Audit`). It imports nothing from `app/{Domain}/`; the domain provider binds each
 contract to its implementation. `App\Auth\Models\User` and `App\Realms\Models\Realm` are the shared kernel and
 may be imported anywhere — relations, route bindings, and policies need the concrete class. Everything else crossing a
 domain line is a violation. `tests/Feature/ArchitectureTest.php` enforces this; the classes still listed in its

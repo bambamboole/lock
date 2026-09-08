@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Fragments;
 
 use App\Realms\Enums\RealmPermission;
-use App\Realms\Models\Activity;
 use App\Realms\Ui\Concerns\ActivatesRealmContext;
+use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Fragments\ActivityChangesFragment as BaseActivityChangesFragment;
 use Lattice\Core\Attributes\AsFragment;
 

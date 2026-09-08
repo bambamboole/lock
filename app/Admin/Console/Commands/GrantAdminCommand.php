@@ -8,7 +8,7 @@ use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;

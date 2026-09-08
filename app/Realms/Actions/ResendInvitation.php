@@ -8,7 +8,7 @@ use App\Realms\Concerns\SendsInvitationMail;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
-use App\Realms\Support\Audit;
+use App\Shared\Audit\Audit;
 use Illuminate\Validation\ValidationException;
 
 final class ResendInvitation

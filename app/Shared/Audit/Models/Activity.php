@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Realms\Models;
+namespace App\Shared\Audit\Models;
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Ui\Fragments;
 
-use App\Realms\Models\Activity;
+use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Concerns\RendersActivityChanges;
 use Lattice\Fragments\FragmentDefinition;
 use Lattice\Ui\Components\Stack;

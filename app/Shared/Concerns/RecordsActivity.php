@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Concerns;
 
-use App\Realms\Models\Activity;
+use App\Shared\Audit\Models\Activity;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 

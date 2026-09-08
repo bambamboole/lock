@@ -4,10 +4,10 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Enums\RealmPermission;
 use App\Realms\Enums\RolePreset;
-use App\Realms\Models\Activity;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Fragments\ActivityChangesFragment;
 use App\Realms\Ui\Tables\RealmActivityTable;
+use App\Shared\Audit\Models\Activity;
 
 use function Tests\Helpers\realmMember;
 

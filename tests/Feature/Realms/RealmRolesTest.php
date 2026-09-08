@@ -4,12 +4,12 @@ declare(strict_types=1);
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Enums\RolePreset;
-use App\Realms\Models\Activity;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Models\Role;
 use App\Realms\Ui\Actions\DeleteRole;
 use App\Realms\Ui\Forms\RoleForm;
 use App\Realms\Ui\Tables\RealmRolesTable;
+use App\Shared\Audit\Models\Activity;
 
 use function Tests\Helpers\addMember;
 use function Tests\Helpers\realmMember;

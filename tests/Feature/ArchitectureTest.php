@@ -3,13 +3,9 @@
 declare(strict_types=1);
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
-use App\Admin\Ui\Actions\ResendUserVerification;
-use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
-use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
 use App\Admin\Ui\Pages\RealmDetailPage;
 use App\Admin\Ui\Pages\UserDetailPage;
-use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Console\Commands\SyncPermissionsCommand;
 use App\Auth\Models\User;
@@ -20,11 +16,8 @@ use App\Realms\Models\Role;
 use App\Realms\Observers\RealmInvitationObserver;
 use App\Realms\Policies\RealmPolicy;
 use App\Realms\Ui\Forms\RoleForm;
-use App\Shared\Concerns\RecordsActivity;
 use App\Shared\Ui\Concerns\RendersUserMenu;
-use App\Shared\Ui\Fragments\ActivityChangesFragment;
 use App\Shared\Ui\Layouts\AppLayout;
-use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -200,13 +193,6 @@ function architectureDomainBoundaryBaseline(): array
 {
     return [
         GrantAdminCommand::class,
-        ResendUserVerification::class,
-        SendUserPasswordReset::class,
-        AdminActivityChangesFragment::class,
-        AdminActivityTable::class,
-        RecordsActivity::class,
-        ActivityChangesFragment::class,
-        ActivityTable::class,
         GlobalRoleSeeder::class,
         UpdateUserGlobalRoles::class,
         RealmDetailPage::class,
