@@ -37,7 +37,7 @@ Not for writing individual new tests — the Testing rule covers that bar direct
       same concept is a consolidation finding.
 
 3. **Audit the tests.** Read every test file — grep alone misses most findings. At scale, fan out one read-only
-   subagent per domain (`tests/Feature/Auth`, `Admin`, `Billing`, `Shared`, `Tenants`, …); require
+   subagent per domain (`tests/Feature/Auth`, `Admin`, `Shared`, `Tenants`, …); require
    each finding as `file:line` + test name + one-line justification + a verdict:
     - **DELETE** — fails the Testing guideline's bar (render-only, payload-existence, absence-only, tautology,
       obsolete pin, duplicate).
@@ -63,7 +63,7 @@ Not for writing individual new tests — the Testing rule covers that bar direct
 
 6. **Gate every stage.** `composer ci:check` and `vendor/bin/phpstan analyse` after each commit-sized step. When
    rendered behavior moved, `npm run build` then `php artisan test tests/Browser` — browser tests serve the last
-   built bundle and need the app reachable at `saas-starter-kit.test`.
+   built bundle and need the app reachable at `lock.test`.
 
 ## Verdict cheat-sheet
 

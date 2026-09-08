@@ -13,8 +13,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * A BusinessModel that also carries shared rows, so the scope override the
- * starter kit documents is exercised.
+ * A BusinessModel that also carries shared rows, so the documented scope
+ * override is exercised.
  *
  * @property string $id
  * @property string|null $tenant_id

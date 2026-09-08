@@ -17,7 +17,7 @@ it('renders every settings tab for an owner in priority order', function () {
         ->get(route('tenant.settings.edit', ['current_tenant' => $tenant]))
         ->assertOk();
 
-    expect(renderedTabKeys($response))->toBe(['general', 'members', 'roles', 'api-tokens', 'billing', 'activity', 'danger']);
+    expect(renderedTabKeys($response))->toBe(['general', 'members', 'roles', 'activity', 'danger']);
 });
 
 it('renders only the unrestricted tabs for a plain member', function () {
@@ -29,5 +29,5 @@ it('renders only the unrestricted tabs for a plain member', function () {
         ->get(route('tenant.settings.edit', ['current_tenant' => $tenant]))
         ->assertOk();
 
-    expect(renderedTabKeys($response))->toBe(['members', 'api-tokens', 'billing']);
+    expect(renderedTabKeys($response))->toBe(['members']);
 });

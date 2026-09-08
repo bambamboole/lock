@@ -18,10 +18,6 @@ return [
             'role-changed' => 'Mitgliederrolle geändert',
             'removed' => 'Mitglied entfernt',
         ],
-        'api-token' => [
-            'created' => 'API-Token erstellt',
-            'revoked' => 'API-Token widerrufen',
-        ],
         'role' => [
             'created' => 'Rolle erstellt',
             'updated' => 'Rolle aktualisiert',

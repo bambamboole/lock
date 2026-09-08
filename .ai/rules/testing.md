@@ -102,7 +102,7 @@ Shared helper functions are namespaced `Tests\Helpers` in `tests/Helpers/*.php` 
 imported per file with `use function Tests\Helpers\tenantMember;`. `tests/Pest.php` holds only the
 `pest()->extend()` bindings. Never define a new global (unnamespaced) shared helper: every file-local test helper
 shares one global function table across the suite, so a name reused in a second file is a fatal redeclare.
-`tenantMember()`, `addMember()`, and `subscribedOwner()` are the shared fixtures — reuse them instead of
+`tenantMember()` and `addMember()` are the shared fixtures — reuse them instead of
 hand-rolling tenant and membership setup.
 
 ## Browser tests for client-only behavior

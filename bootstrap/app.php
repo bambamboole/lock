@@ -3,16 +3,12 @@ declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Auth\Console\Commands\SyncPermissionsCommand;
-use App\Billing\Http\Middleware\ThrottleApiRequests;
-use App\Shared\Console\Commands\AppInstallCommand;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingTenantContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
-use App\Tenants\Http\Middleware\ResolveApiTenant;
 use App\Tenants\Http\Middleware\SetTenantUrlDefaults;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
-use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -52,20 +48,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
-            'throttle.api' => ThrottleApiRequests::class,
             // The framework default redirects to verification.notice, which no
             // route registers — the OIDC package names its verification prompt
             // identity.verification.notice.
             'verified' => EnsureEmailIsVerified::redirectTo('identity.verification.notice'),
         ]);
-
-        // Route model binding on a BusinessModel needs the tenant context
-        // ResolveApiTenant sets, so it must run before SubstituteBindings — not
-        // just after auth, where the api group's default order would place it.
-        $middleware->appendToPriorityList(
-            after: AuthenticatesRequests::class,
-            append: ResolveApiTenant::class,
-        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
@@ -80,7 +67,6 @@ return Application::configure(basePath: dirname(__DIR__))
             : null);
     })
     ->withCommands([
-        AppInstallCommand::class,
         DeployCommand::class,
         GrantAdminCommand::class,
         SyncPermissionsCommand::class,

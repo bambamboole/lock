@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tenants\Ui\Tables;
 
-use App\Auth\Enums\AuthAuditEvent;
 use App\Shared\Ui\Tables\ActivityTable;
 use App\Tenants\Enums\TenantAuditEvent;
 use App\Tenants\Enums\TenantPermission;
@@ -45,7 +44,7 @@ final class TenantActivityTable extends ActivityTable
             $options[$lifecycle] = __("audit.events.model.{$lifecycle}");
         }
 
-        foreach ([...TenantAuditEvent::cases(), ...AuthAuditEvent::cases()] as $event) {
+        foreach (TenantAuditEvent::cases() as $event) {
             $options[$event->value] = __($event->translationKey());
         }
 

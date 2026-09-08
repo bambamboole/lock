@@ -15,8 +15,8 @@ if [[ ! "$name" =~ ^[a-zA-Z0-9._-]+$ ]]; then
 fi
 
 repo_root="$(git rev-parse --show-toplevel)"
-worktree_dir="$(dirname "$repo_root")/saas-starter-kit-$name"
-site_name="saas-starter-kit-$name"
+worktree_dir="$(dirname "$repo_root")/lock-$name"
+site_name="lock-$name"
 
 if [[ -e "$worktree_dir" ]]; then
     echo "error: $worktree_dir already exists" >&2

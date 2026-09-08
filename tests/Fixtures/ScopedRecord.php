@@ -10,8 +10,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Stand-in for the tenant-owned domain models a starter-kit consumer adds. The
- * app itself ships none, so BusinessModel would otherwise go unexercised.
+ * Stand-in for the tenant-owned domain models this app will add. It ships none
+ * yet, so BusinessModel would otherwise go unexercised.
  *
  * @property string $id
  * @property string $tenant_id

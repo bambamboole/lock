@@ -18,23 +18,6 @@ trait InteractsWithConsole
     public function artisan($command, $parameters = []): PendingCommand {}
 }
 
-namespace Laravel\Paddle\Concerns;
-
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Laravel\Paddle\Subscription;
-
-/**
- * Vendor return type is the bare, ungenericized MorphMany, so ->create()
- * on the relation resolves to the base Model instead of Subscription.
- */
-trait ManagesSubscriptions
-{
-    /**
-     * @return MorphMany<Subscription, static>
-     */
-    public function subscriptions() {}
-}
-
 namespace Laravel\Passport;
 
 use Illuminate\Database\Eloquent\Model;

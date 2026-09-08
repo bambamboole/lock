@@ -14,9 +14,9 @@ enum TenantPermission: string implements PermissionEnum
     use HasPermissionLabel;
 
     /*
-     * Only cases backing the members API surface carry #[AsScope] — a
-     * published scope without an endpoint is an empty promise in the token
-     * picker. Tag a case together with the endpoint that checks it.
+     * #[AsScope]-tagged cases become OAuth scopes in the OIDC scope catalog and
+     * are what a relying party may request on the consent screen. Global
+     * permissions never become scopes.
      */
     case UpdateTenant = 'tenant:update';
 
@@ -29,8 +29,6 @@ enum TenantPermission: string implements PermissionEnum
     case ManageMembers = 'member:manage';
 
     case ViewAudit = 'audit:view';
-
-    case ManageBilling = 'billing:manage';
 
     case ManageRoles = 'role:manage';
 }

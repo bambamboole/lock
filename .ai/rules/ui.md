@@ -17,8 +17,8 @@ dependency, and both rules pass an array. Treat the convention as unchecked unti
 
 `app/{Domain}/Ui/Settings/{Name}Tab.php` is a small `final` class with a single `__invoke()` returning a `Tab`; the
 domain's service provider hangs it into the `tenant.settings.tabs` slot with `Lattice::extend(…, priority:)`. That
-is how a module contributes UI to a page it does not own — `App\Auth\Ui\Settings\ApiTokensTab` and
-`App\Billing\Ui\Settings\BillingTab` both live outside `App\Tenants` yet render inside the tenant settings page.
+is how a module contributes UI to a page it does not own: a tab class living outside `App\Tenants` still renders
+inside the tenant settings page.
 There is no `Settings/Tabs/` subfolder: the `Tab` suffix already says what the class is.
 
 ## Resolve models through registered context, never route parameters or session state

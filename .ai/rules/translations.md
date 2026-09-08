@@ -8,7 +8,7 @@ paths:
 ## Kebab-case keys only
 
 All translation keys use lowercase letters and dashes. Never underscores or camelCase —
-`team.settings.api-tokens.created`, not `team.settings.api_tokens.created`.
+`tenant.settings.members.invited`, not `tenant.settings.members_invited`.
 
 ## Dot notation via nested arrays
 
@@ -17,7 +17,7 @@ Use nested PHP arrays to build dot-separated keys: `'settings' => ['general' => 
 
 Dots express hierarchy. Use `actions.delete.confirm.title`, not `actions.delete-confirm-title`, and
 `fields.name.placeholder`, not `fields.name-placeholder`. Keep dashes for compound terms and stable identifiers
-such as `api-tokens` and persisted audit event names. A guard in `tests/Feature/I18n/TranslationKeysTest.php`
+such as tab keys and persisted audit event names. A guard in `tests/Feature/I18n/TranslationKeysTest.php`
 fails on flat structural suffixes.
 
 When a key needs child metadata, move its original value to `.label`. Use `.default` for the primary value of a

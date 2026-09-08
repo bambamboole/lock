@@ -7,7 +7,6 @@ use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
-use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use RuntimeException;
 
@@ -21,8 +20,6 @@ final class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
-
-        $this->seedPersonalAccessClient();
 
         $this->call(GlobalRoleSeeder::class);
 
@@ -51,27 +48,5 @@ final class DatabaseSeeder extends Seeder
         if (Artisan::call('oidc:install-self', ['--fresh' => true, '--force' => true]) !== 0) {
             throw new RuntimeException('Failed to provision the self-SSO client: '.trim(Artisan::output()));
         }
-    }
-
-    /**
-     * Passport requires a personal access client for the `users` provider before
-     * any personal access token can be issued. Create one if it does not yet exist.
-     */
-    private function seedPersonalAccessClient(): void
-    {
-        $clients = app(ClientRepository::class);
-
-        try {
-            $clients->personalAccessClient('users');
-
-            return;
-        } catch (RuntimeException) {
-            // No personal access client exists yet — create one below.
-        }
-
-        $clients->createPersonalAccessGrantClient(
-            config('app.name').' Personal Access Client',
-            'users',
-        );
     }
 }

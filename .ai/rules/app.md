@@ -7,7 +7,7 @@ paths:
 
 ## A domain's provider lives in the module root, not in Providers/
 
-`app/{Domain}/{Domain}ServiceProvider.php` — e.g. `app/Billing/BillingServiceProvider.php`. There is no
+`app/{Domain}/{Domain}ServiceProvider.php` — e.g. `app/Tenants/TenantsServiceProvider.php`. There is no
 `app/{Domain}/Providers/` subfolder: a module has exactly one provider, and a directory holding a single file only
 adds a level to read past. `App\Shared\AppServiceProvider` is the app-wide one. Register new providers in
 `bootstrap/providers.php`.

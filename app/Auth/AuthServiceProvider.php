@@ -9,7 +9,6 @@ use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Models\User;
 use App\Auth\Support\PermissionRepository;
 use App\Auth\Ui\Pages\DevLoginPage;
-use App\Auth\Ui\Settings\ApiTokensTab;
 use Bambamboole\LaravelOidc\Server\Auth\UserActionManager;
 use Bambamboole\LaravelOidc\Server\Auth\Views\LoginView;
 use Illuminate\Support\Facades\Gate;
@@ -54,7 +53,5 @@ final class AuthServiceProvider extends ServiceProvider
         $userActions = $this->app->make(UserActionManager::class);
         $userActions->createUsersUsing(CreateNewUser::class);
         $userActions->resetUserPasswordsUsing(ResetUserPassword::class);
-
-        Lattice::extend('tenant.settings.tabs', (new ApiTokensTab)(...), priority: 30);
     }
 }

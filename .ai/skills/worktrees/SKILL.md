@@ -1,11 +1,11 @@
 ---
 name: worktrees
-description: Use when creating, preparing, listing, switching between, or removing git worktrees for the SaaS Starter Kit app, especially when multiple agents work in parallel. Covers safe multi-agent branch isolation, the sibling worktree layout, full-app dependency/env setup, the required verification gates, and cleanup.
+description: Use when creating, preparing, listing, switching between, or removing git worktrees for the Lock app, especially when multiple agents work in parallel. Covers safe multi-agent branch isolation, the sibling worktree layout, full-app dependency/env setup, the required verification gates, and cleanup.
 ---
 
-# SaaS Starter Kit Worktrees
+# Lock Worktrees
 
-SaaS Starter Kit is a **full Laravel 13 + Inertia + React + Lattice app** (served by Herd at `http://saas-starter-kit.test`), not a
+Lock is a **full Laravel 13 + Inertia + React + Lattice app** (served by Herd at `http://lock.test`), not a
 package. A worktree therefore needs its own dependencies, `.env`, app key, database, and built assets.
 
 Use a worktree whenever you need to make changes while other agents may be editing the main checkout or another
@@ -13,13 +13,13 @@ branch. Keep each agent's work isolated and never move, reset, delete, or overwr
 
 ## Layout: siblings of the main checkout
 
-Worktrees live **as siblings of the repo**, directly under its parent directory, named `saas-starter-kit-<slug>`:
+Worktrees live **as siblings of the repo**, directly under its parent directory, named `lock-<slug>`:
 
 ```text
-<parent>/saas-starter-kit/
-  saas-starter-kit/                     # main checkout (repo root)
-  saas-starter-kit-<slug>/              # a worktree
-  saas-starter-kit-<other-slug>/        # another worktree
+<parent>/lock/
+  lock/                     # main checkout (repo root)
+  lock-<slug>/              # a worktree
+  lock-<other-slug>/        # another worktree
 ```
 
 Do **not** nest worktrees inside the repo (no `.worktrees/`). Siblings sit outside the working tree, so they need no
@@ -56,8 +56,8 @@ Run from the repo root — one script does the whole thing:
 bin/create-worktree.sh <slug> [branch]      # branch defaults to <slug>
 ```
 
-It creates `../saas-starter-kit-<slug>` branched off `main`, gives it a Herd site
-(`https://saas-starter-kit-<slug>.test`) with `APP_URL` pointed at it, then installs composer and npm
+It creates `../lock-<slug>` branched off `main`, gives it a Herd site
+(`https://lock-<slug>.test`) with `APP_URL` pointed at it, then installs composer and npm
 dependencies, generates the app key, OIDC signing keys and Passport keys, migrates a fresh SQLite database, syncs the
 scope catalog, and builds the frontend. It refuses to touch an existing directory.
 
@@ -71,7 +71,7 @@ bin/create-worktree.sh token-fix fix/token-fix
 Notes:
 
 - The script always branches off `main`. To continue an existing branch, do it by hand
-  (`git worktree add ../saas-starter-kit-<slug> <branch>`) and run the setup steps yourself.
+  (`git worktree add ../lock-<slug> <branch>`) and run the setup steps yourself.
 - It uses `npm ci`, not `npm install` — `install` rewrites `package-lock.json` with the platform's optional
   dependencies, which would leave every fresh worktree dirty.
 - `composer install` runs `boost:update` via its hooks, regenerating the git-ignored `CLAUDE.md` / `AGENTS.md` so the

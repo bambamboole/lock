@@ -1,13 +1,13 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "bambamboole/saas-starter-kit",
+    "name": "bambamboole/lock",
     "type": "project",
-    "description": "A batteries-included SaaS starter kit — Laravel + Inertia + React with Lattice server-driven UI.",
+    "description": "An OpenID Connect identity provider built on Laravel, with a Lattice server-driven admin console.",
     "keywords": [
         "laravel",
-        "inertia",
-        "react",
-        "lattice"
+        "oidc",
+        "openid-connect",
+        "identity-provider"
     ],
     "license": "MIT",
     "require": {
@@ -15,7 +15,6 @@
         "bambamboole/laravel-i18next": "^0.6.0",
         "bambamboole/laravel-oidc": "^0.22.0",
         "inertiajs/inertia-laravel": "^3.3.3",
-        "laravel/cashier-paddle": "^2.8.1",
         "laravel/framework": "^13.31.0",
         "laravel/passport": "^13.7.6",
         "laravel/reverb": "^1.11.1",
@@ -126,23 +125,13 @@
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
-        "post-create-project-cmd": [
-            "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
-            "@php artisan migrate --graceful --ansi",
-            "@php artisan migrate --path=database/data-migrations --graceful --ansi",
-            "@php artisan app:install"
-        ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
     "extra": {
         "laravel": {
-            "dont-discover": [],
-            "installer": {
-                "post-create-project": []
-            }
+            "dont-discover": []
         },
         "lattice": {
             "discover": [
