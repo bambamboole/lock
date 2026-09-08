@@ -250,15 +250,15 @@ test('an owner can assign multiple roles to a member', function () {
     $member = User::factory()->create();
     addMember($tenant, $member);
 
-    $billing = Role::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Billing']);
-    $billing->syncPermissions([TenantPermission::ManageBilling->value]);
+    $roleManager = Role::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Role manager']);
+    $roleManager->syncPermissions([TenantPermission::ManageRoles->value]);
 
     $this->actingAs($owner)->callAction(UpdateMemberRole::class, [
-        'role_ids' => [$tenant->memberRole()->id, $billing->id],
+        'role_ids' => [$tenant->memberRole()->id, $roleManager->id],
     ], ['tenant' => $tenant->slug, 'member' => $member->id]);
 
     expect($member->refresh()->rolesFor($tenant)->pluck('id')->sort()->values()->all())
-        ->toBe(collect([$tenant->memberRole()->id, $billing->id])->sort()->values()->all());
+        ->toBe(collect([$tenant->memberRole()->id, $roleManager->id])->sort()->values()->all());
 });
 
 test('assigning roles to a member sets them to exactly the submitted set with no phantom extras', function () {
@@ -268,12 +268,12 @@ test('assigning roles to a member sets them to exactly the submitted set with no
     $member = User::factory()->create();
     addMember($tenant, $member);
 
-    $billing = Role::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Billing']);
-    $billing->syncPermissions([TenantPermission::ManageBilling->value]);
+    $roleManager = Role::factory()->create(['tenant_id' => $tenant->id, 'name' => 'Role manager']);
+    $roleManager->syncPermissions([TenantPermission::ManageRoles->value]);
 
     $this->actingAs($owner)->callAction(UpdateMemberRole::class, [
-        'role_ids' => [$billing->id],
+        'role_ids' => [$roleManager->id],
     ], ['tenant' => $tenant->slug, 'member' => $member->id]);
 
-    expect($member->refresh()->rolesFor($tenant)->pluck('id')->all())->toBe([$billing->id]);
+    expect($member->refresh()->rolesFor($tenant)->pluck('id')->all())->toBe([$roleManager->id]);
 });

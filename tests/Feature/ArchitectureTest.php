@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 use App\Auth\Support\PermissionRepository;
-use App\Billing\Http\Middleware\ShareSubscriptionCallout;
-use App\Billing\Ui\Actions\Concerns\HandlesPaddleFailures;
 use App\Tenants\Actions\RemoveMember;
 use App\Tenants\Observers\TenantInvitationObserver;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -125,8 +123,7 @@ function architectureDomainModels(): array
 
 /**
  * Lattice-as-framework, not UI building: two domain writes send an in-app
- * notification, and the billing middleware pushes a callout effect onto the
- * response. Additions here need a reason of the same kind.
+ * notification. Additions here need a reason of the same kind.
  *
  * @return array<int, class-string>
  */
@@ -135,7 +132,6 @@ function architectureSanctionedLatticeConsumers(): array
     return [
         RemoveMember::class,
         TenantInvitationObserver::class,
-        ShareSubscriptionCallout::class,
     ];
 }
 
@@ -167,11 +163,6 @@ foreach (architectureDomainNamespaces() as $namespace) {
         ->not->toUse(architectureLatticeNamespaces())
         ->ignoring(architectureSanctionedLatticeConsumers());
 }
-
-arch('every billing action funnels paddle failures through the shared trait')
-    ->expect('App\Billing\Ui\Actions')
-    ->toUseTrait(HandlesPaddleFailures::class)
-    ->ignoring('App\Billing\Ui\Actions\Concerns');
 
 it('uses uuid primary keys on all domain models', function () {
     $models = architectureDomainModels();

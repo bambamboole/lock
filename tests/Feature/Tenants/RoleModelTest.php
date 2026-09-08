@@ -23,7 +23,7 @@ it('seeds the admin matrix and an empty member set', function () {
     $owner = $tenant->ownerRole();
 
     expect($admin->permissionValues())->toEqualCanonicalizing([
-        'tenant:update', 'member:manage', 'audit:view', 'billing:manage',
+        'tenant:update', 'member:manage', 'audit:view',
     ])
         ->and($member->permissionValues())->toBeEmpty()
         ->and($owner->permissionValues())->toBeEmpty()

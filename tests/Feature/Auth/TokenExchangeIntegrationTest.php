@@ -37,7 +37,7 @@ beforeEach(function () {
         ]));
 });
 
-it('exchanges a starter-kit login token and enforces the audience on a CheckAudience-only route', function () {
+it('exchanges a first-party login token and enforces the audience on a CheckAudience-only route', function () {
     $subject = loginAccessToken($this);
 
     $exchanged = $this->post(route('oidc.token'), [

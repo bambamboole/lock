@@ -49,21 +49,6 @@ abstract class TestCase extends BaseTestCase
         $this->artisan('migrate', ['--path' => 'database/data-migrations'])->run();
     }
 
-    /**
-     * Passport's createToken() needs a personal access client. The --provider
-     * option is required: without it the command falls into an interactive
-     * choice prompt and hangs the test run.
-     */
-    protected function createPersonalAccessClient(): void
-    {
-        $this->artisan('passport:client', [
-            '--personal' => true,
-            '--name' => 'Test Personal Access Client',
-            '--provider' => 'users',
-            '--no-interaction' => true,
-        ]);
-    }
-
     private function ensurePassportKeysExist(): void
     {
         if (self::$passportKeysEnsured) {

@@ -9,8 +9,6 @@ use App\Tenants\Models\Tenant;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
-use Lattice\Ui\Components\Card;
-use Lattice\Ui\Components\Grid;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
@@ -60,14 +58,6 @@ final class DashboardPage extends TenantPage
                         __('dashboard.heading'),
                         __('dashboard.welcome', ['name' => $user->name, 'tenant' => $current_tenant->name]),
                     ),
-                    Grid::make('dashboard-overview')
-                        ->columns(3)
-                        ->schema([
-                            Card::make(__('dashboard.cards.server-driven.title'), __('dashboard.cards.server-driven.body')),
-                            Card::make(__('dashboard.cards.tenant-context.title'), __('dashboard.cards.tenant-context.body')),
-                            Card::make(__('dashboard.cards.composable.title'), __('dashboard.cards.composable.body')),
-                        ]),
-                    Card::make(__('dashboard.cards.next-steps.title'), __('dashboard.cards.next-steps.body')),
                 ]),
         ]);
     }

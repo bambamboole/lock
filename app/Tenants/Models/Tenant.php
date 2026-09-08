@@ -22,15 +22,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\URL;
-use Laravel\Paddle\Billable;
-use Laravel\Paddle\Customer;
 
 /**
  * @property string $id
  * @property string $name
  * @property string $slug
  * @property bool $is_personal
- * @property CarbonImmutable|null $trial_ends_at
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property CarbonImmutable|null $deleted_at
@@ -43,7 +40,6 @@ use Laravel\Paddle\Customer;
  * @property-read int|null $memberships_count
  * @property-read Collection<int, Role> $roles
  * @property-read int|null $roles_count
- * @property-read Customer|null $customer
  *
  * @method static \Database\Factories\TenantFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Tenant newModelQuery()
@@ -68,7 +64,7 @@ use Laravel\Paddle\Customer;
 final class Tenant extends Model implements ProvidesSettings
 {
     /** @use HasFactory<TenantFactory> */
-    use Billable, HasFactory, HasSettings, HasUuids, SoftDeletes;
+    use HasFactory, HasSettings, HasUuids, SoftDeletes;
 
     public function owner(): ?User
     {
@@ -117,16 +113,6 @@ final class Tenant extends Model implements ProvidesSettings
                 Context::add('tenant_id', $previousTenantId);
             }
         }
-    }
-
-    public function paddleName(): string
-    {
-        return $this->name;
-    }
-
-    public function paddleEmail(): string
-    {
-        return (string) $this->owner()?->email;
     }
 
     /**
@@ -203,49 +189,6 @@ final class Tenant extends Model implements ProvidesSettings
     {
         return [
             'is_personal' => 'boolean',
-            'trial_ends_at' => 'immutable_datetime',
         ];
-    }
-
-    public function onGenericTrial(): bool
-    {
-        return $this->trial_ends_at !== null && $this->trial_ends_at->isFuture();
-    }
-
-    public function subscribedOrOnTrial(): bool
-    {
-        return $this->subscribed() || $this->onGenericTrial();
-    }
-
-    public function currentPlanName(): string
-    {
-        $subscription = $this->subscription();
-
-        if ($subscription === null || ! $subscription->valid()) {
-            return 'free';
-        }
-
-        $priceId = $subscription->items->first()?->getAttribute('price_id');
-
-        if ($priceId === null) {
-            return 'free';
-        }
-
-        foreach (config('billing.plans') as $key => $plan) {
-            if (in_array($priceId, [$plan['monthly'] ?? null, $plan['yearly'] ?? null], true)) {
-                return $key;
-            }
-        }
-
-        return 'free';
-    }
-
-    public function apiLimitTier(): string
-    {
-        if ($this->onGenericTrial() && ! $this->subscribed()) {
-            return 'trial';
-        }
-
-        return $this->currentPlanName();
     }
 }

@@ -1,9 +1,9 @@
 ---
 name: pr-review
-description: Use when reviewing a SaaS Starter Kit pull request, branch diff, or set of staged/working changes for quality — reuse, simplification, efficiency, and altitude cleanups, plus adherence to the project guidelines. Review-only it surfaces findings and never commits the changes it proposes.
+description: Use when reviewing a Lock pull request, branch diff, or set of staged/working changes for quality — reuse, simplification, efficiency, and altitude cleanups, plus adherence to the project guidelines. Review-only it surfaces findings and never commits the changes it proposes.
 ---
 
-# SaaS Starter Kit PR Review
+# Lock PR Review
 
 Review changed code for **quality**, applying the `/simplify` discipline so any agent can run it
 even without the built-in skill. The mandate here is: is the change as simple, reused, efficient, and

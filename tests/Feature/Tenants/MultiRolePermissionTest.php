@@ -10,11 +10,11 @@ test('a member gets the union of permissions from all their tenant roles', funct
     $user = User::factory()->create();
     $tenant = $user->currentTenant()->sole();
 
-    $billing = Role::factory()->create([
+    $roleManager = Role::factory()->create([
         'tenant_id' => $tenant->id,
-        'name' => 'Billing',
+        'name' => 'Role manager',
     ]);
-    $billing->syncPermissions([TenantPermission::ManageBilling->value]);
+    $roleManager->syncPermissions([TenantPermission::ManageRoles->value]);
 
     $auditor = Role::factory()->create([
         'tenant_id' => $tenant->id,
@@ -24,9 +24,9 @@ test('a member gets the union of permissions from all their tenant roles', funct
 
     $member = User::factory()->create();
     $tenant->members()->attach($member);
-    $member->roles()->attach([$billing->id, $auditor->id]);
+    $member->roles()->attach([$roleManager->id, $auditor->id]);
 
-    expect($member->hasTenantPermission($tenant, TenantPermission::ManageBilling))->toBeTrue()
+    expect($member->hasTenantPermission($tenant, TenantPermission::ManageRoles))->toBeTrue()
         ->and($member->hasTenantPermission($tenant, TenantPermission::ViewAudit))->toBeTrue()
         ->and($member->hasTenantPermission($tenant, TenantPermission::DeleteTenant))->toBeFalse();
 });

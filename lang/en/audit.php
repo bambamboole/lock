@@ -18,10 +18,6 @@ return [
             'role-changed' => 'Member role changed',
             'removed' => 'Member removed',
         ],
-        'api-token' => [
-            'created' => 'API token created',
-            'revoked' => 'API token revoked',
-        ],
         'role' => [
             'created' => 'Role created',
             'updated' => 'Role updated',

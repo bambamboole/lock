@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for reporting a problem. Do not include credentials, secrets, or unredacted customer data.
-        For security-sensitive reports, follow the [security policy](https://github.com/bambamboole/saas-starter-kit/security/policy).
+        For security-sensitive reports, follow the [security policy](https://github.com/bambamboole/lock/security/policy).
   - type: input
     id: inventory-id
     attributes:

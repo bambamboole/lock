@@ -1,13 +1,10 @@
 /// <reference types="@lattice-php/lattice/vite-client" />
-import { eagerComponent, extendRegistry, registry as packageRegistry } from "@lattice-php/lattice";
+import { extendRegistry, registry as packageRegistry } from "@lattice-php/lattice";
 import { DEFAULT_NAMESPACE, UI_NAMESPACE } from "@lattice-php/ui/i18n/instance";
 import plugins from "virtual:lattice/plugins";
-import PaddleCheckout from "@/components/paddle-checkout";
 
 export const registry = extendRegistry(packageRegistry, ...plugins, {
-    components: {
-        "billing.checkout": eagerComponent(PaddleCheckout),
-    },
+    components: {},
     name: "app",
 });
 
@@ -23,5 +20,4 @@ export const i18nNamespaces = [
     UI_NAMESPACE,
     ...plugins.flatMap((plugin) => plugin.i18n?.namespace ?? []),
     "tenant",
-    "billing",
 ];

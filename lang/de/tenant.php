@@ -20,9 +20,6 @@ return [
         'audit' => [
             'view' => 'Aktivitätsprotokoll des Mandanten einsehen',
         ],
-        'billing' => [
-            'manage' => 'Abrechnung und Abonnement des Mandanten verwalten',
-        ],
         'role' => [
             'manage' => 'Rollen des Mandanten verwalten',
         ],
@@ -132,8 +129,6 @@ return [
             'general' => 'Allgemein',
             'members' => 'Mitglieder',
             'roles' => 'Rollen',
-            'api-tokens' => 'API-Tokens',
-            'billing' => 'Abrechnung',
             'activity' => 'Aktivität',
             'danger' => 'Gefahrenzone',
         ],
@@ -190,44 +185,6 @@ return [
             'updated' => 'Rolle aktualisiert.',
             'deleted' => 'Rolle gelöscht.',
             'in-use' => 'Diese Rolle ist Mitgliedern oder ausstehenden Einladungen zugewiesen und kann nicht gelöscht werden.',
-        ],
-        'api-tokens' => [
-            'heading' => 'API-Tokens',
-            'subtitle' => 'Erstelle persönliche Zugriffstokens für die API. Jedes Token ist auf die Berechtigungen deiner Rolle in diesem Mandanten beschränkt.',
-            'name' => [
-                'label' => 'Token-Name',
-                'placeholder' => 'z. B. CLI auf meinem Laptop',
-            ],
-            'scopes' => 'Berechtigungen',
-            'scopes-help' => 'Es werden nur Berechtigungen ausgegeben, die deine Rolle in diesem Mandanten gewährt.',
-            'create' => 'Token erstellen',
-            'created' => 'API-Token erstellt.',
-            'reveal' => [
-                'heading' => 'Dein neues Token',
-            ],
-            'reveal-help' => 'Kopiere es jetzt — es wird nicht erneut angezeigt.',
-            'columns' => [
-                'name' => 'Name',
-                'scopes' => 'Berechtigungen',
-                'created' => 'Erstellt',
-            ],
-            'actions' => [
-                'label' => 'Token-Aktionen',
-            ],
-            'revoke' => [
-                'label' => 'Widerrufen',
-                'confirm' => [
-                    'title' => 'Token widerrufen?',
-                    'description' => 'Anwendungen, die dieses Token verwenden, verlieren sofort den Zugriff.',
-                    'label' => 'Token widerrufen',
-                ],
-            ],
-            'revoked' => 'Token widerrufen.',
-            'not-a-member' => 'Du gehörst nicht zu diesem Mandanten.',
-            'ungrantable-scopes' => 'Deine Rolle erlaubt diese Scopes nicht: :scopes',
-            'detail' => [
-                'empty' => 'Dieses Token hat keine Scopes.',
-            ],
         ],
         'activity' => [
             'heading' => 'Aktivität',

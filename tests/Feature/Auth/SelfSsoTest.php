@@ -8,13 +8,12 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
 use Laravel\Passport\Client;
-use Laravel\Passport\ClientRepository;
 
 use function Tests\Helpers\selfSsoProviderFake;
 
 /*
  * The claim-by-claim validation matrix lives in the package's own
- * IdTokenValidator tests; these tests cover the starter kit's integration:
+ * IdTokenValidator tests; these tests cover this app's integration:
  * the same app acting as provider and relying party.
  */
 
@@ -37,8 +36,7 @@ function redirectTarget(TestResponse $response): string
 it('does not create a secret-bearing first-party client during general database seeding', function () {
     $this->seed();
 
-    expect(app(ClientRepository::class)->personalAccessClient('users'))->not->toBeNull()
-        ->and(Client::query()->where('name', 'First-party app')->exists())->toBeFalse()
+    expect(Client::query()->where('name', 'First-party app')->exists())->toBeFalse()
         ->and(Client::query()->where('oidc_provisioning_key', 'first-party')->exists())->toBeFalse();
 });
 

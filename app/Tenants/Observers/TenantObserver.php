@@ -14,8 +14,6 @@ final class TenantObserver
         if (empty($tenant->slug)) {
             $tenant->slug = $this->generateUniqueSlug($tenant->name);
         }
-
-        $tenant->trial_ends_at ??= now()->addDays((int) config('billing.trial-days', 14));
     }
 
     public function updating(Tenant $tenant): void

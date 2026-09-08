@@ -20,7 +20,6 @@ enum RolePreset: string
                 TenantPermission::UpdateTenant,
                 TenantPermission::ManageMembers,
                 TenantPermission::ViewAudit,
-                TenantPermission::ManageBilling,
             ],
             self::Member => [],
         };

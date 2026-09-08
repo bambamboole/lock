@@ -1,7 +1,7 @@
 # Local Development
 
-- SaaS Starter Kit is a full **Laravel 13 + Inertia + React + Lattice** application (Lattice provides server-driven UI). It is
-  served locally with **Herd** at `http://saas-starter-kit.test`. PHP `^8.4`.
+- Lock is a full **Laravel 13 + Inertia + React + Lattice** application (Lattice provides server-driven UI). It is
+  served locally with **Herd** at `http://lock.test`. PHP `^8.4`.
 - First-time setup: `composer setup` (installs deps, copies `.env`, generates the app key, runs migrations, generates
   OIDC signing keys into `.env` via `oidc:rotate-keys --if-missing`, installs npm deps, builds the frontend). Day-to-day, run
   everything with `composer dev` (concurrently runs the queue, Reverb, Pail logs, and Vite — Herd serves the app, so
@@ -22,7 +22,7 @@
   lives in `resources/js/` (the `registry.ts` plugin and a few custom components registered by string key). Prefer the
   `lattice-actions`, `lattice-forms`, and `lattice-tables` skills when building UI.
 - After changing a custom Lattice wire type (a `#[AsComponent]`/`#[AsField]`/`#[AsColumn]` class such as
-  `App\Billing\Ui\Components\CheckoutButton`), regenerate its TypeScript with `php artisan lattice:typescript`
+  a custom component or column class), regenerate its TypeScript with `php artisan lattice:typescript`
   (committed to `resources/js/lattice/generated.d.ts`; needs the `spatie/laravel-typescript-transformer` dev dep).
 - Path-scoped conventions live in `.ai/rules/` — `index.md` maps globs to rule files. Read the rules matching the
   paths you are about to touch before planning or editing, and record a durable new one there rather than in a
@@ -74,7 +74,7 @@
 - Tests are **Pest**, in three suites: `tests/Unit`, `tests/Feature`, and `tests/Browser`. `php artisan test` runs all
   three; filter with `--filter` or a path, and prefer `--compact`.
 - Browser tests drive a real headless Chromium via `pestphp/pest-plugin-browser` (Playwright). They need the browsers
-  installed once (`npx playwright install`), the app reachable at `saas-starter-kit.test` (Herd), and a current
+  installed once (`npx playwright install`), the app reachable at `lock.test` (Herd), and a current
   `npm run build` — they serve the built bundle, not the dev server.
 - How to _write_ a test — suite choice, the Lattice helpers, fixtures, and the bar a test has to clear — lives in
   `.ai/rules/testing.md`.

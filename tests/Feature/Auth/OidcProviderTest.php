@@ -26,10 +26,3 @@ it('returns app-specific claims from userinfo', function () {
         ->assertJsonPath('locale', 'de')
         ->assertJsonPath('zoneinfo', 'Europe/Berlin');
 });
-
-it('still rejects oidc tokens on tenant api routes', function () {
-    $user = User::factory()->create();
-    Passport::actingAs($user, ['openid', 'member:view'], 'oidc');
-
-    $this->getJson('/api/v1/members')->assertForbidden();
-});

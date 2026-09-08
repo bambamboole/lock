@@ -20,9 +20,6 @@ return [
         'audit' => [
             'view' => 'View the tenant audit log',
         ],
-        'billing' => [
-            'manage' => 'Manage the tenant billing and subscription',
-        ],
         'role' => [
             'manage' => 'Manage tenant roles',
         ],
@@ -132,8 +129,6 @@ return [
             'general' => 'General',
             'members' => 'Members',
             'roles' => 'Roles',
-            'api-tokens' => 'API Tokens',
-            'billing' => 'Billing',
             'activity' => 'Activity',
             'danger' => 'Danger',
         ],
@@ -190,44 +185,6 @@ return [
             'updated' => 'Role updated.',
             'deleted' => 'Role deleted.',
             'in-use' => 'This role is assigned to members or pending invitations and cannot be deleted.',
-        ],
-        'api-tokens' => [
-            'heading' => 'API tokens',
-            'subtitle' => 'Create personal access tokens to use the API. Each token is limited to the scopes your role allows in this tenant.',
-            'name' => [
-                'label' => 'Token name',
-                'placeholder' => 'e.g. CLI on my laptop',
-            ],
-            'scopes' => 'Scopes',
-            'scopes-help' => 'Only scopes your role grants in this tenant will be issued.',
-            'create' => 'Create token',
-            'created' => 'API token created.',
-            'reveal' => [
-                'heading' => 'Your new token',
-            ],
-            'reveal-help' => 'Copy it now — it will not be shown again.',
-            'columns' => [
-                'name' => 'Name',
-                'scopes' => 'Scopes',
-                'created' => 'Created',
-            ],
-            'actions' => [
-                'label' => 'Token actions',
-            ],
-            'revoke' => [
-                'label' => 'Revoke',
-                'confirm' => [
-                    'title' => 'Revoke token?',
-                    'description' => 'Applications using this token will immediately lose access.',
-                    'label' => 'Revoke token',
-                ],
-            ],
-            'revoked' => 'Token revoked.',
-            'not-a-member' => 'You do not belong to this tenant.',
-            'ungrantable-scopes' => 'Your role does not allow these scopes: :scopes',
-            'detail' => [
-                'empty' => 'This token has no scopes.',
-            ],
         ],
         'activity' => [
             'heading' => 'Activity',
