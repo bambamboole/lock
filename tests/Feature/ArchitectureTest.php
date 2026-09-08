@@ -16,8 +16,6 @@ use App\Realms\Models\Role;
 use App\Realms\Observers\RealmInvitationObserver;
 use App\Realms\Policies\RealmPolicy;
 use App\Realms\Ui\Forms\RoleForm;
-use App\Shared\Ui\Concerns\RendersUserMenu;
-use App\Shared\Ui\Layouts\AppLayout;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -202,8 +200,6 @@ function architectureDomainBoundaryBaseline(): array
         Role::class,
         RealmPolicy::class,
         RoleForm::class,
-        RendersUserMenu::class,
-        AppLayout::class,
     ];
 }
 

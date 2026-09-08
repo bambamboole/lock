@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Ui\Layouts;
 
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
-use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use App\Shared\Ui\Pages\DashboardPage;
@@ -112,7 +110,11 @@ final class AppLayout extends LayoutDefinition
             ->effects(Effects::redirect(route('realm.settings.edit', absolute: false)));
 
         $items[] = Notifications::make('app-notifications');
-        $items[] = $this->userMenu($user, $this->userMenuItems($user));
+        $items[] = $this->userMenu($user, [
+            $this->profileMenuItem(),
+            Slot::make('app.user-menu'),
+            $this->logoutMenuItem(),
+        ]);
 
         return $items;
     }
@@ -125,26 +127,4 @@ final class AppLayout extends LayoutDefinition
     {
         return Text::make($user->realm->name, $key)->size(Size::Sm);
     }
-
-    /**
-     * @return array<int, MenuItem>
-     */
-    private function userMenuItems(User $user): array
-    {
-        $items = [$this->profileMenuItem()];
-
-        if ($user->can(AdminPermission::Access)) {
-            $items[] = MenuItem::make(__('navigation.admin'))
-                ->href(route('admin.dashboard', absolute: false))
-                ->prefix(Icon::Settings);
-        }
-
-        $items[] = $this->logoutMenuItem();
-
-        return $items;
-    }
-
-    /**
-     * @return array<int, Component>
-     */
 }
