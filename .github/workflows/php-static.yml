@@ -36,7 +36,7 @@ jobs:
         run: composer lint:check
 
       - name: Static Analysis
-        run: vendor/bin/phpstan analyse --no-progress
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
       - name: Rector
         run: composer rector:check
