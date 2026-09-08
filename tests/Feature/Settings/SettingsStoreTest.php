@@ -3,41 +3,41 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Settings\Models\Setting;
 use App\Shared\Settings\SettingsRegistry;
-use App\Tenants\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 
 it('stores and retrieves a free-form setting', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('ui.sidebar', 'collapsed');
+    $realm->settings->set('ui.sidebar', 'collapsed');
 
-    expect($tenant->refresh()->settings->get('ui.sidebar'))->toBe('collapsed');
+    expect($realm->refresh()->settings->get('ui.sidebar'))->toBe('collapsed');
 });
 
 it('overwrites an existing key without duplicating rows', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('k', 'a');
-    $tenant->settings->set('k', 'b');
+    $realm->settings->set('k', 'a');
+    $realm->settings->set('k', 'b');
 
-    expect($tenant->refresh()->settings->get('k'))->toBe('b')
-        ->and($tenant->storedSettings()->where('key', 'k')->count())->toBe(1);
+    expect($realm->refresh()->settings->get('k'))->toBe('b')
+        ->and($realm->storedSettings()->where('key', 'k')->count())->toBe(1);
 });
 
 it('forgets a key', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('k', 'v');
-    $tenant->settings->forget('k');
+    $realm->settings->set('k', 'v');
+    $realm->settings->forget('k');
 
-    expect($tenant->refresh()->settings->get('k', 'default'))->toBe('default');
+    expect($realm->refresh()->settings->get('k', 'default'))->toBe('default');
 });
 
 it('isolates settings per owner and across models', function () {
-    $a = Tenant::factory()->create();
-    $b = Tenant::factory()->create();
+    $a = Realm::factory()->create();
+    $b = Realm::factory()->create();
     $user = User::factory()->create();
 
     $a->settings->set('shared-key', 'a');
@@ -51,48 +51,48 @@ it('isolates settings per owner and across models', function () {
 
 it('casts a declared boolean setting', function () {
     app(SettingsRegistry::class)->define('flags.enabled')->boolean()->default(false);
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('flags.enabled', '1');
+    $realm->settings->set('flags.enabled', '1');
 
-    expect($tenant->refresh()->settings->get('flags.enabled'))->toBeTrue();
+    expect($realm->refresh()->settings->get('flags.enabled'))->toBeTrue();
 });
 
 it('returns the declared default when a key is unset', function () {
     app(SettingsRegistry::class)->define('flags.enabled')->boolean()->default(true);
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    expect($tenant->settings->get('flags.enabled'))->toBeTrue();
+    expect($realm->settings->get('flags.enabled'))->toBeTrue();
 });
 
 it('encrypts a declared setting at rest and decrypts on read', function () {
     app(SettingsRegistry::class)->define('integrations.secret')->string()->encrypted();
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('integrations.secret', 'super-secret');
+    $realm->settings->set('integrations.secret', 'super-secret');
 
-    $raw = $tenant->storedSettings()->where('key', 'integrations.secret')->value('value');
+    $raw = $realm->storedSettings()->where('key', 'integrations.secret')->value('value');
     expect($raw)->not->toContain('super-secret')
-        ->and($tenant->refresh()->settings->get('integrations.secret'))->toBe('super-secret');
+        ->and($realm->refresh()->settings->get('integrations.secret'))->toBe('super-secret');
 });
 
 it('encrypts a declared array setting at rest and decrypts on read', function () {
     app(SettingsRegistry::class)->define('integrations.config')->array()->encrypted();
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('integrations.config', ['token' => 'abc', 'scopes' => ['read', 'write']]);
+    $realm->settings->set('integrations.config', ['token' => 'abc', 'scopes' => ['read', 'write']]);
 
-    $raw = $tenant->storedSettings()->where('key', 'integrations.config')->value('value');
+    $raw = $realm->storedSettings()->where('key', 'integrations.config')->value('value');
     expect($raw)->not->toContain('abc')
-        ->and($tenant->refresh()->settings->get('integrations.config'))->toBe(['token' => 'abc', 'scopes' => ['read', 'write']]);
+        ->and($realm->refresh()->settings->get('integrations.config'))->toBe(['token' => 'abc', 'scopes' => ['read', 'write']]);
 });
 
 it('reads settings from the eager-loaded relation without extra queries', function () {
-    $tenant = Tenant::factory()->create();
-    $tenant->settings->set('a', '1');
-    $tenant->settings->set('b', '2');
+    $realm = Realm::factory()->create();
+    $realm->settings->set('a', '1');
+    $realm->settings->set('b', '2');
 
-    $fresh = Tenant::query()->with('storedSettings')->findOrFail($tenant->id);
+    $fresh = Realm::query()->with('storedSettings')->findOrFail($realm->id);
 
     DB::enableQueryLog();
     $a = $fresh->settings->get('a');
@@ -115,42 +115,42 @@ it('purges settings when a hard-deleted owner is removed', function () {
 });
 
 it('keeps settings when a soft-deletable owner is soft-deleted', function () {
-    $tenant = Tenant::factory()->create();
-    $tenant->settings->set('k', 'v');
+    $realm = Realm::factory()->create();
+    $realm->settings->set('k', 'v');
 
-    $tenant->delete();
+    $realm->delete();
 
     expect(Setting::query()->count())->toBe(1);
 });
 
 it('exposes typed getters that coerce and fall back to the given default', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    $tenant->settings->set('a.string', 42);
-    $tenant->settings->set('a.bool', '1');
-    $tenant->settings->set('a.int', '7');
-    $tenant->settings->set('a.float', '1.5');
-    $tenant->settings->set('a.array', ['x']);
+    $realm->settings->set('a.string', 42);
+    $realm->settings->set('a.bool', '1');
+    $realm->settings->set('a.int', '7');
+    $realm->settings->set('a.float', '1.5');
+    $realm->settings->set('a.array', ['x']);
 
-    expect($tenant->refresh()->settings->string('a.string'))->toBe('42')
-        ->and($tenant->refresh()->settings->boolean('a.bool'))->toBeTrue()
-        ->and($tenant->refresh()->settings->integer('a.int'))->toBe(7)
-        ->and($tenant->refresh()->settings->float('a.float'))->toBe(1.5)
-        ->and($tenant->refresh()->settings->array('a.array'))->toBe(['x']);
+    expect($realm->refresh()->settings->string('a.string'))->toBe('42')
+        ->and($realm->refresh()->settings->boolean('a.bool'))->toBeTrue()
+        ->and($realm->refresh()->settings->integer('a.int'))->toBe(7)
+        ->and($realm->refresh()->settings->float('a.float'))->toBe(1.5)
+        ->and($realm->refresh()->settings->array('a.array'))->toBe(['x']);
 });
 
 it('typed getters return the passed default for an unset key', function () {
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    expect($tenant->settings->get('missing', 'fallback'))->toBe('fallback')
-        ->and($tenant->settings->boolean('missing', true))->toBeTrue()
-        ->and($tenant->settings->integer('missing', 9))->toBe(9)
-        ->and($tenant->settings->string('missing', 'x'))->toBe('x');
+    expect($realm->settings->get('missing', 'fallback'))->toBe('fallback')
+        ->and($realm->settings->boolean('missing', true))->toBeTrue()
+        ->and($realm->settings->integer('missing', 9))->toBe(9)
+        ->and($realm->settings->string('missing', 'x'))->toBe('x');
 });
 
 it('typed getters honour a registered definition default over the getter default', function () {
     app(SettingsRegistry::class)->define('flags.on')->boolean()->default(true);
-    $tenant = Tenant::factory()->create();
+    $realm = Realm::factory()->create();
 
-    expect($tenant->settings->boolean('flags.on', false))->toBeTrue();
+    expect($realm->settings->boolean('flags.on', false))->toBeTrue();
 });

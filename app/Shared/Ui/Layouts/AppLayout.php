@@ -5,18 +5,15 @@ namespace App\Shared\Ui\Layouts;
 
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use App\Shared\Ui\Pages\DashboardPage;
-use App\Tenants\Models\Tenant;
-use App\Tenants\Ui\Actions\SwitchTenant;
-use App\Tenants\Ui\Forms\CreateTenantForm;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsLayout;
 use Lattice\Core\Enums\Breakpoint;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Facades\Effects;
-use Lattice\Form\Components\Form;
 use Lattice\Layouts\Components\Outlet;
 use Lattice\Layouts\LayoutDefinition;
 use Lattice\Notifications\Components\Notifications;
@@ -24,11 +21,8 @@ use Lattice\Ui\Components\Breadcrumbs;
 use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Callouts;
 use Lattice\Ui\Components\Component;
-use Lattice\Ui\Components\Dropdown;
-use Lattice\Ui\Components\Icon as IconComponent;
 use Lattice\Ui\Components\Menu;
 use Lattice\Ui\Components\MenuItem;
-use Lattice\Ui\Components\Modal;
 use Lattice\Ui\Components\Sidebar;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
@@ -39,7 +33,6 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Height;
 use Lattice\Ui\Enums\Icon;
 use Lattice\Ui\Enums\Orientation;
-use Lattice\Ui\Enums\Placement;
 use Lattice\Ui\Enums\Side;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
@@ -73,8 +66,7 @@ final class AppLayout extends LayoutDefinition
                             ]),
                         ])
                         ->footer([
-                            $this->tenantSwitcher($user, Placement::Top)
-                                ->key('tenant-switcher-mobile')
+                            $this->realmLabel($user, 'realm-label-mobile')
                                 ->hiddenFrom(Breakpoint::Md),
                         ]),
                     Stack::make('app-main')
@@ -89,7 +81,7 @@ final class AppLayout extends LayoutDefinition
                                     ->emphasis(Emphasis::Ghost)
                                     ->effects(Effects::toggleSidebar('app-sidebar')),
                                 BrandMark::make('app-topbar-logo')->hiddenFrom(Breakpoint::Md),
-                                $this->tenantSwitcher($user)->visibleFrom(Breakpoint::Md),
+                                $this->realmLabel($user, 'realm-label')->visibleFrom(Breakpoint::Md),
                                 Text::make('/')->size(Size::Sm)->color(ColorName::Muted)->visibleFrom(Breakpoint::Md),
                                 Breadcrumbs::make('app-breadcrumbs')->visibleFrom(Breakpoint::Md),
                                 Stack::make('topbar-end')
@@ -112,16 +104,12 @@ final class AppLayout extends LayoutDefinition
      */
     private function topbarTrailing(User $user): array
     {
-        $currentTenant = $user->currentTenant;
-
         $items = [];
 
-        if ($currentTenant instanceof Tenant) {
-            $items[] = Button::make(__('navigation.tenant-settings'))
-                ->icon(Icon::Settings)
-                ->emphasis(Emphasis::Ghost)
-                ->effects(Effects::redirect(route('tenant.settings.edit', ['current_tenant' => $currentTenant->slug], false)));
-        }
+        $items[] = Button::make(__('navigation.realm-settings'))
+            ->icon(Icon::Settings)
+            ->emphasis(Emphasis::Ghost)
+            ->effects(Effects::redirect(route('realm.settings.edit', absolute: false)));
 
         $items[] = Notifications::make('app-notifications');
         $items[] = $this->userMenu($user, $this->userMenuItems($user));
@@ -129,33 +117,13 @@ final class AppLayout extends LayoutDefinition
         return $items;
     }
 
-    private function tenantSwitcher(User $user, Placement $placement = Placement::Bottom): Dropdown
+    /**
+     * A user belongs to exactly one realm, so this names where you are rather
+     * than offering somewhere to go.
+     */
+    private function realmLabel(User $user, string $key): Text
     {
-        $currentTenant = $user->currentTenant;
-
-        $items = $user->tenants
-            ->map(function (Tenant $tenant) use ($currentTenant): MenuItem {
-                $item = MenuItem::make($tenant->name)
-                    ->action(SwitchTenant::class, ['tenant' => $tenant->slug]);
-
-                return $tenant->is($currentTenant) ? $item->suffix(Icon::Check) : $item;
-            })
-            ->all();
-
-        $items[] = MenuItem::make(__('tenant.create.menu.label'))
-            ->modal(
-                Modal::make('tenants.create-modal')
-                    ->title(__('tenant.create.title'))
-                    ->schema([
-                        Form::use(CreateTenantForm::class),
-                    ]),
-            )
-            ->prefix(Icon::Plus);
-
-        return Dropdown::make('tenant-switcher')
-            ->placement($placement)
-            ->trigger($this->dropdownTrigger('users', $currentTenant->name ?? __('navigation.select-tenant')))
-            ->items($items);
+        return Text::make($user->realm->name, $key)->size(Size::Sm);
     }
 
     /**
@@ -179,19 +147,4 @@ final class AppLayout extends LayoutDefinition
     /**
      * @return array<int, Component>
      */
-    private function dropdownTrigger(string $icon, string $label): array
-    {
-        return [
-            Stack::make()
-                ->direction(Orientation::Horizontal)
-                ->align(Align::Center)
-                ->gap(Gap::Small)
-                ->schema([
-                    IconComponent::make($icon),
-                    Text::make($label)
-                        ->size(Size::Sm)
-                        ->color(ColorName::Default),
-                ]),
-        ];
-    }
 }

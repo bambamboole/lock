@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Tenants\Models\Activity;
+use App\Realms\Models\Activity;
 
 // Only the keys this app changes from the package defaults live here.
 return [

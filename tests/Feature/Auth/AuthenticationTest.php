@@ -5,15 +5,11 @@ use App\Auth\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
-use function Tests\Helpers\assumeNotNull;
-
-test('the dashboard landing redirects to the current tenant dashboard', function () {
+test('the root path leads to the dashboard of the signed-in user realm', function () {
     $user = User::factory()->create();
-    $personalTenant = $user->personalTenant();
-    assumeNotNull($personalTenant);
 
-    $this->actingAs($user)->get(route('dashboard.home'))
-        ->assertRedirect(route('dashboard', ['current_tenant' => $personalTenant->slug]));
+    $this->actingAs($user)->get('/')->assertRedirect(route('dashboard'));
+    $this->actingAs($user)->get(route('dashboard'))->assertOk();
 });
 
 test('users can logout', function () {

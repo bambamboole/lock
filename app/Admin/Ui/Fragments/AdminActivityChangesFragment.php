@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Fragments;
 
 use App\Admin\Enums\AdminPermission;
+use App\Realms\Models\Activity;
 use App\Shared\Ui\Fragments\ActivityChangesFragment;
-use App\Tenants\Models\Activity;
 use Lattice\Core\Attributes\AsFragment;
 
 #[AsFragment('admin.activity-changes', can: AdminPermission::Access)]

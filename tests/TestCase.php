@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Realms\Models\Realm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Lattice\Support\Testing\InteractsWithLatticeComponents;
@@ -30,6 +31,7 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->ensurePassportKeysExist();
+        $this->ensureSystemRealmsExist();
 
         if ($this->stubsVite) {
             $this->withoutVite();
@@ -47,6 +49,18 @@ abstract class TestCase extends BaseTestCase
         $this->baseMigrateDatabases();
 
         $this->artisan('migrate', ['--path' => 'database/data-migrations'])->run();
+    }
+
+    /**
+     * The master and default realms are structural: admin lookups and
+     * self-service registration resolve them by slug and fail without them.
+     * The seeder creates them in a real install, so tests get them too.
+     */
+    private function ensureSystemRealmsExist(): void
+    {
+        foreach ([config('realm.master_slug') => 'Master', config('realm.default_slug') => 'Default'] as $slug => $name) {
+            Realm::firstOrCreate(['slug' => $slug], ['name' => $name]);
+        }
     }
 
     private function ensurePassportKeysExist(): void

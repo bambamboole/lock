@@ -68,13 +68,13 @@ return [
         'notifications' => [
             'heading' => 'Notifications',
             'summary' => ':count/2 enabled',
-            'tenant-invitations' => [
-                'label' => 'Tenant invitations',
-                'help-text' => 'Notify me in-app when I am invited to a tenant.',
+            'realm-invitations' => [
+                'label' => 'Realm invitations',
+                'help-text' => 'Notify me in-app when I am invited to a realm.',
             ],
-            'tenant-membership' => [
-                'label' => 'Tenant membership changes',
-                'help-text' => 'Notify me in-app when I am removed from a tenant.',
+            'realm-membership' => [
+                'label' => 'Realm membership changes',
+                'help-text' => 'Notify me in-app when I am removed from a realm.',
             ],
         ],
         'updated' => 'Preferences updated.',

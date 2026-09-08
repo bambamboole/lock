@@ -68,13 +68,13 @@ return [
         'notifications' => [
             'heading' => 'Benachrichtigungen',
             'summary' => ':count/2 aktiviert',
-            'tenant-invitations' => [
-                'label' => 'Mandanteneinladungen',
-                'help-text' => 'Benachrichtige mich in der App, wenn ich zu einem Mandanten eingeladen werde.',
+            'realm-invitations' => [
+                'label' => 'Realm-Einladungen',
+                'help-text' => 'Benachrichtige mich in der App, wenn ich zu einem Realm eingeladen werde.',
             ],
-            'tenant-membership' => [
-                'label' => 'Änderungen der Mandantenmitgliedschaft',
-                'help-text' => 'Benachrichtige mich in der App, wenn ich aus einem Mandanten entfernt werde.',
+            'realm-membership' => [
+                'label' => 'Änderungen der Realm-Mitgliedschaft',
+                'help-text' => 'Benachrichtige mich in der App, wenn ich aus einem Realm entfernt werde.',
             ],
         ],
         'updated' => 'Einstellungen aktualisiert.',

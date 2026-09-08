@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Ui\Pages;
 
+use App\Realms\Models\Realm;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use App\Shared\Ui\Components\PageHeader;
-use App\Tenants\Models\Tenant;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -14,12 +14,12 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '{current_tenant}/dashboard', name: 'dashboard')]
-final class DashboardPage extends TenantPage
+#[AsPage(route: 'dashboard', name: 'dashboard')]
+final class DashboardPage extends RealmPage
 {
     use ResolvesCurrentUser;
 
-    private ?Tenant $tenant = null;
+    private ?Realm $realm = null;
 
     public function title(): string
     {
@@ -31,23 +31,23 @@ final class DashboardPage extends TenantPage
      */
     public function breadcrumbs(): array
     {
-        if (! $this->tenant instanceof Tenant) {
+        if (! $this->realm instanceof Realm) {
             return [];
         }
 
         return [
             Breadcrumb::make(
                 __('dashboard.title'),
-                route('dashboard', ['current_tenant' => $this->tenant->slug], absolute: false),
+                route('dashboard', absolute: false),
             ),
         ];
     }
 
-    public function render(PageSchema $schema, Request $request, Tenant $current_tenant): PageSchema
+    public function render(PageSchema $schema, Request $request): PageSchema
     {
         $user = $this->currentUser();
 
-        $this->tenant = $current_tenant;
+        $this->realm = $user->realm;
 
         return $schema->schema([
             Stack::make('dashboard-page')
@@ -56,7 +56,7 @@ final class DashboardPage extends TenantPage
                 ->schema([
                     PageHeader::make(
                         __('dashboard.heading'),
-                        __('dashboard.welcome', ['name' => $user->name, 'tenant' => $current_tenant->name]),
+                        __('dashboard.welcome', ['name' => $user->name, 'realm' => $user->realm->name]),
                     ),
                 ]),
         ]);

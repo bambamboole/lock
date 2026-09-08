@@ -213,8 +213,8 @@ final class ProfilePage extends Page
     private function notificationsSummary(User $user): string
     {
         $enabled = collect([
-            'notifications.tenant-invitations',
-            'notifications.tenant-membership',
+            'notifications.realm-invitations',
+            'notifications.realm-membership',
         ])->filter(fn (string $key) => $user->settings->get($key) !== false)->count();
 
         return __('user.preferences.notifications.summary', ['count' => $enabled]);

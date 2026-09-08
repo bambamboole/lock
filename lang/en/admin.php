@@ -8,8 +8,8 @@ return [
             'users' => [
                 'manage' => 'View and manage users',
             ],
-            'tenants' => [
-                'manage' => 'View and manage tenants',
+            'realms' => [
+                'manage' => 'View and manage realms',
             ],
             'roles' => [
                 'manage' => 'Manage which users are admins',
@@ -22,8 +22,8 @@ return [
             'users' => [
                 'title' => 'Users',
             ],
-            'tenants' => [
-                'title' => 'Tenants',
+            'realms' => [
+                'title' => 'Realms',
             ],
             'admins' => [
                 'title' => 'Admins',
@@ -48,7 +48,7 @@ return [
         'heading' => 'Users',
         'columns' => [
             'member' => 'Member',
-            'tenants' => 'Tenants',
+            'realm' => 'Realm',
             'admin' => 'Admin',
             'created-at' => 'Joined',
         ],
@@ -60,10 +60,10 @@ return [
                 'heading' => 'Summary',
             ],
             'created-at' => 'Joined',
-            'tenants' => [
-                'heading' => 'Tenant memberships',
+            'realms' => [
+                'heading' => 'Realm',
             ],
-            'no-tenants' => 'This user is not a member of any tenant.',
+            'no-realms' => 'This user belongs to no realm.',
             'no-roles' => 'No roles assigned.',
             'admin-roles' => [
                 'heading' => 'Admin roles',
@@ -85,13 +85,12 @@ return [
         ],
         'already-verified' => 'This user has already verified their email address.',
     ],
-    'tenants' => [
-        'heading' => 'Tenants',
+    'realms' => [
+        'heading' => 'Realms',
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
-            'personal' => 'Personal',
-            'members' => 'Members',
+            'users' => 'Users',
             'owner' => 'Owner',
             'created-at' => 'Created',
         ],
@@ -103,14 +102,13 @@ return [
                 'heading' => 'Summary',
             ],
             'slug' => 'Slug',
-            'personal' => 'Personal tenant',
             'owner' => 'Owner',
             'no-owner' => 'No owner assigned.',
             'created-at' => 'Created',
             'members' => [
                 'heading' => 'Members',
             ],
-            'no-members' => 'This tenant has no members.',
+            'no-members' => 'This realm has no members.',
             'no-roles' => 'No roles assigned.',
         ],
     ],

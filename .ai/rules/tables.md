@@ -8,9 +8,9 @@ paths:
 ## Registered context keys inherit through the entire component tree
 
 Every registered key in a definition's frame cascades into child forms, row and bulk actions, fragments, slot
-factories, and closure-built modals. Do not thread inherited keys such as `tenant` through `Action::use()`,
+factories, and closure-built modals. Do not thread inherited keys such as `realm` through `Action::use()`,
 `Form::use()`, or `Fragment::lazy()`. Pass only context that identifies the child definition itself, such as a row's
-`member` key. A slot that starts a frame still sets its tenant once with `->context(['tenant' => $tenant])`.
+`member` key. A slot that starts a frame still sets its realm once with `->context(['realm' => $realm])`.
 
 ## Row actions are filtered by permission before they are built
 

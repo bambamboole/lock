@@ -7,7 +7,7 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
-use App\Tenants\Support\Audit;
+use App\Realms\Support\Audit;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;

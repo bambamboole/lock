@@ -11,8 +11,9 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->foreignUuid('realm_id')->constrained()->cascadeOnDelete();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->text('two_factor_secret')->nullable();
@@ -22,8 +23,19 @@ return new class extends Migration
             $table->string('timezone')->nullable();
             $table->rememberToken();
             $table->timestamps();
+
+            // Identity is realm-local: the same address may sign in to two
+            // realms as two unrelated people.
+            $table->unique(['realm_id', 'email']);
         });
 
+        /*
+         * Still keyed by email alone, which is now only unique per realm. The
+         * package's NewPasswordController goes through Laravel's password
+         * broker, and DatabaseTokenRepository looks a token up by email with
+         * no realm in hand — adding realm_id here would break its inserts
+         * without a realm-aware repository to match. Tracked as a known gap.
+         */
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');

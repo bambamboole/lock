@@ -13,7 +13,7 @@ name it for what it does.
 
 `Support/` stays for the smaller helpers that are not services and not data: pure functions over their arguments,
 static registries, string manglers, and thin adapters a config entry names by class-string rather than the container
-injecting. `App\Tenants\Support\Audit`, `App\Tenants\Support\TenantMemberRoles`, and `App\Auth\Support\OidcScopeCatalog`
+injecting. `App\Realms\Support\Audit`, `App\Realms\Support\RealmMemberRoles`, and `App\Auth\Support\OidcScopeCatalog`
 (wired through `config('oidc.scopes')`) are the shape that belongs there. The permission plumbing
 (`PermissionRepository`, `PermissionDefinition`) also lives under `Support/` — a one-class `Services/` or `Data/` directory next to `Support/` is not worth the extra slice.
 

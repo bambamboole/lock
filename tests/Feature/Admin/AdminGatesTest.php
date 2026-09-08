@@ -22,13 +22,13 @@ test('super admin passes every admin gate', function () {
     }
 });
 
-test('support admin can access and manage users but not tenants or roles', function () {
+test('support admin can access and manage users but not realms or roles', function () {
     $user = User::factory()->create();
     grantGlobalRole($user, GlobalRoleSeeder::SUPPORT);
 
     expect(Gate::forUser($user)->allows(AdminPermission::Access))->toBeTrue()
         ->and(Gate::forUser($user)->allows(AdminPermission::ManageUsers))->toBeTrue()
-        ->and(Gate::forUser($user)->allows(AdminPermission::ManageTenants))->toBeFalse()
+        ->and(Gate::forUser($user)->allows(AdminPermission::ManageRealms))->toBeFalse()
         ->and(Gate::forUser($user)->allows(AdminPermission::ManageAdminRoles))->toBeFalse();
 });
 

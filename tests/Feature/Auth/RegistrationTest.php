@@ -16,6 +16,6 @@ test('new users can register', function () {
     $this->assertAuthenticatedAs($user, 'identity');
     $this->assertGuest('web');
     expect($user->name)->toBe('Test User')
-        ->and($user->personalTenant())->not->toBeNull();
+        ->and($user->realm->slug)->toBe(config('realm.default_slug'));
     $response->assertRedirect('/login');
 });

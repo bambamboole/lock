@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Layouts;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Pages\ActivityPage;
 use App\Admin\Ui\Pages\AdminDashboardPage;
-use App\Admin\Ui\Pages\TenantsPage;
+use App\Admin\Ui\Pages\RealmsPage;
 use App\Admin\Ui\Pages\UsersPage;
 use App\Auth\Models\User;
 use App\Shared\Ui\Components\BrandMark;
@@ -59,8 +59,8 @@ final class AdminLayout extends LayoutDefinition
                             ...($user->can(AdminPermission::ManageUsers) ? [
                                 MenuItem::fromPage(UsersPage::class)->label(__('navigation.users'))->prefix(Affix::icon('users')),
                             ] : []),
-                            ...($user->can(AdminPermission::ManageTenants) ? [
-                                MenuItem::fromPage(TenantsPage::class)->label(__('navigation.tenants'))->prefix(Icon::List),
+                            ...($user->can(AdminPermission::ManageRealms) ? [
+                                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.realms'))->prefix(Icon::List),
                             ] : []),
                             MenuItem::fromPage(ActivityPage::class)->label(__('navigation.activity'))->prefix(Icon::Clock),
                         ]),
@@ -97,15 +97,9 @@ final class AdminLayout extends LayoutDefinition
 
     private function backToAppButton(User $user): Button
     {
-        $currentTenant = $user->currentTenant;
-
-        $url = $currentTenant !== null
-            ? route('dashboard', ['current_tenant' => $currentTenant->slug], false)
-            : '/';
-
         return Button::make(__('navigation.back-to-app'))
             ->icon(Icon::ChevronLeft)
             ->emphasis(Emphasis::Ghost)
-            ->effects(Effects::redirect($url));
+            ->effects(Effects::redirect(route('dashboard', absolute: false)));
     }
 }

@@ -8,8 +8,8 @@ return [
             'users' => [
                 'manage' => 'Benutzer einsehen und verwalten',
             ],
-            'tenants' => [
-                'manage' => 'Mandanten einsehen und verwalten',
+            'realms' => [
+                'manage' => 'Realms einsehen und verwalten',
             ],
             'roles' => [
                 'manage' => 'Festlegen, welche Benutzer Admins sind',
@@ -22,8 +22,8 @@ return [
             'users' => [
                 'title' => 'Benutzer',
             ],
-            'tenants' => [
-                'title' => 'Mandanten',
+            'realms' => [
+                'title' => 'Realms',
             ],
             'admins' => [
                 'title' => 'Admins',
@@ -48,7 +48,7 @@ return [
         'heading' => 'Benutzer',
         'columns' => [
             'member' => 'Mitglied',
-            'tenants' => 'Mandanten',
+            'realm' => 'Realm',
             'admin' => 'Admin',
             'created-at' => 'Beigetreten',
         ],
@@ -60,10 +60,10 @@ return [
                 'heading' => 'Übersicht',
             ],
             'created-at' => 'Beigetreten',
-            'tenants' => [
-                'heading' => 'Mandantenmitgliedschaften',
+            'realms' => [
+                'heading' => 'Realm',
             ],
-            'no-tenants' => 'Dieser Benutzer ist kein Mitglied eines Mandanten.',
+            'no-realms' => 'Dieser Benutzer ist gehört zu keinem Realm.',
             'no-roles' => 'Keine Rollen zugewiesen.',
             'admin-roles' => [
                 'heading' => 'Admin-Rollen',
@@ -85,13 +85,12 @@ return [
         ],
         'already-verified' => 'Dieser Benutzer hat seine E-Mail-Adresse bereits verifiziert.',
     ],
-    'tenants' => [
-        'heading' => 'Mandanten',
+    'realms' => [
+        'heading' => 'Realms',
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
-            'personal' => 'Persönlich',
-            'members' => 'Mitglieder',
+            'users' => 'Benutzer',
             'owner' => 'Inhaber',
             'created-at' => 'Erstellt',
         ],
@@ -103,14 +102,13 @@ return [
                 'heading' => 'Übersicht',
             ],
             'slug' => 'Slug',
-            'personal' => 'Persönlicher Mandant',
             'owner' => 'Inhaber',
             'no-owner' => 'Kein Inhaber zugewiesen.',
             'created-at' => 'Erstellt',
             'members' => [
                 'heading' => 'Mitglieder',
             ],
-            'no-members' => 'Dieser Mandant hat keine Mitglieder.',
+            'no-members' => 'Dieser Realm hat keine Mitglieder.',
             'no-roles' => 'Keine Rollen zugewiesen.',
         ],
     ],

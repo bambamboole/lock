@@ -8,7 +8,7 @@ return [
             'updated' => 'Updated',
             'deleted' => 'Deleted',
         ],
-        'tenant' => ['updated' => 'Tenant updated'],
+        'realm' => ['updated' => 'Realm updated'],
         'invitation' => [
             'created' => 'Invitation sent',
             'cancelled' => 'Invitation cancelled',

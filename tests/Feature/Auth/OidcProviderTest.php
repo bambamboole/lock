@@ -9,7 +9,7 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use Laravel\Passport\Passport;
 
-it('serves discovery with the tenant scopes included', function () {
+it('serves discovery with the realm scopes included', function () {
     $discovery = $this->getJson('/.well-known/openid-configuration')->assertOk();
 
     expect($discovery->json('scopes_supported'))->toContain('member:view');

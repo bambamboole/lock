@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Auth\Console\Commands\SyncPermissionsCommand;
+use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Console\Commands\DeployCommand;
-use App\Shared\Exceptions\MissingTenantContext;
+use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
-use App\Tenants\Http\Middleware\SetTenantUrlDefaults;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -34,9 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /*
          * Already-authenticated users hitting a guest route must not be sent to
-         * the framework's route('dashboard') probe: that route is tenant-scoped
-         * ({current_tenant}/dashboard) and has no default for the parameter here.
-         * /dashboard (dashboard.home) resolves the tenant and forwards.
+         * the framework's route('dashboard') probe: that route is realm-scoped
+         * ({current_realm}/dashboard) and has no default for the parameter here.
+         * /dashboard (dashboard.home) resolves the realm and forwards.
          */
         $middleware->redirectUsersTo('/dashboard');
 
@@ -44,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            SetTenantUrlDefaults::class,
+            SetCurrentRealm::class,
         ]);
 
         $middleware->alias([
@@ -59,11 +59,11 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*'),
         );
 
-        // A BusinessModel query without a current tenant throws with a
+        // A BusinessModel query without a current realm throws with a
         // developer-facing message — on token-facing paths that is an
         // authorization problem, not a server error.
-        $exceptions->render(fn (MissingTenantContext $exception, Request $request) => $request->is('api/*')
-            ? response()->json(['message' => __('tenant.api.no-tenant-context')], 403)
+        $exceptions->render(fn (MissingRealmContext $exception, Request $request) => $request->is('api/*')
+            ? response()->json(['message' => __('realm.api.no-realm-context')], 403)
             : null);
     })
     ->withCommands([
