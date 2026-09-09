@@ -110,9 +110,20 @@ final class Realm extends Model implements ProvidesSettings
 
     public static function fromContext(): ?self
     {
+        $realmId = self::currentId();
+
+        return $realmId === null ? null : self::find($realmId);
+    }
+
+    /**
+     * The current realm's key without loading it — for callers that only need
+     * to scope a query and would otherwise pay a lookup per call.
+     */
+    public static function currentId(): ?string
+    {
         $realmId = Context::get('realm_id');
 
-        return is_string($realmId) || is_int($realmId) ? self::find($realmId) : null;
+        return is_string($realmId) || is_int($realmId) ? (string) $realmId : null;
     }
 
     /**

@@ -20,6 +20,7 @@ Every glob is a code span. Bare `*` in a table cell reads as markdown emphasis, 
 | `database/migrations/**` | .ai/rules/migrations.md |
 | `app/*/Models/**`, `app/Shared/Settings/Models/**` | .ai/rules/models.md |
 | `app/*/Observers/**` | .ai/rules/observers.md |
+| `app/Auth/**`, `app/Admin/**`, `config/auth.php` | .ai/rules/realms.md |
 | `routes/*.php` | .ai/rules/routes.md |
 | `app/*/Services/**`, `app/*/Data/**` | .ai/rules/services.md |
 | `app/*/Ui/Tables/**` | .ai/rules/tables.md |

@@ -14,8 +14,12 @@ return [
     ],
 
     'providers' => [
+        /*
+         * Not the stock `eloquent` driver: identity is realm-local, so every
+         * user lookup carries a realm constraint. See RealmUserProvider.
+         */
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'realm-eloquent',
             'model' => env('AUTH_MODEL', User::class),
         ],
     ],

@@ -8,10 +8,13 @@ use App\Auth\Actions\CreateNewUser;
 use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Models\User;
 use App\Auth\Support\PermissionRepository;
+use App\Auth\Support\RealmPasswordBrokerManager;
+use App\Auth\Support\RealmUserProvider;
 use App\Auth\Ui\Pages\DevLoginPage;
 use App\Shared\Auth\Contracts\PermissionCatalog;
 use Bambamboole\LaravelOidc\Server\Auth\UserActionManager;
 use Bambamboole\LaravelOidc\Server\Auth\Views\LoginView;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
@@ -42,6 +45,20 @@ final class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /*
+         * Not register(): ProviderRepository re-adds the deferred services
+         * after the eager providers have run, so a marker dropped there is put
+         * straight back and PasswordResetServiceProvider wins the rebinding.
+         */
+        $this->app->removeDeferredServices(['auth.password', 'auth.password.broker']);
+        $this->app->singleton('auth.password', fn ($app): RealmPasswordBrokerManager => new RealmPasswordBrokerManager($app));
+        $this->app->singleton('auth.password.broker', fn ($app) => $app->make('auth.password')->broker());
+
+        Auth::provider('realm-eloquent', fn ($app, array $config): RealmUserProvider => new RealmUserProvider(
+            $app['hash'],
+            $config['model'],
+        ));
+
         Lattice::context('user', User::class);
 
         Gate::before(function (User $user, string $ability): ?bool {
