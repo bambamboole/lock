@@ -29,13 +29,8 @@ return new class extends Migration
             $table->unique(['realm_id', 'email']);
         });
 
-        /*
-         * Still keyed by email alone, which is now only unique per realm. The
-         * package's NewPasswordController goes through Laravel's password
-         * broker, and DatabaseTokenRepository looks a token up by email with
-         * no realm in hand — adding realm_id here would break its inserts
-         * without a realm-aware repository to match. Tracked as a known gap.
-         */
+        // Keyed by email alone here; a later migration re-keys it by
+        // (realm_id, email) once the realm-aware token repository exists.
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');

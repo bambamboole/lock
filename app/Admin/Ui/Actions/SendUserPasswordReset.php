@@ -31,7 +31,12 @@ final class SendUserPasswordReset extends ActionDefinition
         /** @var User $user */
         $user = $this->contextModel('user');
 
-        Password::broker(config('auth.defaults.passwords', 'users'))->sendResetLink(['email' => $user->email]);
+        /*
+         * Admin spans realms, but credential lookup is realm-local — the broker
+         * would not find a user outside the administrator's own realm.
+         */
+        $user->realm->runAsCurrent(fn () => Password::broker(config('auth.defaults.passwords', 'users'))
+            ->sendResetLink(['email' => $user->email]));
 
         Audit::record(AdminAuditEvent::PasswordResetSent, $user);
 
