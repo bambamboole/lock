@@ -7,7 +7,7 @@ declare(strict_types=1);
  */
 
 use App\Auth\Models\User;
-use Laravel\Passport\Passport;
+use Bambamboole\LaravelOidc\Server\Facades\Oidc;
 
 it('serves discovery with the realm scopes included', function () {
     $discovery = $this->getJson('/.well-known/openid-configuration')->assertOk();
@@ -17,7 +17,7 @@ it('serves discovery with the realm scopes included', function () {
 
 it('returns app-specific claims from userinfo', function () {
     $user = User::factory()->create(['locale' => 'de', 'timezone' => 'Europe/Berlin']);
-    Passport::actingAs($user, ['openid', 'profile', 'email'], 'oidc');
+    Oidc::actingAs($user, ['openid', 'profile', 'email'], 'oidc');
 
     $this->getJson(route('oidc.userinfo'))
         ->assertOk()

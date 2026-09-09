@@ -6,9 +6,9 @@ namespace Database\Seeders;
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
-use Laravel\Passport\Passport;
 use RuntimeException;
 
 final class DatabaseSeeder extends Seeder
@@ -38,7 +38,7 @@ final class DatabaseSeeder extends Seeder
     }
 
     /**
-     * Re-seeding a fresh database wipes the oauth_clients table while .env still
+     * Re-seeding a fresh database wipes the oidc_clients table while .env still
      * points at the deleted first-party client, breaking self-SSO login. Provision
      * a fresh client (and rewrite .env) whenever the configured one is gone.
      */
@@ -50,7 +50,7 @@ final class DatabaseSeeder extends Seeder
 
         $clientId = config('oidc.first_party.client_id');
 
-        if (is_string($clientId) && Passport::client()->newQuery()->whereKey($clientId)->exists()) {
+        if (is_string($clientId) && app(ClientRepository::class)->find($clientId) !== null) {
             return;
         }
 

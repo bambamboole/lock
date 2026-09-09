@@ -11,7 +11,7 @@ inputs:
     description: PHP version passed to setup-php.
     default: '8.5'
   build_php:
-    description: Install PHP, composer dependencies, and bootstrap the app (.env, app key, passport keys).
+    description: Install PHP, composer dependencies, and bootstrap the app (.env, app key, OIDC signing keys).
     default: 'true'
   coverage:
     description: Coverage driver passed to setup-php (none, pcov).
@@ -60,7 +60,7 @@ runs:
         cp .env.example .env
         php artisan package:discover --ansi
         php artisan key:generate
-        php artisan passport:keys --no-interaction
+        php artisan oidc:rotate-keys --if-missing --no-interaction
 
     - if: inputs.install_js == 'true' || inputs.build_js == 'true'
       uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6

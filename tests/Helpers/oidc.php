@@ -6,8 +6,8 @@ namespace Tests\Helpers;
 
 use Bambamboole\LaravelOidc\Client\Facades\OidcClient;
 use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
-use Laravel\Passport\Client;
-use Laravel\Passport\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Models\Client;
 use Tests\TestCase;
 
 /**
@@ -23,9 +23,9 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
 
     config()->set([
         'oidc-client.issuer' => config('app.url'),
-        'oidc-client.client_id' => (string) $client->id,
+        'oidc-client.client_id' => $client->client_id,
         'oidc-client.client_secret' => $client->plainSecret,
-        'oidc.first_party.client_id' => (string) $client->id,
+        'oidc.first_party.client_id' => $client->client_id,
         'oidc.first_party.trusted' => true,
     ]);
 
@@ -44,7 +44,7 @@ function loginAccessToken(TestCase $test): string
     $view = $test->actingAs($test->user, 'identity')
         ->withSession(['oidc.auth_time' => time()])
         ->get(route('oidc.authorize', [
-            'client_id' => $test->client->id,
+            'client_id' => $test->client->client_id,
             'redirect_uri' => 'https://rp.test/callback',
             'response_type' => 'code',
             'scope' => 'openid',
@@ -61,7 +61,7 @@ function loginAccessToken(TestCase $test): string
 
     return $test->post(route('oidc.token'), [
         'grant_type' => 'authorization_code',
-        'client_id' => $test->client->id,
+        'client_id' => $test->client->client_id,
         'client_secret' => $test->client->plainSecret,
         'redirect_uri' => 'https://rp.test/callback',
         'code' => $params['code'],

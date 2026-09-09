@@ -90,7 +90,7 @@ function architectureLatticeNamespaces(): array
 
 /**
  * Concrete Eloquent models whose primary-key strategy this app owns. A model
- * extending a vendor model (Passport tokens, activitylog activities) inherits
+ * extending a vendor model (activitylog activities) inherits
  * the vendor's key strategy and is skipped.
  *
  * @return list<class-string<Model>>

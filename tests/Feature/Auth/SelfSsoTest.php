@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Auth\Models\OidcSession;
+use Bambamboole\LaravelOidc\Server\Models\Client;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
-use Laravel\Passport\Client;
 
 use function Tests\Helpers\selfSsoProviderFake;
 
@@ -37,7 +37,7 @@ it('does not create a secret-bearing first-party client during general database 
     $this->seed();
 
     expect(Client::query()->where('name', 'First-party app')->exists())->toBeFalse()
-        ->and(Client::query()->where('oidc_provisioning_key', 'first-party')->exists())->toBeFalse();
+        ->and(Client::query()->where('provisioning_key', 'first-party')->exists())->toBeFalse();
 });
 
 it('establishes the web session only after the self-sso callback', function () {

@@ -17,9 +17,8 @@ A domain never reaches into another domain's `Http/`.
 
 ## API endpoints authenticate with auth:oidc
 
-`routes/api.php` runs on the `oidc` guard that `laravel-oidc` registers itself, not Passport's `auth:api`. The
-`api` guard in `config/auth.php` is never routed to but must stay — Passport resolves the personal-access-token
-provider by looking for a guard with the `passport` driver.
+`routes/api.php` runs on the `oidc` guard that `laravel-oidc` registers itself; `config/auth.php` declares no `api`
+guard at all. Gate a route on scopes with `CheckScopes::using({Domain}Permission::…)` from the package.
 
 ## Middleware is attached at the route or group level
 

@@ -33,7 +33,7 @@ Not for writing individual new tests — the Testing rule covers that bar direct
     - Map package ownership before judging coverage. Generic behavior from a Lattice package or another
       vendor package belongs in that package's test suite. App-specific configuration and integration remain app-owned.
     - Grep for inline duplication clusters: hand-rolled realm/user setup that a factory state owns, repeated
-      Passport client bootstrapping, copy-pasted context arrays for `submitForm`/`callAction`. 2+ definitions of the
+      OAuth client bootstrapping, copy-pasted context arrays for `submitForm`/`callAction`. 2+ definitions of the
       same concept is a consolidation finding.
 
 3. **Audit the tests.** Read every test file — grep alone misses most findings. At scale, fan out one read-only
