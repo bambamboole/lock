@@ -45,11 +45,19 @@ jobs:
         run: npm run types:check
 
       # The committed wire types must match what the PHP definitions produce;
-      # a stale generated.d.ts is a silent type lie on the client.
+      # a stale generated.d.ts is a silent type lie on the client. The generator
+      # errors out when discovery finds nothing, and this app declares no
+      # #[AsComponent]/#[AsField]/#[AsColumn] of its own — so the guard keys on
+      # whether any exist rather than running unconditionally. Adding the first
+      # one arms it again.
       - name: Check Generated Lattice Types
         run: |
-          php artisan lattice:typescript
-          git diff --exit-code resources/js/lattice/generated.d.ts
+          if grep -rqE '#\[As(Component|Field|Column)' app/; then
+            php artisan lattice:typescript
+            git diff --exit-code resources/js/lattice/generated.d.ts
+          else
+            echo "No app wire types declared; nothing to generate."
+          fi
 
       - name: Build
         run: npm run build

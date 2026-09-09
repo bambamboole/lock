@@ -55,4 +55,6 @@ sibling class.
 
 A `#[AsComponent]` / `#[AsField]` / `#[AsColumn]` class is part of the wire format. After changing its public
 properties run `php artisan lattice:typescript` and commit `resources/js/lattice/generated.d.ts`. The generator
-reads `extra.lattice.discover` from `composer.json` and fails loudly when discovery is empty.
+reads `extra.lattice.discover` from `composer.json` and fails loudly when discovery is empty. The app currently
+declares none, so the `js` workflow only runs the generator once one exists — adding the first wire type arms that
+check, and the generated file has to be committed with it.
