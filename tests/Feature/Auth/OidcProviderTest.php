@@ -10,7 +10,7 @@ use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Facades\Oidc;
 
 it('serves discovery with the realm scopes included', function () {
-    $discovery = $this->getJson('/.well-known/openid-configuration')->assertOk();
+    $discovery = $this->getJson(route('oidc.discovery'))->assertOk();
 
     expect($discovery->json('scopes_supported'))->toContain('member:view');
 });

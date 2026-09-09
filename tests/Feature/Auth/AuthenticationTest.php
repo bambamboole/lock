@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
+use Bambamboole\LaravelOidc\Server\Realms\IssuerResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
@@ -16,9 +17,12 @@ test('users can logout', function () {
     $user = User::factory()->create();
     $idToken = 'self-sso-id-token';
 
+    $issuer = app(IssuerResolver::class)->url();
+    config()->set('oidc-client.issuer', $issuer);
+
     Http::fake([
-        config('app.url').'/.well-known/openid-configuration' => Http::response([
-            'issuer' => config('app.url'),
+        $issuer.'/.well-known/openid-configuration' => Http::response([
+            'issuer' => $issuer,
             'authorization_endpoint' => route('oidc.authorize'),
             'token_endpoint' => route('oidc.token'),
             'jwks_uri' => route('oidc.jwks'),

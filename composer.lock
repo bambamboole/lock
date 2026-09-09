@@ -136,12 +136,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/bambamboole/laravel-oidc.git",
-                "reference": "5b5a982edeee8b48c488752b678e7a6781bd106a"
+                "reference": "6594cd01bd2761153e43f914a0196c7c224233bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/5b5a982edeee8b48c488752b678e7a6781bd106a",
-                "reference": "5b5a982edeee8b48c488752b678e7a6781bd106a",
+                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/6594cd01bd2761153e43f914a0196c7c224233bc",
+                "reference": "6594cd01bd2761153e43f914a0196c7c224233bc",
                 "shasum": ""
             },
             "require": {
@@ -225,7 +225,7 @@
                 "issues": "https://github.com/bambamboole/laravel-oidc/issues",
                 "source": "https://github.com/bambamboole/laravel-oidc"
             },
-            "time": "2026-09-09T09:44:35+00:00"
+            "time": "2026-09-09T14:44:26+00:00"
         },
         {
             "name": "bambamboole/laravel-translation-dumper",

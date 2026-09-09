@@ -6,8 +6,9 @@ namespace Tests\Helpers;
 
 use Bambamboole\LaravelOidc\Client\Facades\OidcClient;
 use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
+use Bambamboole\LaravelOidc\Server\Clients\Client;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Models\Client;
+use Bambamboole\LaravelOidc\Server\Realms\IssuerResolver;
 use Tests\TestCase;
 
 /**
@@ -22,7 +23,7 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
     );
 
     config()->set([
-        'oidc-client.issuer' => config('app.url'),
+        'oidc-client.issuer' => app(IssuerResolver::class)->url(),
         'oidc-client.client_id' => $client->client_id,
         'oidc-client.client_secret' => $client->plainSecret,
         'oidc.first_party.client_id' => $client->client_id,

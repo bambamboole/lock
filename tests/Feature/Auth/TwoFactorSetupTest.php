@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\TotpFactorProvider;
+use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
 use Bambamboole\LaravelOidc\Ui\Forms\TwoFactorSetupForm;
 use PragmaRX\Google2FA\Google2FA;
 

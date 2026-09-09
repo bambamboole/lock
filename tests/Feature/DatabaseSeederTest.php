@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
+use Bambamboole\LaravelOidc\Server\Clients\Client;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Models\Client;
 
 use function Tests\Helpers\readEnvironmentFile;
 
