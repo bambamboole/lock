@@ -16,8 +16,8 @@ final class AcceptInvitationController
     /**
      * An invitation grants a role inside one realm, and a user only exists in
      * one realm, so accepting is only meaningful for a user already in it.
-     * Inviting someone who has no account yet needs realm-scoped registration,
-     * which arrives with host-resolved realms.
+     * Inviting someone who has no account yet needs a registration surface that
+     * names the realm, which arrives with the realm in the request path.
      */
     public function __invoke(AcceptRealmInvitationRequest $request, RealmInvitation $invitation): RedirectResponse
     {

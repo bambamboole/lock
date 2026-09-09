@@ -34,6 +34,19 @@ through `RealmPasswordBrokerManager`, rebound in `AuthServiceProvider::boot()` a
 `ProviderRepository` re-adds the deferred services after the eager providers run, so a marker dropped in `register()`
 is put straight back and Laravel's `PasswordResetServiceProvider` wins the rebinding.
 
+## The realm comes from the request path, and the session does not follow it
+
+A realm resolved from a **host** would be isolated by the browser: separate origins, separate session cookies. From
+a **path** every realm shares one cookie, so a login in one realm is a login in all of them unless `session.path` is
+scoped per realm. Nothing does that yet — `config/session.php` sets no `path`, so the framework default `/` applies.
+Scoping it is the first thing that has to land alongside the path segment, not after it.
+
+Everything that resolves a realm reads it from `Context` (`Realm::currentId()` / `Realm::fromContext()`), and falls
+back to `realm.default_slug` for a request that names none. `App\Auth\Actions\CreateNewUser` is the pattern: it
+registers into the current realm and into the default only while requests carry no realm. Do not reintroduce a host
+assumption — three comments carried one and were corrected; the two resolutions have different security properties
+and are not interchangeable.
+
 ## laravel-oidc's RealmResolver is deliberately unbound
 
 Leaving it unbound keeps every package row in the configured `oidc.realm` (`default`). Binding it to the app's

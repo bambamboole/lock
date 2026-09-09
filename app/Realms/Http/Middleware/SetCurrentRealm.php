@@ -10,8 +10,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Puts the signed-in user's realm into the context every scoped query and
  * queued job reads. The realm comes from the user because a user has exactly
- * one; once realms are resolved from the request host, guests get one too and
- * this reads the host instead.
+ * one; once the realm is read from the request path, guests get one too and
+ * this reads the path instead.
  */
 final class SetCurrentRealm
 {
