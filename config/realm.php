@@ -10,8 +10,8 @@ return [
 
     /*
      * Where self-service registration lands while the realm is not yet derived
-     * from the request host. Once hosts resolve realms this becomes a fallback
-     * for requests that name no realm.
+     * from the request path. Once the path names the realm this stays as the
+     * fallback for requests that do not.
      */
     'default_slug' => env('REALM_DEFAULT_SLUG', 'default'),
 ];

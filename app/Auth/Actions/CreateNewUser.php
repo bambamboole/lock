@@ -19,10 +19,10 @@ final class CreateNewUser
      */
     public function create(array $input): User
     {
-        // Self-service registration carries no realm of its own yet, so it
-        // lands in the configured default. Uniqueness follows the realm: the
-        // same address may already exist in a different one.
-        $realm = Realm::default();
+        // Registration lands in the realm the request resolved, and in the
+        // configured default until requests name one. Uniqueness follows the
+        // realm: the same address may already exist in a different one.
+        $realm = Realm::fromContext() ?? Realm::default();
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
