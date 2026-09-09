@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Ui\Pages;
 
-use Bambamboole\LaravelOidc\Server\Auth\Views\LoginPrompt;
+use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginPrompt;
 use Bambamboole\LaravelOidc\Ui\Pages\LoginPage;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\Request;

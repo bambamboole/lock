@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Auth\Support\OidcScopeCatalog;
-use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\RecoveryCodeProvider;
-use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\TotpFactorProvider;
-use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\WebAuthnFactorProvider;
+use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
+use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
+use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
 
 /*
  * Only the keys this app changes from the laravel-oidc package defaults live

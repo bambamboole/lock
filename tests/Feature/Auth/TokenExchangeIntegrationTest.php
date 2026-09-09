@@ -8,8 +8,8 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Contracts\AuthorizationViewResponse;
-use Bambamboole\LaravelOidc\Server\Http\Middleware\CheckAudience;
+use Bambamboole\LaravelOidc\Server\Consents\Views\AuthorizationViewResponse;
+use Bambamboole\LaravelOidc\Server\Tokens\Middleware\CheckAudience;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Auth\Models\OidcSession;
-use Bambamboole\LaravelOidc\Server\Models\Client;
+use Bambamboole\LaravelOidc\Server\Clients\Client;
+use Bambamboole\LaravelOidc\Server\Sessions\OidcSession;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
