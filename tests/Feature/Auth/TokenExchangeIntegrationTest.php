@@ -7,12 +7,12 @@ declare(strict_types=1);
  */
 
 use App\Auth\Models\User;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Contracts\AuthorizationViewResponse;
 use Bambamboole\LaravelOidc\Server\Http\Middleware\CheckAudience;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Laravel\Passport\ClientRepository;
-use Laravel\Passport\Passport;
 
 use function Tests\Helpers\loginAccessToken;
 
@@ -22,13 +22,31 @@ beforeEach(function () {
     // The oidc guard only accepts an exchanged token whose `aud` it serves;
     // a resource server has to declare its own audiences.
     config(['oidc.resource.audiences' => ['https://api.internal/orders']]);
-    Passport::authorizationView(fn (array $parameters) => response()->json(['authToken' => $parameters['authToken']]));
+    // The real consent view is a Lattice page; loginAccessToken() only needs the
+    // auth token out of it, so swap the response for JSON.
+    app()->bind(AuthorizationViewResponse::class, fn () => new class implements AuthorizationViewResponse
+    {
+        /** @var array<string, mixed> */
+        private array $parameters = [];
+
+        public function withParameters(array $parameters = []): static
+        {
+            $this->parameters = $parameters;
+
+            return $this;
+        }
+
+        public function toResponse($request)
+        {
+            return response()->json(['authToken' => $this->parameters['authToken']]);
+        }
+    });
 
     $this->user = User::factory()->create();
     $this->client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('RP', ['https://rp.test/callback']);
     $this->client->forceFill([
         'grant_types' => [...$this->client->grant_types, 'urn:ietf:params:oauth:grant-type:token-exchange'],
-        'allowed_exchange_audiences' => json_encode(['https://api.internal/orders']),
+        'allowed_exchange_audiences' => ['https://api.internal/orders'],
     ])->save();
 
     Route::middleware(['auth:oidc', CheckAudience::using('https://api.internal/orders')])
@@ -42,7 +60,7 @@ it('exchanges a first-party login token and enforces the audience on a CheckAudi
 
     $exchanged = $this->post(route('oidc.token'), [
         'grant_type' => 'urn:ietf:params:oauth:grant-type:token-exchange',
-        'client_id' => $this->client->id,
+        'client_id' => $this->client->client_id,
         'client_secret' => $this->client->plainSecret,
         'subject_token' => $subject,
         'subject_token_type' => 'urn:ietf:params:oauth:token-type:access_token',

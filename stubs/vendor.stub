@@ -18,17 +18,3 @@ trait InteractsWithConsole
     public function artisan($command, $parameters = []): PendingCommand {}
 }
 
-namespace Laravel\Passport;
-
-use Illuminate\Database\Eloquent\Model;
-
-/**
- * Both are `Attribute` accessors without generic annotations, so the model's
- * schema-derived property types are shadowed by an untyped accessor.
- *
- * @property array<int, string> $grant_types
- * @property array<int, string> $redirect_uris
- */
-class Client extends Model
-{
-}

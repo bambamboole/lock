@@ -42,17 +42,17 @@ middleware or listener flashed never appears in the rendered schema. Assert it w
 `->assertNotFlashed()`, `->assertNothingFlashed()` or `->props($type)` — never by reading `flash.latticeEffects`
 out of the Inertia page yourself.
 
-## Passport personal access tokens need a personal-access client
+## Personal access tokens need a personal-access client
 
-`$this->artisan('passport:client', ['--personal' => true, '--name' => '...', '--provider' => 'users'])` — the
-`--provider` argument is required. `DatabaseSeeder` also seeds one for the running app.
+`app(ClientRepository::class)->createPersonalAccessGrantClient($name, 'users')` — there is no console command for
+it, and the provider argument is what binds the client to the guard's user provider.
 
 ## Authenticate API tests against the oidc guard
 
-`Passport::actingAs($user, $scopes, 'oidc')` — the third argument defaults to `'api'`, and without it the request
-silently 401s. Between two differently-authenticated requests in one test, call `auth()->forgetGuards()`: the oidc
-guard caches its resolved user and only gets a refreshed request, so the previous bearer token would otherwise still
-authenticate.
+`Oidc::actingAs($user, $scopes, 'oidc')`. The token it attaches is never persisted, so
+`currentAccessToken()->token` has no key — code that reads the token row has to tolerate that. Between two
+differently-authenticated requests in one test, call `auth()->forgetGuards()`: the oidc guard caches its resolved
+user and only gets a refreshed request, so the previous bearer token would otherwise still authenticate.
 
 ## What a test must earn
 

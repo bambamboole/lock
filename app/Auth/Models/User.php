@@ -10,7 +10,9 @@ use App\Realms\Models\Role;
 use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
+use Bambamboole\LaravelOidc\Server\Auth\Concerns\HasOidcTokens;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\Concerns\HasAuthenticationFactors;
+use Bambamboole\LaravelOidc\Server\Contracts\OAuthenticatable;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -29,8 +31,6 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
-use Laravel\Passport\Contracts\OAuthenticatable;
-use Laravel\Passport\HasApiTokens;
 
 /**
  * @property string $id
@@ -71,7 +71,7 @@ use Laravel\Passport\HasApiTokens;
 final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser, ProvidesSettings
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasAuthenticationFactors, HasFactory, HasSettings, HasUuids, Notifiable;
+    use HasAuthenticationFactors, HasFactory, HasOidcTokens, HasSettings, HasUuids, Notifiable;
 
     /**
      * The one realm this user exists in. Identity does not cross realms: two

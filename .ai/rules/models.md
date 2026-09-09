@@ -19,9 +19,11 @@ Declare mass-assignable attributes with the `#[Fillable([...])]` class attribute
 
 ## Models extending a vendor model keep the vendor's key strategy
 
-`App\Auth\Models\OAuthAccessToken` (Passport) and `App\Shared\Audit\Models\Activity` (activitylog) extend a package model
-and inherit its primary key and table. Do not add `HasUuids` or `#[Fillable]` to those — configure the package
-instead.
+`App\Shared\Audit\Models\Activity` (activitylog) extends a package model and inherits its primary key and table.
+Do not add `HasUuids` or `#[Fillable]` to it — configure the package instead.
+
+laravel-oidc is not extensible this way: it hardcodes its own `Token` and `Client` classes everywhere it writes, so
+a subclass would never be the hydrated model. Read its rows through the package classes.
 
 ## Realm-owned models extend BusinessModel; scoping is automatic
 

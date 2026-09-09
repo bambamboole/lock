@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-use Laravel\Passport\Client;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Models\Client;
 
 use function Tests\Helpers\readEnvironmentFile;
 
 it('does not provision the self-SSO client outside the local environment', function () {
     $this->seed();
 
-    expect(Client::query()->where('oidc_provisioning_key', 'first-party')->exists())->toBeFalse();
+    expect(Client::query()->where('provisioning_key', 'first-party')->exists())->toBeFalse();
 });
 
 it('re-provisions the self-SSO client when the configured one is gone from the database', function () {
@@ -27,7 +28,7 @@ it('re-provisions the self-SSO client when the configured one is gone from the d
 
     $this->seed();
 
-    $client = Client::query()->where('oidc_provisioning_key', 'first-party')->sole();
+    $client = Client::query()->where('provisioning_key', 'first-party')->sole();
     $environment = readEnvironmentFile($basePath.'/.env');
 
     expect($environment['OIDC_FIRST_PARTY_CLIENT'])->toBe((string) $client->id)
@@ -42,13 +43,15 @@ it('leaves an intact self-SSO client untouched when re-seeding locally', functio
     app()->useEnvironmentPath($basePath);
     app()['env'] = 'local';
 
-    $client = Client::factory()->create(['oidc_provisioning_key' => 'first-party']);
-    config(['oidc.first_party.client_id' => (string) $client->id]);
+    $client = app(ClientRepository::class)
+        ->createAuthorizationCodeGrantClient('First-party app', [config('app.url').'/login/callback']);
+    $client->forceFill(['provisioning_key' => 'first-party'])->save();
+    config(['oidc.first_party.client_id' => $client->client_id]);
 
     $this->seed();
 
     $environment = readEnvironmentFile($basePath.'/.env');
 
-    expect(Client::query()->where('oidc_provisioning_key', 'first-party')->count())->toBe(1)
+    expect(Client::query()->where('provisioning_key', 'first-party')->count())->toBe(1)
         ->and($environment['OIDC_RP_CLIENT_SECRET'])->toBe('existing-secret');
 });

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Auth\Models\OAuthAccessToken;
 use App\Auth\Support\OidcScopeCatalog;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\RecoveryCodeProvider;
 use Bambamboole\LaravelOidc\Server\Auth\MultiFactor\TotpFactorProvider;
@@ -46,8 +45,7 @@ return [
         ],
     ],
 
-    'passport' => [
-        'token_model' => OAuthAccessToken::class,
-        'scopes' => OidcScopeCatalog::class,
+    'scopes' => [
+        'catalog' => OidcScopeCatalog::class,
     ],
 ];

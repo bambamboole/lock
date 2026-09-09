@@ -42,7 +42,6 @@ php artisan key:generate --ansi
 php artisan migrate --force --ansi
 php artisan migrate --path=database/data-migrations --force --ansi
 php artisan oidc:rotate-keys --if-missing --ansi
-php artisan passport:keys --no-interaction
 
 # `npm ci` and not `npm install`: install rewrites package-lock.json with the
 # platform's optional deps, which would leave every fresh worktree dirty and

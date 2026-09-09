@@ -58,7 +58,7 @@ bin/create-worktree.sh <slug> [branch]      # branch defaults to <slug>
 
 It creates `../lock-<slug>` branched off `main`, gives it a Herd site
 (`https://lock-<slug>.test`) with `APP_URL` pointed at it, then installs composer and npm
-dependencies, generates the app key, OIDC signing keys and Passport keys, migrates a fresh SQLite database, syncs the
+dependencies, generates the app key and the OIDC signing keys, migrates a fresh SQLite database, syncs the
 scope catalog, and builds the frontend. It refuses to touch an existing directory.
 
 Examples:

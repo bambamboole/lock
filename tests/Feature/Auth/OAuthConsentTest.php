@@ -5,14 +5,14 @@ declare(strict_types=1);
  * OAuth 2.1 §4.1.1–4.1.2 (authorization request/response); OpenID Connect Core 1.0 §3.1.2 (authorization endpoint / consent)
  */
 
-use Laravel\Passport\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 
 it('redirects guests to login', function () {
     $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('Test RP', ['https://rp.test/callback']);
     $verifier = str_repeat('a', 64);
 
     $this->get(route('oidc.authorize', [
-        'client_id' => $client->id,
+        'client_id' => $client->client_id,
         'redirect_uri' => 'https://rp.test/callback',
         'response_type' => 'code',
         'scope' => 'openid',

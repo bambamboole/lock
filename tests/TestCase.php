@@ -15,8 +15,6 @@ abstract class TestCase extends BaseTestCase
         migrateDatabases as private baseMigrateDatabases;
     }
 
-    private static bool $passportKeysEnsured = false;
-
     /**
      * Rendering a real route resolves @vite, which throws without
      * public/build/manifest.json. Feature tests assert Inertia props and the
@@ -30,7 +28,6 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->ensurePassportKeysExist();
         $this->ensureSystemRealmsExist();
 
         if ($this->stubsVite) {
@@ -61,18 +58,5 @@ abstract class TestCase extends BaseTestCase
         foreach ([config('realm.master_slug') => 'Master', config('realm.default_slug') => 'Default'] as $slug => $name) {
             Realm::firstOrCreate(['slug' => $slug], ['name' => $name]);
         }
-    }
-
-    private function ensurePassportKeysExist(): void
-    {
-        if (self::$passportKeysEnsured) {
-            return;
-        }
-
-        if (! file_exists(storage_path('oauth-private.key'))) {
-            $this->artisan('passport:keys', ['--no-interaction' => true]);
-        }
-
-        self::$passportKeysEnsured = true;
     }
 }

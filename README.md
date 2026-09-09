@@ -7,8 +7,8 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
 ## Features
 
 - **OpenID Connect provider** — authorization code + PKCE, token exchange, consent, discovery, and
-  key rotation via [`laravel-oidc`](https://github.com/bambamboole/laravel-oidc), backed by
-  [Laravel Passport](https://laravel.com/docs/passport) for OAuth client and token storage.
+  key rotation via [`laravel-oidc`](https://github.com/bambamboole/laravel-oidc), which owns the OAuth2 core
+  and its client and token storage.
 - **Relying-party login** — the app signs its own users in through its own OIDC endpoints
   (self-SSO), so the account console runs on the same flows external clients use.
 - **Authentication** — registration, password reset, email verification, **two-factor** (TOTP,
@@ -33,7 +33,7 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
 composer setup
 ```
 
-That installs dependencies, writes `.env`, generates app and Passport keys, runs the migrations,
+That installs dependencies, writes `.env`, generates the app key, runs the migrations,
 rotates the OIDC signing keys, and builds the frontend. Then start everything (app server, queue,
 Reverb, logs, Vite):
 
