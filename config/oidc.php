@@ -44,6 +44,12 @@ return [
         ],
     ],
 
+    // The package's whole `clients` block would be replaced, not merged, by a
+    // `clients` key here — mergeConfigFrom only merges the top level — so the
+    // secret `app:bootstrap` reconciles the console client to gets its own key
+    // next to the package's OIDC_FIRST_PARTY_CLIENT and OIDC_FIRST_PARTY_TRUSTED.
+    'first_party_secret' => env('OIDC_FIRST_PARTY_SECRET'),
+
     'scopes' => [
         'catalog' => OidcScopeCatalog::class,
     ],

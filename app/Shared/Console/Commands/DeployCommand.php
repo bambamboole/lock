@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
  * instances do not race each other. Bytecode caches (config, routes, views)
  * stay with the deploy platform — this command owns application state.
  */
-#[Description('Run the deploy steps every release needs: migrations, data migrations, signing keys, permission sync, lattice discovery cache.')]
+#[Description('Run the deploy steps every release needs: migrations, data migrations, signing keys, permission sync, environment bootstrap, lattice discovery cache.')]
 #[Signature('app:deploy')]
 final class DeployCommand extends Command
 {
@@ -26,6 +26,7 @@ final class DeployCommand extends Command
             ['migrate --path=database/data-migrations', fn (): int => $this->call('migrate', ['--force' => true, '--isolated' => true, '--path' => 'database/data-migrations'])],
             ['oidc:rotate-keys --if-missing', $this->generateMissingSigningKeys(...)],
             ['permission:sync', fn (): int => $this->call('permission:sync')],
+            ['app:bootstrap', fn (): int => $this->call('app:bootstrap')],
             ['lattice:discover-cache', fn (): int => $this->call('lattice:discover-cache')],
         ];
 
