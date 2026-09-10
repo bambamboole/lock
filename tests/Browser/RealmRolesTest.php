@@ -12,7 +12,7 @@ it('opens the create role form from the roles tab', function () {
 
     $this->actingAs($user);
 
-    $page = visit('/settings/realm?tabs=roles');
+    $page = visit('/console/acme/settings?tabs=roles');
 
     $page->assertMissing('input[name="name"]')
         ->click('[data-test="create-role"]')

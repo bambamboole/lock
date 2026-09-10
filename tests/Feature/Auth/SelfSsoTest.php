@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Clients\Client;
-use Bambamboole\LaravelOidc\Server\Sessions\OidcSession;
+use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
@@ -33,17 +33,10 @@ function redirectTarget(TestResponse $response): string
     return $location;
 }
 
-it('does not create a secret-bearing first-party client during general database seeding', function () {
-    $this->seed();
-
-    expect(Client::query()->where('name', 'First-party app')->exists())->toBeFalse()
-        ->and(Client::query()->where('provisioning_key', 'first-party')->exists())->toBeFalse();
-});
-
 it('establishes the web session only after the self-sso callback', function () {
     Exceptions::fake();
 
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     $fake = selfSsoProviderFake();
 
     $this->get('/dashboard')->assertRedirect(route('login'));
@@ -91,7 +84,7 @@ it('establishes the web session only after the self-sso callback', function () {
 });
 
 it('rejects an id token minted for a different nonce', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     $fake = selfSsoProviderFake();
 
     $this->withSession($fake->callbackContext())

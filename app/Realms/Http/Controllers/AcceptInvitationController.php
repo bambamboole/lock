@@ -33,6 +33,6 @@ final class AcceptInvitationController
             $invitation->update(['accepted_at' => now()]);
         });
 
-        return to_route('dashboard');
+        return to_route('dashboard', ['current_realm' => $invitation->realm->slug]);
     }
 }

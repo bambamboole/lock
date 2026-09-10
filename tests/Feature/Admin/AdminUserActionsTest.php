@@ -21,7 +21,7 @@ beforeEach(function () {
 
 test('a roles-manage admin can grant a global role to a user', function () {
     $admin = globalAdmin();
-    $target = User::factory()->create();
+    $target = User::factory()->for(Realm::master())->create();
     $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
@@ -29,6 +29,18 @@ test('a roles-manage admin can grant a global role to a user', function () {
     ], ['user' => $target->id]);
 
     expect($target->refresh()->can(AdminPermission::Access))->toBeTrue();
+});
+
+test('global roles cannot be granted to a user outside the master realm', function () {
+    $admin = globalAdmin();
+    $target = User::factory()->create();
+    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+
+    $this->actingAs($admin)->callDeniedAction(UpdateUserGlobalRoles::class, [
+        'role_ids' => [$superAdminRole->id],
+    ], ['user' => $target->id])->assertForbidden();
+
+    expect($target->refresh()->globalRoles()->exists())->toBeFalse();
 });
 
 test('clearing a user\'s global roles revokes their admin access', function () {
@@ -61,7 +73,7 @@ test('a support admin cannot manage global roles', function () {
 
 test('updating global roles does not touch the target user\'s realm roles', function () {
     $admin = globalAdmin();
-    $realm = Realm::factory()->create();
+    $realm = Realm::master();
     $target = User::factory()->for($realm)->create();
     $realmRole = Role::factory()->for($realm)->create(['name' => 'Support']);
     $target->roles()->attach($realmRole);
@@ -76,7 +88,7 @@ test('updating global roles does not touch the target user\'s realm roles', func
 
 test('a realm-scoped role id submitted for global roles is not attached', function () {
     $admin = globalAdmin();
-    $target = User::factory()->create();
+    $target = User::factory()->for(Realm::master())->create();
     $realm = Realm::factory()->create();
     $realmRole = Role::factory()->for($realm)->create(['name' => 'Support']);
 

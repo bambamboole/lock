@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Models;
 
+use App\Admin\Enums\AdminPermission;
 use App\Auth\Support\PermissionRepository;
 use App\Realms\Models\Realm;
 use App\Realms\Models\Role;
@@ -11,8 +12,8 @@ use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
-use Bambamboole\LaravelOidc\Server\Users\Concerns\HasOidcTokens;
-use Bambamboole\LaravelOidc\Server\Users\OAuthenticatable;
+use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
+use Bambamboole\LaravelOidc\Server\Tokens\OAuthenticatable;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -71,7 +72,7 @@ use Laravel\Passkeys\Passkey;
 final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser, ProvidesSettings
 {
     /** @use HasFactory<UserFactory> */
-    use HasAuthenticationFactors, HasFactory, HasOidcTokens, HasSettings, HasUuids, Notifiable;
+    use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasSettings, HasUuids, Notifiable;
 
     /**
      * The one realm this user exists in. Identity does not cross realms: two
@@ -121,6 +122,11 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->realm_id === $realm->id;
     }
 
+    public function canAccessRealm(Realm $realm): bool
+    {
+        return $this->belongsToRealm($realm) || $this->hasGlobalPermission(AdminPermission::ManageRealms);
+    }
+
     public function ownsRealm(Realm $realm): bool
     {
         return $this->rolesFor($realm)->contains(fn (Role $role) => $role->isOwner());
@@ -137,6 +143,10 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
 
         if (app(PermissionRepository::class)->isGlobal($value)) {
             return false;
+        }
+
+        if ($this->hasGlobalPermission(AdminPermission::ManageRealms)) {
+            return true;
         }
 
         $roles = $this->rolesFor($realm)->load('permissions');
@@ -160,6 +170,10 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
 
     public function hasGlobalPermission(PermissionEnum $permission): bool
     {
+        if (! $this->realm->isMaster()) {
+            return false;
+        }
+
         return $this->globalRoles()
             ->with('permissions')
             ->get()

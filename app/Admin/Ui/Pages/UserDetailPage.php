@@ -107,7 +107,7 @@ final class UserDetailPage extends AdminPage
     private function adminRolesCard(User $user, ?User $currentUser): Card
     {
         return Card::make(__('admin.users.detail.admin-roles.heading'))
-            ->visible($currentUser instanceof User && Gate::forUser($currentUser)->allows(AdminPermission::ManageAdminRoles) && $currentUser->isNot($user))
+            ->visible($currentUser instanceof User && $user->realm->isMaster() && Gate::forUser($currentUser)->allows(AdminPermission::ManageAdminRoles) && $currentUser->isNot($user))
             ->schema([
                 Action::use(UpdateUserGlobalRoles::class, ['user' => $user->id]),
             ]);

@@ -10,7 +10,7 @@ declare(strict_types=1);
 return [
     'enabled' => (bool) env('OIDC_RP_ENABLED', true),
 
-    'issuer' => env('OIDC_RP_ISSUER', env('APP_URL')),
+    'issuer' => env('OIDC_RP_ISSUER', rtrim((string) env('APP_URL'), '/').'/realms/admin'),
 
     // The package has no default: RelyingParty sends this string verbatim,
     // so an empty value breaks the authorize request.

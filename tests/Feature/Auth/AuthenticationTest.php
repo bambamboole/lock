@@ -2,15 +2,17 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Realms\IssuerResolver;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
-test('the root path leads to the dashboard of the signed-in user realm', function () {
+test('the root path leads to the console dashboard of the signed-in user realm', function () {
     $user = User::factory()->create();
+    $dashboard = route('dashboard', ['current_realm' => $user->realm->slug]);
 
-    $this->actingAs($user)->get('/')->assertRedirect(route('dashboard'));
-    $this->actingAs($user)->get(route('dashboard'))->assertOk();
+    $this->actingAs($user)->get('/')->assertRedirect(route('dashboard.home'));
+    $this->actingAs($user)->get(route('dashboard.home'))->assertRedirect($dashboard);
+    $this->actingAs($user)->get($dashboard)->assertOk();
 });
 
 test('users can logout', function () {

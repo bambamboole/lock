@@ -23,6 +23,9 @@ return [
         'role' => [
             'manage' => 'Manage realm roles',
         ],
+        'realm-settings' => [
+            'manage' => 'Manage authentication configuration',
+        ],
     ],
     'roles' => [
         'owner' => 'Owner',
@@ -131,6 +134,7 @@ return [
             'roles' => 'Roles',
             'activity' => 'Activity',
             'danger' => 'Danger',
+            'configuration' => 'Configuration',
         ],
         'general' => [
             'heading' => 'Realm details',

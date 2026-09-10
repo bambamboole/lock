@@ -1,0 +1,16 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Auth\Support;
+
+use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
+
+final class DatabaseRealmRepository implements RealmRepository
+{
+    public function find(string $id): ?Realm
+    {
+        return Realm::query()->with('storedSettings')->where('slug', $id)->first();
+    }
+}

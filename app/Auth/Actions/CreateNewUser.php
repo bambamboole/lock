@@ -6,21 +6,22 @@ namespace App\Auth\Actions;
 use App\Auth\Concerns\PasswordValidationRules;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-final class CreateNewUser
+final class CreateNewUser implements CreateUser
 {
     use PasswordValidationRules;
 
     /**
-     * @param  array<string, string>  $input
+     * @param  array<string, mixed>  $input
      */
-    public function create(array $input): User
+    public function __invoke(array $input): User
     {
-        // Registration lands in the realm the request resolved, and in the
-        // configured default until requests name one. Uniqueness follows the
+        // Registration lands in the realm the request resolved; the configured
+        // default only covers callers that resolve none. Uniqueness follows the
         // realm: the same address may already exist in a different one.
         $realm = Realm::fromContext() ?? Realm::default();
 

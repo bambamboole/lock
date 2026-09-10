@@ -23,6 +23,9 @@ return [
         'role' => [
             'manage' => 'Rollen des Realms verwalten',
         ],
+        'realm-settings' => [
+            'manage' => 'Authentifizierung konfigurieren',
+        ],
     ],
     'roles' => [
         'owner' => 'Eigentümer',
@@ -131,6 +134,7 @@ return [
             'roles' => 'Rollen',
             'activity' => 'Aktivität',
             'danger' => 'Gefahrenzone',
+            'configuration' => 'Konfiguration',
         ],
         'general' => [
             'heading' => 'Realm-Details',

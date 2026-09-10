@@ -8,12 +8,14 @@ use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -47,6 +49,8 @@ return Application::configure(basePath: dirname(__DIR__))
             SetCurrentRealm::class,
         ]);
 
+        $middleware->appendToPriorityList(after: StartSession::class, append: SetCurrentRealm::class);
+
         $middleware->alias([
             // The framework default redirects to verification.notice, which no
             // route registers — the OIDC package names its verification prompt
@@ -55,6 +59,12 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->map(fn (AuthenticationException $exception): AuthenticationException => new AuthenticationException(
+            $exception->getMessage(),
+            array_map(fn (?string $guard): string => $guard ?? auth()->getDefaultDriver(), $exception->guards()),
+            $exception->redirectTo(request()),
+        ));
+
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );

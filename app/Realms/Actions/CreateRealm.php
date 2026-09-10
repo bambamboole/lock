@@ -4,9 +4,10 @@ declare(strict_types=1);
 namespace App\Realms\Actions;
 
 use App\Realms\Models\Realm;
+use App\Shared\Realms\Contracts\CreatesRealm;
 use Illuminate\Support\Facades\DB;
 
-final class CreateRealm
+final class CreateRealm implements CreatesRealm
 {
     /**
      * Creates the realm and its preset roles. The realm starts empty: its

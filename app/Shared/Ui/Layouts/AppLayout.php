@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Shared\Ui\Layouts;
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
-use App\Shared\Ui\Pages\DashboardPage;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsLayout;
 use Lattice\Core\Enums\Breakpoint;
@@ -48,6 +48,8 @@ final class AppLayout extends LayoutDefinition
 
         abort_unless($user instanceof User, 403);
 
+        $realm = Realm::fromContext() ?? $user->realm;
+
         return $schema->schema([
             Stack::make('app-shell')
                 ->direction(Orientation::Horizontal)
@@ -59,7 +61,9 @@ final class AppLayout extends LayoutDefinition
                         ->items([
                             BrandMark::wordmark('app-sidebar-logo'),
                             Menu::make('sidebar')->items([
-                                MenuItem::fromPage(DashboardPage::class)->label(__('navigation.dashboard'))->prefix(Icon::LayoutDashboard),
+                                MenuItem::make(__('navigation.dashboard'))
+                                    ->href(route('dashboard', ['current_realm' => $realm->slug], false))
+                                    ->prefix(Icon::LayoutDashboard),
                                 Slot::make('app.navigation'),
                             ]),
                         ])
@@ -88,7 +92,7 @@ final class AppLayout extends LayoutDefinition
                                     ->direction(Orientation::Horizontal)
                                     ->align(Align::Center)
                                     ->gap(Gap::Small)
-                                    ->schema($this->topbarTrailing($user)),
+                                    ->schema($this->topbarTrailing($user, $realm)),
                             ]),
                             Callouts::make('app-callouts'),
                             Outlet::make(),
@@ -100,14 +104,14 @@ final class AppLayout extends LayoutDefinition
     /**
      * @return array<int, Component>
      */
-    private function topbarTrailing(User $user): array
+    private function topbarTrailing(User $user, Realm $realm): array
     {
         $items = [];
 
         $items[] = Button::make(__('navigation.realm-settings'))
             ->icon(Icon::Settings)
             ->emphasis(Emphasis::Ghost)
-            ->effects(Effects::redirect(route('realm.settings.edit', absolute: false)));
+            ->effects(Effects::redirect(route('realm.settings.edit', ['current_realm' => $realm->slug], false)));
 
         $items[] = Notifications::make('app-notifications');
         $items[] = $this->userMenu($user, [

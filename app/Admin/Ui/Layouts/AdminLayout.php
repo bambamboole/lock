@@ -100,6 +100,6 @@ final class AdminLayout extends LayoutDefinition
         return Button::make(__('navigation.back-to-app'))
             ->icon(Icon::ChevronLeft)
             ->emphasis(Emphasis::Ghost)
-            ->effects(Effects::redirect(route('dashboard', absolute: false)));
+            ->effects(Effects::redirect(route('dashboard.home', absolute: false)));
     }
 }

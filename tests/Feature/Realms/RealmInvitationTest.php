@@ -140,7 +140,7 @@ test('realm invitations can be accepted', function () {
 
     $this->actingAs($invitedUser)
         ->get(route('invitations.accept', $invitation))
-        ->assertRedirect(route('dashboard'));
+        ->assertRedirect(route('dashboard', ['current_realm' => $realm->slug]));
 
     expect($invitation->refresh()->accepted_at)->not->toBeNull();
 });

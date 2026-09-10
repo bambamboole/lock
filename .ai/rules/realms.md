@@ -47,10 +47,22 @@ registers into the current realm and into the default only while requests carry 
 assumption — three comments carried one and were corrected; the two resolutions have different security properties
 and are not interchangeable.
 
-## laravel-oidc's RealmResolver is deliberately unbound
+## laravel-oidc reads realms from the database
 
-Leaving it unbound keeps every package row in the configured `oidc.realm` (`default`). Binding it to the app's
-current realm looks right and breaks login: the app provisions exactly one first-party client, `oidc:install-self`
-creates it with no realm current, and the package's `ClientRepository::create()` never writes `realm_id` at all — it
-relies on the column default. A `master`-realm user then authorizes against a `default`-realm client and
-`findActive()` returns null. Bind it only once clients are provisioned per realm.
+`App\Auth\Support\DatabaseRealmResolver` and `DatabaseRealmRepository` (bound in `AuthServiceProvider::register()`)
+hand the package the `realms` row for the `/realms/{realm}` path segment, and `App\Realms\Models\Realm` implements
+the package's `Realm` contract by reading its settings (`realm.*` keys, seeded from
+`App\Realms\Support\RealmConfiguration::defaults()` when the realm is created). Package rows (clients, tokens,
+sessions, consents) carry the realm slug in `realm_id`, so a client only exists inside the realm it was created in:
+provision clients — including the first-party client — with that realm current
+(`Realm::master()->runAsCurrent(...)`, as `DatabaseSeeder` does), or the package will not find them at login.
+
+The master realm is `admin` by default (`REALM_MASTER_SLUG`), and `config('oidc.realm')` follows the same value: the
+app authenticates against `APP_URL/realms/admin`, and `OIDC_RP_ISSUER` has to name that realm.
+
+## Global roles only count inside the master realm
+
+`User::hasGlobalPermission()` returns false for a user outside the master realm whatever roles they hold, and
+`App\Admin\Ui\Actions\UpdateUserGlobalRoles` refuses such a target. Instance administrators live in the master
+realm; every other realm is data to them, reachable through `User::canAccessRealm()` and the `admin:realms:manage`
+permission rather than membership.

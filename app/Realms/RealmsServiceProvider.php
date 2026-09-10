@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace App\Realms;
 
 use App\Auth\Models\User;
+use App\Realms\Actions\CreateRealm;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmInvitation;
 use App\Realms\Models\Role;
+use App\Realms\Support\RealmConfiguration;
 use App\Realms\Support\RealmMemberRoles;
 use App\Realms\Ui\Settings\ActivityTab;
+use App\Realms\Ui\Settings\ConfigurationTab;
 use App\Realms\Ui\Settings\DangerTab;
 use App\Realms\Ui\Settings\GeneralTab;
 use App\Realms\Ui\Settings\MembersTab;
 use App\Realms\Ui\Settings\RolesTab;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\RealmMemberDirectory;
+use App\Shared\Settings\SettingsRegistry;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Core\Services\ContextResolutions;
@@ -25,10 +30,12 @@ final class RealmsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(RealmMemberDirectory::class, RealmMemberRoles::class);
+        $this->app->bind(CreatesRealm::class, CreateRealm::class);
     }
 
     public function boot(): void
     {
+        RealmConfiguration::register($this->app->make(SettingsRegistry::class));
         /*
          * Lattice round-trips the realm by slug on lazy table and form
          * requests, so the slug arrives from the client. Resolving it without
@@ -41,7 +48,7 @@ final class RealmsServiceProvider extends ServiceProvider
                 $realm = Realm::where('slug', $value)->firstOrFail();
                 $user = auth()->user();
 
-                abort_unless($user instanceof User && $user->belongsToRealm($realm), 404);
+                abort_unless($user instanceof User && $user->canAccessRealm($realm), 404);
 
                 return $realm;
             },
@@ -77,6 +84,7 @@ final class RealmsServiceProvider extends ServiceProvider
         }, keyBy: fn (Activity $activity): int => (int) $activity->getKey());
 
         Lattice::extend('realm.settings.tabs', (new GeneralTab)(...), priority: 10);
+        Lattice::extend('realm.settings.tabs', (new ConfigurationTab)(...), priority: 30);
         Lattice::extend('realm.settings.tabs', (new MembersTab)(...), priority: 20);
         Lattice::extend('realm.settings.tabs', (new RolesTab)(...), priority: 25);
         Lattice::extend('realm.settings.tabs', (new ActivityTab)(...), priority: 40);

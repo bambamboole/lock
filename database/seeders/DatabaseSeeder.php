@@ -6,7 +6,8 @@ namespace Database\Seeders;
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
@@ -17,10 +18,7 @@ final class DatabaseSeeder extends Seeder
     {
         Artisan::call('migrate', ['--path' => 'database/data-migrations', '--force' => true]);
 
-        $master = $this->firstOrCreateRealm(config('realm.master_slug'), 'Master');
-        $this->firstOrCreateRealm(config('realm.default_slug'), 'Default');
-
-        User::factory()->for($master)->create([
+        User::factory()->for(Realm::master())->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
@@ -29,12 +27,7 @@ final class DatabaseSeeder extends Seeder
 
         Artisan::call('admin:grant', ['email' => 'test@example.com']);
 
-        $this->ensureSelfSsoClient();
-    }
-
-    private function firstOrCreateRealm(string $slug, string $name): Realm
-    {
-        return Realm::firstOrCreate(['slug' => $slug], ['name' => $name]);
+        Realm::master()->runAsCurrent(fn () => $this->ensureSelfSsoClient());
     }
 
     /**
@@ -44,13 +37,13 @@ final class DatabaseSeeder extends Seeder
      */
     private function ensureSelfSsoClient(): void
     {
-        if (! app()->environment('local')) {
-            return;
+        if (Artisan::call('oidc:rotate-keys', ['--if-missing' => true, '--no-interaction' => true]) !== 0) {
+            throw new RuntimeException('Failed to prepare OIDC signing keys: '.trim(Artisan::output()));
         }
 
-        $clientId = config('oidc.first_party.client_id');
+        $clientId = app(RealmResolver::class)->current()->clients()->firstPartyClientId;
 
-        if (is_string($clientId) && app(ClientRepository::class)->find($clientId) !== null) {
+        if (is_string($clientId) && Client::query()->inRealm()->where('client_id', $clientId)->exists()) {
             return;
         }
 
