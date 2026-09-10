@@ -5,6 +5,7 @@ use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Admin\Console\Commands\SyncPermissionsCommand;
 use App\Auth\Models\User;
 use App\Realms\Http\Middleware\SetCurrentRealm;
+use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
@@ -85,6 +86,7 @@ return Application::configure(basePath: dirname(__DIR__))
             : null);
     })
     ->withCommands([
+        BootstrapCommand::class,
         DeployCommand::class,
         GrantAdminCommand::class,
         SyncPermissionsCommand::class,

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Admin;
 
+use App\Admin\Actions\EnsureAdministrator;
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
@@ -15,6 +17,11 @@ use Lattice\Ui\Enums\Icon;
 
 final class AdminServiceProvider extends ServiceProvider
 {
+    public function register(): void
+    {
+        $this->app->bind(EnsuresAdministrator::class, EnsureAdministrator::class);
+    }
+
     public function boot(): void
     {
         /*
