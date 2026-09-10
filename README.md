@@ -19,7 +19,6 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
   global roles, and a cross-realm activity view.
 - **Audit log** — a tenant-scoped activity trail via
   [spatie/laravel-activitylog](https://spatie.be/docs/laravel-activitylog).
-- **Realtime** — live in-app notifications via [Laravel Reverb](https://laravel.com/docs/reverb).
 - **i18n** — English and German out of the box with enforced key parity.
 - **Modern frontend** — React 19, Inertia 3, Tailwind CSS v4, TypeScript.
 
@@ -35,8 +34,8 @@ composer setup
 ```
 
 That installs dependencies, writes `.env`, generates the app key, runs the migrations,
-rotates the OIDC signing keys, and builds the frontend. Then start everything (app server, queue,
-Reverb, logs, Vite):
+rotates the OIDC signing keys, and builds the frontend. Then start everything (queue, logs, Vite —
+Herd serves the app):
 
 ```bash
 composer dev

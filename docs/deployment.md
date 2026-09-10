@@ -31,8 +31,7 @@ environment; they never share state.
 | `deploy`    | `php artisan app:deploy` (one-off release step)         |
 | anything    | executed as-is, e.g. `php artisan admin:grant me@x.com` |
 
-Build args: `PHP_VERSION` (default `8.5`, matching CI and Herd; `composer.json` allows `^8.4`), `NODE_VERSION`, and the
-`VITE_REVERB_*` values if a Reverb server is deployed (see [Reverb](#reverb)).
+Build args: `PHP_VERSION` (default `8.5`, matching CI and Herd; `composer.json` allows `^8.4`) and `NODE_VERSION`.
 
 ## Environment
 
@@ -175,17 +174,6 @@ Postgres is the only state that matters besides the signing keys: users, realms,
 roles, settings, and the audit log all live there. Back up the `postgres` volume (or run `pg_dump` from the
 `postgres` service) on a schedule. The `storage` volume only holds uploaded files, of which there are none today, and
 Redis holds only cache, sessions, and queued jobs.
-
-## Reverb
-
-Nothing server-side in the app broadcasts today: no event implements `ShouldBroadcast`, `routes/channels.php` only
-authorizes the framework's per-user channel, and the app sends no Lattice notifications. The compose stack therefore
-runs no Reverb service and sets `BROADCAST_CONNECTION=log`.
-
-The frontend still calls `configureEcho()` unconditionally in `resources/js/app.tsx` with the `VITE_REVERB_*` values
-baked in at build time. In the published image those are empty, so the browser's websocket connection attempt fails
-quietly and every page keeps working without live updates. If Reverb is wanted later, add a `reverb` service
-(`php artisan reverb:start`), route `wss://` to it, and rebuild the image with the `VITE_REVERB_*` build args.
 
 ## Monitoring
 

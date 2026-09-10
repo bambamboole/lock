@@ -51,7 +51,6 @@ final class AppServiceProvider extends ServiceProvider
 
         Model::shouldBeStrict(! app()->isProduction());
 
-        DevCommands::artisan('reverb:start', 'reverb');
         DevCommands::except('server');
 
         DB::prohibitDestructiveCommands(

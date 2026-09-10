@@ -21,15 +21,11 @@ export default defineConfig({
     build: {
         rollupOptions: {
             output: {
-                // The rich editor and the websocket client are both large and
-                // used by a minority of pages; splitting them keeps them out of
-                // the entry chunk every page pays for.
+                // The rich editor is large and used by a minority of pages;
+                // splitting it keeps it out of the entry chunk every page pays for.
                 manualChunks(id) {
                     if (id.includes("prosemirror") || id.includes("@tiptap")) {
                         return "rich-editor-vendor";
-                    }
-                    if (id.includes("pusher-js") || id.includes("@laravel/echo")) {
-                        return "echo-vendor";
                     }
                 },
             },

@@ -58,10 +58,6 @@ RUN composer dump-autoload --no-dev --optimize --no-scripts \
 FROM node:${NODE_VERSION}-bookworm-slim AS assets
 
 ARG VITE_APP_NAME=Lock
-ARG VITE_REVERB_APP_KEY=
-ARG VITE_REVERB_HOST=
-ARG VITE_REVERB_PORT=
-ARG VITE_REVERB_SCHEME=
 
 WORKDIR /app
 
