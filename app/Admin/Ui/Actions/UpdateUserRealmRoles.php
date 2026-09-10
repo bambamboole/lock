@@ -32,7 +32,6 @@ final class UpdateUserRealmRoles extends ActionDefinition
         return $action
             ->label(__('admin.users.detail.realm-roles.update'))
             ->method(HttpMethod::Patch)
-            ->variant(Variant::Secondary)
             ->form([
                 CheckboxGroup::make('role_ids', __('admin.users.detail.realm-roles.field.label'))
                     ->options($roles->map(fn (RealmRole $role) => CheckboxGroup::option($role->name, $role->id))->all())

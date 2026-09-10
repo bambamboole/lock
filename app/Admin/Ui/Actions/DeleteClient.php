@@ -27,7 +27,6 @@ final class DeleteClient extends ActionDefinition
         return $action
             ->label(__('admin.clients.detail.delete.label'))
             ->method(HttpMethod::Delete)
-            ->variant(Variant::Danger)
             ->confirm(__('admin.clients.detail.delete.confirm.title'), __('admin.clients.detail.delete.confirm.description'));
     }
 

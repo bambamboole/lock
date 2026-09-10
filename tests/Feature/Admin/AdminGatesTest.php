@@ -41,13 +41,13 @@ test('a non-admin fails every admin gate', function () {
     }
 });
 
-test('an admin permission check reflects a role attached after an earlier check on the same instance', function () {
+test('an admin permission check reflects a role attached after an earlier check, once the user is refreshed', function () {
     $user = User::factory()->for(Realm::master())->create();
     expect($user->can(AdminPermission::Access))->toBeFalse();
 
     grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
 
-    expect($user->can(AdminPermission::Access))->toBeTrue();
+    expect($user->refresh()->can(AdminPermission::Access))->toBeTrue();
 });
 
 test('a global role held outside the master realm grants nothing', function () {

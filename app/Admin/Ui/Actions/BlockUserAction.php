@@ -12,7 +12,6 @@ use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
-use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\Variant;
 
 #[AsAction('admin.users.block', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
@@ -26,17 +25,15 @@ final class BlockUserAction extends ActionDefinition
     {
         return $action
             ->label(__('admin.users.detail.block.label'))
-            ->variant(Variant::Danger)
-            ->emphasis(Emphasis::Outline)
             ->confirm(__('admin.users.detail.block.confirm.title'), __('admin.users.detail.block.confirm.description'));
     }
 
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $target = $this->contextModelOrNull('user');
+        $target = $this->contextStringOrNull('user');
 
-        return $target instanceof User && $target->isNot($this->currentUser());
+        return $target !== null && $target !== $this->currentUser()->id;
     }
 
     public function handle(Request $request): ActionResult

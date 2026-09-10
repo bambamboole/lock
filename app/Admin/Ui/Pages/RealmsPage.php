@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Pages;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Models\User;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
@@ -30,11 +31,11 @@ final class RealmsPage extends AdminPage
 
         return $schema->schema([
             Stack::make('admin-realms-page')->gap(Gap::Large)->schema([
-                PageHeader::make(__('admin.realms.heading'), __('admin.realms.description'), [
+                PageHeader::make(__('admin.realms.heading'), __('admin.realms.description'), ActionBar::make(primary: [
                     Button::make(__('admin.realms.create.submit'))
                         ->visible($user instanceof User && $user->can(AdminPermission::ManageRealms))
                         ->effects(Effects::redirect(route('admin.realms.create', [], false))),
-                ]),
+                ])),
                 Table::use(AdminRealmsTable::class),
             ]),
         ]);

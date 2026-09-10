@@ -3,12 +3,17 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\grantGlobalRole;
+use function Tests\Helpers\headerTriggers;
+use function Tests\Helpers\rowClickHref;
+use function Tests\Helpers\rowMenuTriggers;
+use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -59,4 +64,76 @@ test('a user holding a global role is flagged as admin in the table', function (
 
     expect($row)->not->toBeNull()
         ->and(data_get($row, 'roles_exists'))->toBeTrue();
+});
+
+test('the user detail page offers its actions in the header, led by the two an operator reaches for', function () {
+    $active = User::factory()->for($this->realm)->create();
+    $blocked = User::factory()->for($this->realm)->create(['blocked_at' => now()]);
+
+    $this->actingAs(globalAdmin());
+
+    expect(headerTriggers($this->get("/admin/realms/acme/users/{$active->id}")->assertOk()))
+        ->toBe([
+            'admin.users.send-password-reset',
+            'admin.users.block',
+            'admin.users.sessions.end-all',
+            'admin.users.delete',
+        ])
+        ->and(headerTriggers($this->get("/admin/realms/acme/users/{$blocked->id}")->assertOk()))
+        ->toBe([
+            'admin.users.unblock',
+            'admin.users.sessions.end-all',
+            'admin.users.delete',
+        ]);
+});
+
+test('a user row opens the detail page and carries the same actions as it', function () {
+    $target = User::factory()->for($this->realm)->create();
+
+    $rows = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+    $row = tableRow($rows, $target->id);
+
+    expect(rowClickHref($row))->toBe("/admin/realms/acme/users/{$target->id}")
+        ->and(rowMenuTriggers($row))->toBe([
+            'admin.users.send-password-reset',
+            'admin.users.block',
+            'admin.users.sessions.end-all',
+            'admin.users.delete',
+        ]);
+});
+
+test('a user row menu follows the state of its own user', function () {
+    $blocked = User::factory()->for($this->realm)->create(['blocked_at' => now()]);
+    $unverified = User::factory()->for($this->realm)->unverified()->create();
+
+    $rows = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+
+    expect(rowMenuTriggers(tableRow($rows, $blocked->id)))
+        ->toBe(['admin.users.unblock', 'admin.users.sessions.end-all', 'admin.users.delete'])
+        ->and(rowMenuTriggers(tableRow($rows, $unverified->id)))
+        ->toContain('admin.users.resend-verification');
+});
+
+test('an admin cannot block or delete themselves from the users table', function () {
+    $admin = globalAdmin();
+
+    $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
+
+    expect(rowMenuTriggers(tableRow($rows, $admin->id)))
+        ->not->toContain('admin.users.block')
+        ->not->toContain('admin.users.delete');
+});
+
+test('a row action runs against the user whose row rendered it', function () {
+    $target = User::factory()->for($this->realm)->create();
+    $bystander = User::factory()->for($this->realm)->create();
+
+    $this->actingAs(globalAdmin());
+    $rows = $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+    $row = tableRow($rows, $target->id);
+
+    $this->callAction(BlockUserAction::class, context: ['realm' => 'acme', 'user' => $row['id']])->assertOk();
+
+    expect($target->refresh()->isBlocked())->toBeTrue()
+        ->and($bystander->refresh()->isBlocked())->toBeFalse();
 });

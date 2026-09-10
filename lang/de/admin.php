@@ -49,9 +49,6 @@ return [
             'blocked' => 'Gesperrt',
             'mfa' => 'MFA aktiv',
         ],
-        'actions' => [
-            'manage' => 'Verwalten',
-        ],
         'status' => [
             'active' => 'Aktiv',
             'blocked' => 'Gesperrt',
@@ -89,9 +86,6 @@ return [
             ],
             'admin-roles' => [
                 'heading' => 'Admin-Rollen',
-            ],
-            'account-actions' => [
-                'heading' => 'Kontoaktionen',
             ],
             'realm-roles' => [
                 'heading' => 'Realm-Rollen',
@@ -201,9 +195,6 @@ return [
             'grant-types' => 'Grant-Typen',
             'status' => 'Status',
         ],
-        'actions' => [
-            'manage' => 'Verwalten',
-        ],
         'status' => [
             'active' => 'Aktiv',
             'blocked' => 'Gesperrt',
@@ -279,14 +270,6 @@ return [
                 'heading' => 'Einstellungen',
                 'subtitle' => 'Öffnen Sie eine Zeile, um die Einstellung zu ändern. Client-ID, Scopes und Status sind fest.',
             ],
-            'credentials' => [
-                'heading' => 'Zugangsdaten',
-                'subtitle' => 'Das Rotieren des Secrets macht das aktuelle sofort ungültig.',
-            ],
-            'danger' => [
-                'heading' => 'Gefahrenzone',
-                'subtitle' => 'Ein gesperrter Client erhält keine neuen Tokens, bis er entsperrt wird. Löschen entfernt seine Tokens, Einwilligungen und Sitzungen.',
-            ],
             'rotate-secret' => [
                 'label' => 'Secret rotieren',
                 'done' => 'Client-Secret rotiert.',
@@ -329,9 +312,6 @@ return [
             'users' => 'Benutzer',
             'created-at' => 'Erstellt',
         ],
-        'actions' => [
-            'manage' => 'Verwalten',
-        ],
         'created' => 'Realm angelegt.',
         'updated' => 'Realm aktualisiert.',
         'configuration-saved' => 'Realm-Konfiguration gespeichert.',
@@ -342,7 +322,6 @@ return [
         ],
         'tabs' => [
             'general' => 'Allgemein',
-            'danger' => 'Gefahrenzone',
         ],
         'values' => [
             'never' => 'Nie',

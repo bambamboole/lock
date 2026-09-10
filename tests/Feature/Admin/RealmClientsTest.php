@@ -27,7 +27,11 @@ use Lattice\Support\Testing\ComponentNode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\latticeSchema;
+use function Tests\Helpers\rowClickHref;
+use function Tests\Helpers\rowMenuTriggers;
+use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -359,4 +363,32 @@ test('deleting a client removes its tokens, codes, consents and session particip
         ->and(Consent::query()->where('client_id', $survivor->id)->count())->toBe(1)
         ->and(SessionParticipant::query()->where('client_id', $survivor->id)->count())->toBe(1)
         ->and(Activity::global()->where('event', RealmAuditEvent::ClientDeleted->eventName())->sole()->getProperty('client_id'))->toBe($client->client_id);
+});
+
+test('a client row opens its detail page and carries the same actions as it', function () {
+    $client = realmClient($this->realm);
+
+    $this->actingAs(globalAdmin());
+    $detail = $this->get("/admin/realms/acme/clients/{$client->id}")->assertOk();
+    $row = tableRow($this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->json('data'), $client->id);
+
+    expect(rowClickHref($row))->toBe("/admin/realms/acme/clients/{$client->id}")
+        ->and(headerTriggers($detail))->toBe([
+            'admin.clients.rotate-secret',
+            'admin.clients.revoke',
+            'admin.clients.delete',
+        ])
+        ->and(rowMenuTriggers($row))->toBe(headerTriggers($detail));
+});
+
+test('a client row menu follows the state of its own client', function () {
+    $public = realmClient($this->realm, 'Public app', confidential: false);
+    $revoked = realmClient($this->realm, 'Revoked app');
+
+    $this->actingAs(globalAdmin());
+    $this->callAction(RevokeClient::class, [], ['realm' => 'acme', 'client' => $revoked->id])->assertOk();
+    $rows = $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+
+    expect(rowMenuTriggers(tableRow($rows, $public->id)))->toBe(['admin.clients.revoke', 'admin.clients.delete'])
+        ->and(rowMenuTriggers(tableRow($rows, $revoked->id)))->toBe(['admin.clients.rotate-secret', 'admin.clients.restore', 'admin.clients.delete']);
 });

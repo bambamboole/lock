@@ -25,7 +25,6 @@ final class RevokeClient extends ActionDefinition
     {
         return $action
             ->label(__('admin.clients.detail.revoke.label'))
-            ->variant(Variant::Warning)
             ->confirm(__('admin.clients.detail.revoke.confirm.title'), __('admin.clients.detail.revoke.confirm.description'));
     }
 

@@ -5,21 +5,28 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Ui\Actions\BlockUserAction;
+use App\Admin\Ui\Actions\DeleteUserAction;
+use App\Admin\Ui\Actions\EndAllUserSessionsAction;
+use App\Admin\Ui\Actions\ResendUserVerification;
+use App\Admin\Ui\Actions\ResetUserMfaAction;
+use App\Admin\Ui\Actions\SendUserPasswordReset;
+use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
+use Lattice\Actions\Components\Action;
 use Lattice\Core\Enums\ColorName;
-use Lattice\Facades\Effects;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BooleanColumn;
 use Lattice\Table\Columns\StackColumn;
 use Lattice\Table\Columns\TextColumn;
+use Lattice\Table\Components\RowClick;
 use Lattice\Table\Filters\TernaryFilter;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
-use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Text;
-use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\Size;
 
 /**
@@ -103,12 +110,31 @@ final class AdminUsersTable extends EloquentTableDefinition
         ];
     }
 
+    #[\Override]
+    public function rowClick(array $row): RowClick
+    {
+        return RowClick::make()->href(route('admin.realms.users.show', ['realm' => $this->contextString('realm'), 'user' => $row['id']], false));
+    }
+
+    /**
+     * The same actions the user's detail page offers, gated on the same row
+     * state — the flags they read are selected by {@see self::builder()}, so a
+     * row costs no extra query.
+     */
     public function actions(array $row): array
     {
-        return [
-            Button::make(__('admin.users.actions.manage'))
-                ->emphasis(Emphasis::Ghost)
-                ->effects(Effects::redirect(route('admin.realms.users.show', ['realm' => $this->contextString('realm'), 'user' => $row['id']], false))),
-        ];
+        $context = ['realm' => $this->contextString('realm'), 'user' => $row['id']];
+        $blocked = (bool) ($row['blocked'] ?? false);
+
+        return array_filter([ActionBar::menu('admin.users.row-actions', [
+            ...($blocked ? [] : [Action::use(SendUserPasswordReset::class, $context)]),
+            ...($blocked
+                ? [Action::use(UnblockUserAction::class, $context)]
+                : [Action::use(BlockUserAction::class, $context)]),
+            ...($blocked || (bool) ($row['email_verified'] ?? false) ? [] : [Action::use(ResendUserVerification::class, $context)]),
+            ...((bool) ($row['mfa'] ?? false) ? [Action::use(ResetUserMfaAction::class, $context)] : []),
+            Action::use(EndAllUserSessionsAction::class, $context),
+            Action::use(DeleteUserAction::class, $context),
+        ])]);
     }
 }

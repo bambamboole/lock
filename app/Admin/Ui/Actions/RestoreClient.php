@@ -25,7 +25,6 @@ final class RestoreClient extends ActionDefinition
     {
         return $action
             ->label(__('admin.clients.detail.restore.label'))
-            ->variant(Variant::Secondary)
             ->confirm(__('admin.clients.detail.restore.confirm.title'), __('admin.clients.detail.restore.confirm.description'));
     }
 

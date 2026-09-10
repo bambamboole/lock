@@ -17,6 +17,10 @@ use Lattice\Ui\Enums\Width;
  * The title block every page opens with: an h1, an optional lead paragraph, and
  * actions pushed to the trailing edge. A factory rather than a wire component —
  * it composes existing components and adds nothing the client has to know about.
+ *
+ * Below `sm` the row becomes a column: a phone has no width for a heading and
+ * a row of buttons side by side, and a flex row would squeeze the heading to
+ * nothing rather than wrap.
  */
 final class PageHeader
 {
@@ -46,6 +50,7 @@ final class PageHeader
         return Stack::make('page-header')
             ->direction(Orientation::Horizontal)
             ->align(Align::Start)
+            ->class('max-sm:flex-col max-sm:items-stretch')
             ->schema($schema);
     }
 }

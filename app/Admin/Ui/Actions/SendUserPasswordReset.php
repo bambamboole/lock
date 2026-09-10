@@ -22,8 +22,7 @@ final class SendUserPasswordReset extends ActionDefinition
     public function definition(Action $action): Action
     {
         return $action
-            ->label(__('admin.users.detail.send-password-reset'))
-            ->variant(Variant::Secondary);
+            ->label(__('admin.users.detail.send-password-reset'));
     }
 
     public function handle(Request $request): ActionResult
