@@ -270,9 +270,6 @@ return [
             'description' => 'Client of :realm.',
             'created-at' => 'Created',
             'scopes' => 'Scopes',
-            'summary' => [
-                'heading' => 'Summary',
-            ],
             'secret' => [
                 'heading' => 'Client secret',
                 'subtitle' => 'Copy the secret now. It is shown only once and cannot be recovered.',
@@ -280,7 +277,7 @@ return [
             ],
             'settings' => [
                 'heading' => 'Settings',
-                'subtitle' => 'Name, type, grant types and URIs of the client.',
+                'subtitle' => 'Open a row to change that setting. Client ID, scopes and status are fixed.',
             ],
             'credentials' => [
                 'heading' => 'Credentials',

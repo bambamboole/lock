@@ -24,6 +24,7 @@ use Bambamboole\LaravelOidc\Server\Tokens\Models\AuthorizationCode;
 use Bambamboole\LaravelOidc\Server\Tokens\Models\RefreshToken;
 use Illuminate\Support\Facades\Hash;
 use Lattice\Support\Testing\ComponentNode;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\latticeSchema;
@@ -48,6 +49,17 @@ function clientFormData(array $overrides = []): array
         'post_logout_redirect_uris' => 'https://portal.test/',
         ...$overrides,
     ];
+}
+
+/**
+ * One client setting as `UpdateClientForm` receives it: the payload and the
+ * context naming the field, ready to spread into `submitForm()`.
+ *
+ * @return array{0: array<string, mixed>, 1: array<string, string>}
+ */
+function clientSetting(Client $client, string $field, mixed $value): array
+{
+    return [[$field => $value], ['realm' => $client->realm_id, 'client' => $client->id, 'field' => $field]];
 }
 
 function realmClient(Realm $realm, string $name = 'Existing app', bool $confidential = true): Client
@@ -93,7 +105,7 @@ test('the clients console is forbidden without realms-manage', function (Closure
     $this->get("/admin/realms/acme/clients/{$client->id}")->assertForbidden();
     $this->loadDeniedTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->submitDeniedForm(CreateClientForm::class, clientFormData(), ['realm' => 'acme'])->assertForbidden();
-    $this->submitDeniedForm(UpdateClientForm::class, clientFormData(), $context)->assertForbidden();
+    $this->submitDeniedForm(UpdateClientForm::class, ...clientSetting($client, 'name', 'Renamed'))->assertForbidden();
     $this->callDeniedAction(RotateClientSecret::class, [], $context)->assertForbidden();
     $this->callDeniedAction(RevokeClient::class, [], $context)->assertForbidden();
     $this->callDeniedAction(DeleteClient::class, [], $context)->assertForbidden();
@@ -116,12 +128,22 @@ test('the clients table lists only the selected realm and searches name and clie
     expect(collect(is_array($rows) ? $rows : [])->pluck('id')->all())->toEqualCanonicalizing([$byName->id, $byClientId->id]);
 });
 
+test('a client row refuses a field the client does not have', function () {
+    $client = realmClient($this->realm);
+
+    $this->actingAs(globalAdmin());
+
+    expect(fn () => $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'client_id', 'injected')))
+        ->toThrow(NotFoundHttpException::class)
+        ->and($client->refresh()->client_id)->not->toBe('injected');
+});
+
 test('a client detail page opens under its own realm only', function () {
     $client = realmClient($this->realm);
 
     $this->actingAs(globalAdmin());
     $this->get("/admin/realms/globex/clients/{$client->id}")->assertNotFound();
-    $this->submitDeniedForm(UpdateClientForm::class, clientFormData(), ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
+    $this->submitDeniedForm(UpdateClientForm::class, ['name' => 'Renamed'], ['realm' => 'globex', 'client' => $client->id, 'field' => 'name'])->assertForbidden();
     $this->callDeniedAction(RevokeClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
     $this->callDeniedAction(DeleteClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
 
@@ -200,45 +222,62 @@ test('rejects inconsistent client settings on the matching field', function (arr
     'invalid post-logout uri' => [['post_logout_redirect_uris' => 'not a uri'], 'post_logout_redirect_uris'],
 ]);
 
-test('updating a client changes its settings and logs the difference', function () {
+test('each client row saves on its own and leaves the rest of the client alone', function () {
     $client = realmClient($this->realm);
 
-    $this->actingAs(globalAdmin())->submitForm(UpdateClientForm::class, clientFormData([
-        'name' => 'Renamed app',
-        'grant_types' => ['authorization_code'],
-        'consent_required' => false,
-        'backchannel_logout_uri' => 'https://rp.test/backchannel',
-    ]), ['realm' => 'acme', 'client' => $client->id])->assertRedirect("/admin/realms/acme/clients/{$client->id}");
+    $this->actingAs(globalAdmin());
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'name', 'Renamed app'))
+        ->assertRedirect("/admin/realms/acme/clients/{$client->id}");
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'grant_types', ['authorization_code']))->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'consent_required', false))->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'backchannel_logout_uri', 'https://rp.test/backchannel'))->assertRedirect();
 
     $client->refresh();
 
     expect($client->name)->toBe('Renamed app')
         ->and($client->grant_types)->toBe(['authorization_code'])
-        ->and($client->redirect_uris)->toBe(['https://portal.test/callback', 'https://portal.test/alt'])
+        ->and($client->redirect_uris)->toBe(['https://rp.test/callback'])
         ->and($client->consent_required)->toBeFalse()
         ->and($client->backchannel_logout_uri)->toBe('https://rp.test/backchannel')
         ->and($client->confidential())->toBeTrue();
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::ClientUpdated->eventName())->sole();
+    $changes = Activity::global()->where('event', RealmAuditEvent::ClientUpdated->eventName())->get()
+        ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
 
-    expect($activity->getProperty('changes.name.new'))->toBe('Renamed app')
-        ->and($activity->getProperty('changes.consent_required.new'))->toBeFalse();
+    expect($changes['name']['new'])->toBe('Renamed app')
+        ->and($changes['consent_required']['new'])->toBeFalse();
+});
+
+test('a single client row is validated against the stored client', function () {
+    $client = realmClient($this->realm);
+
+    $this->actingAs(globalAdmin());
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'grant_types', ['refresh_token']))
+        ->assertInvalid(['grant_types' => __('admin.clients.validation.refresh-token-needs-code')]);
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'redirect_uris', ''))
+        ->assertInvalid(['redirect_uris' => __('admin.clients.validation.redirect-uri-required')]);
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'grant_types', ['authorization_code', 'client_credentials']))->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))
+        ->assertInvalid(['token_endpoint_auth_method' => __('admin.clients.validation.client-credentials-needs-secret')]);
+
+    expect($client->refresh()->confidential())->toBeTrue()
+        ->and($client->redirect_uris)->toBe(['https://rp.test/callback'])
+        ->and($client->grant_types)->toBe(['authorization_code', 'client_credentials']);
 });
 
 test('turning a public client confidential mints a secret and back again drops it', function () {
     $client = realmClient($this->realm, confidential: false);
-    $context = ['realm' => 'acme', 'client' => $client->id];
     $detailUrl = "/admin/realms/acme/clients/{$client->id}";
 
     $this->actingAs(globalAdmin());
-    $this->submitForm(UpdateClientForm::class, clientFormData(['token_endpoint_auth_method' => 'client_secret_post']), $context)->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'client_secret_post'))->assertRedirect();
     $secrets = revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk()));
 
     expect($secrets)->toHaveCount(1)
         ->and($client->refresh()->confidential())->toBeTrue()
         ->and(Hash::check($secrets[0], (string) $client->getAttributes()['secret']))->toBeTrue();
 
-    $this->submitForm(UpdateClientForm::class, clientFormData(['token_endpoint_auth_method' => 'none', 'grant_types' => ['authorization_code']]), $context)->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))->assertRedirect();
 
     expect($client->refresh()->confidential())->toBeFalse()
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty();

@@ -270,9 +270,6 @@ return [
             'description' => 'Client von :realm.',
             'created-at' => 'Erstellt',
             'scopes' => 'Scopes',
-            'summary' => [
-                'heading' => 'Übersicht',
-            ],
             'secret' => [
                 'heading' => 'Client-Secret',
                 'subtitle' => 'Kopieren Sie das Secret jetzt. Es wird nur einmal angezeigt und kann nicht wiederhergestellt werden.',
@@ -280,7 +277,7 @@ return [
             ],
             'settings' => [
                 'heading' => 'Einstellungen',
-                'subtitle' => 'Name, Typ, Grant-Typen und URIs des Clients.',
+                'subtitle' => 'Öffnen Sie eine Zeile, um die Einstellung zu ändern. Client-ID, Scopes und Status sind fest.',
             ],
             'credentials' => [
                 'heading' => 'Zugangsdaten',

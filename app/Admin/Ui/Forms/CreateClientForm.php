@@ -30,14 +30,14 @@ final class CreateClientForm extends FormDefinition
         $this->realm();
 
         return $form
-            ->schema($this->clientFields(null))
+            ->schema($this->clientCreationFields())
             ->submitLabel(__('admin.clients.create.submit'));
     }
 
     public function handle(FormData $data): LatticeResponse
     {
         $realm = $this->realm();
-        $client = $this->createClient->handle($realm, $this->clientAttributes($data));
+        $client = $this->createClient->handle($realm, $this->clientAttributes($data, null));
 
         ClientDetailPage::revealSecret($client->plainSecret);
 

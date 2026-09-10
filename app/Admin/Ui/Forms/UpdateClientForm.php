@@ -12,15 +12,19 @@ use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
 use Lattice\Facades\Effects;
 use Lattice\Form\Attributes\AsForm;
+use Lattice\Form\Components\Field;
 use Lattice\Form\Components\Form as FormComponent;
-use Lattice\Form\Components\TextInput;
-use Lattice\Form\Components\Toggle;
 use Lattice\Form\FormData;
 use Lattice\Form\FormDefinition;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
+/**
+ * Edits one setting of a client, named by the `field` context. What the
+ * payload does not carry is taken from the stored client, so the rules that
+ * span type, grant types and redirect URIs still see a whole client.
+ */
 #[AsForm('admin.clients.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class UpdateClientForm extends FormDefinition
 {
@@ -37,21 +41,9 @@ final class UpdateClientForm extends FormDefinition
 
     public function definition(FormComponent $form, Request $request): FormComponent
     {
-        $client = $this->realmClient();
-
         return $form
             ->method(HttpMethod::Patch)
-            ->schema([
-                ...$this->clientFields($client),
-                Toggle::make('consent_required', __('admin.clients.fields.consent-required.label'))
-                    ->value($client->consent_required, editable: true)
-                    ->helperText(__('admin.clients.fields.consent-required.help-text'))
-                    ->rules(['boolean']),
-                TextInput::make('backchannel_logout_uri', __('admin.clients.fields.backchannel-logout-uri.label'))
-                    ->value($client->backchannel_logout_uri, editable: true)
-                    ->helperText(__('admin.clients.fields.backchannel-logout-uri.help-text'))
-                    ->rules(['nullable', 'string', 'max:2048', 'url:http,https']),
-            ])
+            ->schema([$this->clientField($this->realmClient())])
             ->submitLabel(__('common.action.save'));
     }
 
@@ -59,17 +51,21 @@ final class UpdateClientForm extends FormDefinition
     {
         $realm = $this->realm();
         $client = $this->realmClient();
-        $backchannelLogoutUri = trim((string) $data->string('backchannel_logout_uri'));
 
-        $secret = $this->updateClient->handle($client, $this->clientAttributes(
-            $data,
-            consentRequired: $data->boolean('consent_required'),
-            backchannelLogoutUri: $backchannelLogoutUri === '' ? null : $backchannelLogoutUri,
-        ));
+        $secret = $this->updateClient->handle($client, $this->clientAttributes($data, $client));
 
         ClientDetailPage::revealSecret($secret);
 
         return Effects::respond()->toast(__('admin.clients.updated'), Variant::Success)
             ->toRoute('admin.realms.clients.show', ['realm' => $realm->slug, 'client' => $client->id]);
+    }
+
+    private function clientField(Client $client): Field
+    {
+        $field = $this->clientFields($client)[$this->contextString('field')] ?? null;
+
+        abort_unless($field instanceof Field, 404);
+
+        return $field;
     }
 }
