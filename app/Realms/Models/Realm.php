@@ -221,9 +221,22 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         );
     }
 
+    /**
+     * A realm user's only landing is their account page, and signing out of a
+     * realm returns to that realm's own sign-in — never to the application
+     * root, which is the master realm's relying-party entry.
+     */
     public function login(): LoginSettings
     {
-        return LoginSettings::fromConfig();
+        $configured = LoginSettings::fromConfig();
+
+        return new LoginSettings(
+            usernameField: $configured->usernameField,
+            home: route('account', ['realm' => $this->slug], absolute: false),
+            loginRoute: $configured->loginRoute,
+            logoutRedirect: route('identity.login', ['realm' => $this->slug], absolute: false),
+            acrValues: $configured->acrValues,
+        );
     }
 
     public function brokering(): BrokeringSettings

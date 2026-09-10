@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Profil',
+    'title' => 'Konto',
     'sections' => [
         'login' => 'Anmeldung',
     ],
     'profile' => [
-        'subtitle' => 'Aktualisiere deinen Namen und deine E-Mail-Adresse.',
+        'subtitle' => 'Verwalte dein Profil, deine Anmeldesicherheit und deine Browser-Sitzungen.',
         'updated' => 'Profil aktualisiert.',
         'unverified' => 'Deine E-Mail-Adresse ist nicht bestätigt.',
         'email' => [
@@ -49,6 +49,30 @@ return [
             'heading' => 'Wiederherstellungscodes',
         ],
     ],
+    'sessions' => [
+        'heading' => 'Browser-Sitzungen',
+        'description' => 'Alle Browser, die aktuell in diesem Konto angemeldet sind. Melde jede Sitzung ab, die du nicht kennst.',
+        'empty' => 'Keine weiteren Browser-Sitzungen.',
+        'unknown-device' => 'Unbekanntes Gerät',
+        'columns' => [
+            'device' => 'Gerät',
+            'last-active' => 'Zuletzt aktiv',
+            'status' => 'Status',
+        ],
+        'status' => [
+            'current' => 'Dieses Gerät',
+            'active' => 'Aktiv',
+        ],
+        'sign-out' => [
+            'label' => 'Abmelden',
+            'confirm' => [
+                'title' => 'Diese Sitzung abmelden?',
+                'description' => 'Dieser Browser muss sich erneut anmelden, und Anwendungen, in denen er angemeldet war, werden aufgefordert, ihre Sitzungen zu beenden.',
+            ],
+            'done' => 'Die Sitzung wurde abgemeldet.',
+            'missing' => 'Diese Sitzung ist bereits beendet.',
+        ],
+    ],
     'preferences' => [
         'heading' => 'Einstellungen',
         'subtitle' => 'Wähle dein Design, deine Sprache und deine Zeitzone.',
@@ -64,18 +88,6 @@ return [
         'timezone' => [
             'label' => 'Zeitzone',
             'placeholder' => 'Zeitzone auswählen',
-        ],
-        'notifications' => [
-            'heading' => 'Benachrichtigungen',
-            'summary' => ':count/2 aktiviert',
-            'realm-invitations' => [
-                'label' => 'Realm-Einladungen',
-                'help-text' => 'Benachrichtige mich in der App, wenn ich zu einem Realm eingeladen werde.',
-            ],
-            'realm-membership' => [
-                'label' => 'Änderungen der Realm-Mitgliedschaft',
-                'help-text' => 'Benachrichtige mich in der App, wenn ich aus einem Realm entfernt werde.',
-            ],
         ],
         'updated' => 'Einstellungen aktualisiert.',
     ],

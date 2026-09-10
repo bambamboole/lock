@@ -10,7 +10,7 @@ it('isolates provider session cookies from the app and other realms', function (
     app(UpdateRealmConfiguration::class)->handle($realm, ['session_cookie_name' => 'partners-identity']);
     $cookie = (string) config('session.cookie');
 
-    $this->get('/profile')->assertCookie($cookie);
+    $this->get('/login')->assertCookie($cookie);
 
     $admin = $this->get('/realms/admin/auth/login')->assertOk();
     $admin->assertCookie($cookie.'-oidc-admin')->assertCookieExpired($cookie);

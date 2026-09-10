@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 
-it('reveals the edit form behind a profile row and keeps the others closed', function () {
-    $this->actingAs(User::factory()->create());
+use function Tests\Helpers\visitAccountAs;
 
-    $page = visit('/profile');
+it('reveals the edit form behind an account row and keeps the others closed', function () {
+    $page = visitAccountAs(User::factory()->create());
 
     $page->assertMissing('input[name="name"]')
         ->assertMissing('input[name="current_password"]')

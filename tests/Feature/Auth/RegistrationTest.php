@@ -19,7 +19,7 @@ test('new users can register', function () {
     $this->assertGuest('web');
     expect($user->name)->toBe('Test User')
         ->and($user->realm_id)->toBe($realm->id);
-    $response->assertRedirect('/login');
+    $response->assertRedirect(route('account', ['realm' => $realm->slug]));
 });
 
 test('registration lands in the realm the request path names', function () {

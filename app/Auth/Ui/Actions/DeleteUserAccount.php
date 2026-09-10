@@ -38,6 +38,7 @@ final class DeleteUserAccount extends ActionDefinition
     public function handle(Request $request): ActionResult
     {
         $user = $this->currentUser();
+        $login = route('identity.login', ['realm' => $user->realm->slug], absolute: false);
 
         Auth::logout();
 
@@ -46,6 +47,6 @@ final class DeleteUserAccount extends ActionDefinition
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return ActionResult::success()->to('/');
+        return ActionResult::success()->to($login);
     }
 }

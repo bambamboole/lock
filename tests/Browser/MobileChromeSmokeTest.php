@@ -6,13 +6,12 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\visitAccountAs;
 
-it('renders the profile on a mobile viewport', function () {
-    $this->actingAs(User::factory()->create());
+it('renders the account page on a mobile viewport', function () {
+    $page = visitAccountAs(User::factory()->create())->on()->mobile();
 
-    $page = visit('/profile')->on()->mobile();
-
-    $page->assertSee('Profile')
+    $page->assertSee('Account')
         ->assertNoJavaScriptErrors();
 });
 

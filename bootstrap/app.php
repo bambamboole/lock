@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Admin\Console\Commands\SyncPermissionsCommand;
+use App\Auth\Models\User;
 use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
+use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
@@ -33,9 +35,16 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance']);
 
-        // The framework default probes route('dashboard'), which does not exist;
-        // the home route sends admins and realm users to their own landing.
-        $middleware->redirectUsersTo('/');
+        // The framework default probes route('dashboard'), which does not exist.
+        // A signed-in identity lands on its realm's account page; the home
+        // route sorts everyone else between the console and their account.
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $identity = $request->user('identity');
+
+            return $identity instanceof User
+                ? route('account', ['realm' => $identity->realm->slug])
+                : '/';
+        });
 
         $middleware->web(append: [
             HandleAppearance::class,
@@ -44,6 +53,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SetCurrentRealm::class,
         ]);
 
+        // A page below /realms/{realm} may list the web group before the realm
+        // middleware; the realm still has to swap the session cookie in before
+        // the session starts, so priority pins it there whatever the order.
+        $middleware->prependToPriorityList(before: StartSession::class, prepend: ResolveRealm::class);
         $middleware->appendToPriorityList(after: StartSession::class, append: SetCurrentRealm::class);
 
         $middleware->alias([

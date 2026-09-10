@@ -39,7 +39,7 @@ it('establishes the web session only after the self-sso callback', function () {
     $user = User::factory()->for(Realm::master())->create();
     $fake = selfSsoProviderFake();
 
-    $this->get('/profile')->assertRedirect(route('login'));
+    $this->get('/')->assertRedirect(route('login'));
     $this->assertGuest('identity');
     $this->assertGuest('web');
 

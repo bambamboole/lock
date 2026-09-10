@@ -19,8 +19,8 @@ use function Tests\Helpers\createPasskey;
 test('security settings stay hidden until the password is confirmed', function () {
     $user = User::factory()->withTwoFactor()->create();
 
-    $this->actingAs($user)
-        ->get(route('profile.edit'))
+    $this->actingAs($user, 'identity')
+        ->get(route('account', ['realm' => $user->realm->slug]))
         ->assertOk()
         ->assertSee(__('user.security.confirm.action'))
         ->assertDontSee(__('user.security.two-factor.add-method'));
@@ -29,21 +29,21 @@ test('security settings stay hidden until the password is confirmed', function (
 test('confirming the password reveals the two-factor section', function () {
     $user = User::factory()->withTwoFactor()->create();
 
-    $this->actingAs($user)
+    $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('profile.edit'))
+        ->get(route('account', ['realm' => $user->realm->slug]))
         ->assertOk()
         ->assertSee(__('user.security.two-factor.add-method'))
         ->assertSee(__('user.security.two-factor.status.enabled'));
 });
 
-test('recovery codes never reach the profile page', function () {
+test('recovery codes never reach the account page', function () {
     $user = User::factory()->withTwoFactor()->create();
     $code = app(RecoveryCodeProvider::class)->codes($user)[0];
 
-    $this->actingAs($user)
+    $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('profile.edit'))
+        ->get(route('account', ['realm' => $user->realm->slug]))
         ->assertOk()
         ->assertDontSee($code);
 });
@@ -54,9 +54,9 @@ test('a passkey alone counts as a second factor', function () {
 
     expect(app(FactorRegistry::class)->configuredChallengeableEnrollments($user))->toHaveCount(1);
 
-    $this->actingAs($user)
+    $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('profile.edit'))
+        ->get(route('account', ['realm' => $user->realm->slug]))
         ->assertOk()
         ->assertSee(__('user.security.two-factor.status.enabled'));
 });

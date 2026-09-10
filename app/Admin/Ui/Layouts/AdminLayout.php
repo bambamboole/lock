@@ -89,7 +89,7 @@ final class AdminLayout extends LayoutDefinition
                                     ->gap(Gap::Small)
                                     ->schema([
                                         $this->userMenu($user, [
-                                            $this->profileMenuItem(),
+                                            $this->accountMenuItem($user),
                                             $this->logoutMenuItem(),
                                         ]),
                                     ]),
@@ -183,6 +183,6 @@ final class AdminLayout extends LayoutDefinition
         return Button::make(__('navigation.back-to-app'))
             ->icon(Icon::ChevronLeft)
             ->emphasis(Emphasis::Ghost)
-            ->effects(Effects::redirect(route('profile.edit', absolute: false)));
+            ->effects(Effects::redirect(route('account', ['realm' => $user->realm->slug], absolute: false)));
     }
 }
