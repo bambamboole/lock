@@ -27,6 +27,7 @@ use Lattice\Table\Filters\TernaryFilter;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
 use Lattice\Ui\Components\Text;
+use Lattice\Ui\Enums\ColumnWidth;
 use Lattice\Ui\Enums\Size;
 
 /**
@@ -54,6 +55,14 @@ final class AdminUsersTable extends EloquentTableDefinition
                 [new User()->getMorphClass()],
             )
             ->withExists('roles')
+            /*
+             * The member cell renders the name and the address, but a column
+             * that exists only to make a field searchable has to keep the real
+             * column name as its key — and a hidden column's key is stripped
+             * from every row, taking the cell's binding with it. Aliases give
+             * the cell keys of its own, out of reach of that.
+             */
+            ->addSelect(['users.name as member_name', 'users.email as member_email'])
             ->withCasts(['email_verified' => 'boolean', 'blocked' => 'boolean', 'mfa' => 'boolean']);
 
         if ($query->sorts === []) {
@@ -70,16 +79,29 @@ final class AdminUsersTable extends EloquentTableDefinition
             TextColumn::make('email')->searchable()->visible(false),
             StackColumn::make('member')
                 ->label(__('admin.users.columns.member'))
+                ->width(ColumnWidth::Lg)
                 ->schema([
-                    Text::bound('name'),
-                    Text::bound('email')->color(ColorName::Muted)->size(Size::Sm),
+                    Text::bound('member_name'),
+                    Text::bound('member_email')->color(ColorName::Muted)->size(Size::Sm),
                 ]),
-            BooleanColumn::make('email_verified')->label(__('admin.users.columns.verified')),
-            BooleanColumn::make('mfa')->label(__('admin.users.columns.mfa')),
-            BooleanColumn::make('blocked')->label(__('admin.users.columns.blocked')),
-            BooleanColumn::make('roles_exists')->label(__('admin.users.columns.admin')),
-            TextColumn::make('created_at')->label(__('admin.users.columns.created-at'))->dateTime()->sortable(),
+            $this->flag('email_verified', __('admin.users.columns.verified')),
+            $this->flag('mfa', __('admin.users.columns.mfa')),
+            $this->flag('blocked', __('admin.users.columns.blocked')),
+            $this->flag('roles_exists', __('admin.users.columns.admin')),
+            TextColumn::make('created_at')
+                ->label(__('admin.users.columns.created-at'))
+                ->date()
+                ->sortable(),
         ];
+    }
+
+    /**
+     * Four yes/no columns in one row: narrow enough that the row stays
+     * scannable, wide enough that the label above them is not cut in half.
+     */
+    private function flag(string $key, string $label): BooleanColumn
+    {
+        return BooleanColumn::make($key)->label($label)->width(ColumnWidth::Sm);
     }
 
     public function filters(): array
