@@ -10,9 +10,8 @@ use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimsRequest;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
 
 /**
- * The realm roles ride along as a flat `roles` list on every audience and
- * without a scope of their own: they are part of the identity, and the
- * relying party has to see them in the id_token as well as in userinfo.
+ * The realm roles ride along as a flat `roles` list without a scope of their
+ * own: they are part of the identity, so every audience sees them.
  */
 final class UserClaimsResolver implements ClaimsResolver
 {

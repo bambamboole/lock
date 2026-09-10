@@ -10,6 +10,7 @@ use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
+use PHPUnit\Framework\Assert;
 use Tests\TestCase;
 
 /**
@@ -74,28 +75,19 @@ function loginAccessToken(TestCase $test): string
 }
 
 /**
- * The payload of a signed JWT as the relying party reads it, without
- * validating the signature — the tests only inspect what was minted.
- *
  * @return array<string, mixed>
  */
-function jwtClaims(mixed $jwt): array
+function jwtClaims(?string $jwt): array
 {
-    if (! is_string($jwt)) {
-        throw new RuntimeException('Expected a JWT string.');
-    }
+    Assert::assertIsString($jwt, 'Expected a JWT string.');
 
     $segments = explode('.', $jwt);
 
-    if (count($segments) !== 3) {
-        throw new RuntimeException('The token is not a compact JWS.');
-    }
+    Assert::assertCount(3, $segments, 'Expected a compact JWS.');
 
-    $payload = json_decode(base64_decode(strtr($segments[1], '-_', '+/'), true) ?: '', true, flags: JSON_THROW_ON_ERROR);
+    $payload = json_decode((string) base64_decode(strtr($segments[1], '-_', '+/'), true), true, flags: JSON_THROW_ON_ERROR);
 
-    if (! is_array($payload)) {
-        throw new RuntimeException('The JWT payload is not an object.');
-    }
+    Assert::assertIsArray($payload, 'Expected a JWT payload object.');
 
     return $payload;
 }
