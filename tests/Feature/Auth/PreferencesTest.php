@@ -10,7 +10,7 @@ it('saves the locale via the language form', function () {
 
     $this->actingAs($user)
         ->submitForm(LanguageForm::class, ['locale' => 'de'])
-        ->assertRedirect(route('profile.edit'));
+        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
 
     expect($user->refresh()->locale)->toBe('de');
 });
@@ -20,7 +20,7 @@ it('saves the timezone via the timezone form', function () {
 
     $this->actingAs($user)
         ->submitForm(TimezoneForm::class, ['timezone' => 'Europe/Berlin'])
-        ->assertRedirect(route('profile.edit'));
+        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
 
     expect($user->refresh()->timezone)->toBe('Europe/Berlin');
 });

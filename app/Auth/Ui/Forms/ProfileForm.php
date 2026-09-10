@@ -24,6 +24,8 @@ abstract class ProfileForm extends FormDefinition
 
     protected function saved(string $message): LatticeResponse
     {
-        return Effects::respond()->toast($message, Variant::Success)->toRoute('profile.edit');
+        return Effects::respond()
+            ->toast($message, Variant::Success)
+            ->toRoute('account', ['realm' => $this->currentUser()->realm->slug]);
     }
 }

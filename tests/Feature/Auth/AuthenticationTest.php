@@ -3,17 +3,18 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 use function Tests\Helpers\globalAdmin;
 
-test('the root path sends a realm user to their profile and an admin to the realms console', function () {
+test('the root path sends a master realm user to their account and an admin to the realms console', function () {
     (new GlobalRoleSeeder)->run();
 
     $this->get('/')->assertRedirect(route('login'));
-    $this->actingAs(User::factory()->create())->get('/')->assertRedirect(route('profile.edit'));
+    $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(route('account', ['realm' => Realm::master()->slug]));
     $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
@@ -66,7 +67,7 @@ test('provider discovery failure still persists both local session logouts', fun
 
     Auth::forgetGuards();
 
-    $this->get('/profile')->assertRedirect(route('login'));
+    $this->get('/')->assertRedirect(route('login'));
 
     Auth::forgetGuards();
 

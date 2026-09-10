@@ -13,7 +13,7 @@ test('users can update their name', function () {
 
     $this->actingAs($user)
         ->submitForm(NameForm::class, ['name' => 'New Name'])
-        ->assertRedirect(route('profile.edit'));
+        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
 
     expect($user->refresh()->name)->toBe('New Name');
 });
@@ -23,7 +23,7 @@ test('users can update their email', function () {
 
     $this->actingAs($user)
         ->submitForm(EmailForm::class, ['email' => 'new@example.com'])
-        ->assertRedirect(route('profile.edit'));
+        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
 
     expect($user->refresh()->email)->toBe('new@example.com');
 });

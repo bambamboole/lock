@@ -16,7 +16,7 @@ final readonly class DatabaseRealmResolver implements RealmResolver
 
     public function current(): Realm
     {
-        $id = request()->attributes->get('oidc.realm') ?? (request()->routeIs('oidc.*', 'identity.*') ? request()->route('realm') : null);
+        $id = request()->attributes->get('oidc.realm') ?? (request()->routeIs('oidc.*', 'identity.*', 'account', 'realm.lattice.*') ? request()->route('realm') : null);
 
         if (! is_string($id) || $id === '') {
             $context = Context::get('realm_id');

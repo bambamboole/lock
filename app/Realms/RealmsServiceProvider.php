@@ -12,6 +12,7 @@ use App\Realms\Actions\RotateClientSecret;
 use App\Realms\Actions\SetClientRevocation;
 use App\Realms\Actions\UpdateClient;
 use App\Realms\Actions\UpdateRealmConfiguration;
+use App\Realms\Support\RealmScopedLatticeEndpoints;
 use App\Shared\Realms\Contracts\CreatesClient;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\DeletesClient;
@@ -22,6 +23,7 @@ use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Settings\SettingsRegistry;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 final class RealmsServiceProvider extends ServiceProvider
@@ -41,5 +43,7 @@ final class RealmsServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RealmConfiguration::register($this->app->make(SettingsRegistry::class));
+
+        URL::formatPathUsing(fn (string $path): string => $this->app->make(RealmScopedLatticeEndpoints::class)->format($path));
     }
 }

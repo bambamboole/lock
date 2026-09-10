@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 
+use function Tests\Helpers\visitAccountAs;
+
 /**
  * Step two of the wizard is prepared by Lattice's resolve sub-request, so it is
  * only ever right in a browser: the server has the payload either way, but it
@@ -10,12 +12,12 @@ use App\Auth\Models\User;
  * shipped with.
  */
 beforeEach(function () {
-    $this->actingAs(User::factory()->create());
+    $this->user = User::factory()->create();
     session(['auth.password_confirmed_at' => time()]);
 });
 
 it('prepares the preselected method without the user picking one', function () {
-    visit('/profile')
+    visitAccountAs($this->user)
         ->click('button:has-text("Add method")')
         ->assertSee('Passkey')
         ->click('[data-test="wizard-next"]')
@@ -24,7 +26,7 @@ it('prepares the preselected method without the user picking one', function () {
 });
 
 it('prepares the authenticator app once it is picked', function () {
-    visit('/profile')
+    visitAccountAs($this->user)
         ->click('button:has-text("Add method")')
         ->click('text=Authenticator app')
         ->click('[data-test="wizard-next"]')

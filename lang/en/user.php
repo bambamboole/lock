@@ -2,12 +2,12 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Profile',
+    'title' => 'Account',
     'sections' => [
         'login' => 'Sign-in',
     ],
     'profile' => [
-        'subtitle' => 'Update your name and email address.',
+        'subtitle' => 'Manage your profile, sign-in security and browser sessions.',
         'updated' => 'Profile updated.',
         'unverified' => 'Your email address is unverified.',
         'email' => [
@@ -49,6 +49,30 @@ return [
             'heading' => 'Recovery codes',
         ],
     ],
+    'sessions' => [
+        'heading' => 'Browser sessions',
+        'description' => 'Every browser currently signed in to this account. Sign out any you do not recognise.',
+        'empty' => 'No other browser sessions.',
+        'unknown-device' => 'Unknown device',
+        'columns' => [
+            'device' => 'Device',
+            'last-active' => 'Last active',
+            'status' => 'Status',
+        ],
+        'status' => [
+            'current' => 'This device',
+            'active' => 'Active',
+        ],
+        'sign-out' => [
+            'label' => 'Sign out',
+            'confirm' => [
+                'title' => 'Sign out this session?',
+                'description' => 'That browser will have to sign in again, and applications it signed in to are told to end their sessions.',
+            ],
+            'done' => 'The session was signed out.',
+            'missing' => 'That session has already ended.',
+        ],
+    ],
     'preferences' => [
         'heading' => 'Preferences',
         'subtitle' => 'Choose your theme, language, and timezone.',
@@ -64,18 +88,6 @@ return [
         'timezone' => [
             'label' => 'Timezone',
             'placeholder' => 'Select a timezone',
-        ],
-        'notifications' => [
-            'heading' => 'Notifications',
-            'summary' => ':count/2 enabled',
-            'realm-invitations' => [
-                'label' => 'Realm invitations',
-                'help-text' => 'Notify me in-app when I am invited to a realm.',
-            ],
-            'realm-membership' => [
-                'label' => 'Realm membership changes',
-                'help-text' => 'Notify me in-app when I am removed from a realm.',
-            ],
         ],
         'updated' => 'Preferences updated.',
     ],

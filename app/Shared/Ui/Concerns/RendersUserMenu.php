@@ -57,17 +57,21 @@ trait RendersUserMenu
             ->items($items);
     }
 
-    private function profileMenuItem(): MenuItem
+    private function accountMenuItem(User $user): MenuItem
     {
-        return MenuItem::make(__('navigation.profile'))
-            ->href(route('profile.edit', absolute: false))
+        return MenuItem::make(__('navigation.account'))
+            ->href(route('account', ['realm' => $user->realm->slug], absolute: false))
             ->prefix(Affix::icon('circle-user'));
     }
 
-    private function logoutMenuItem(): MenuItem
+    /**
+     * The app's own logout ends the root session through the relying-party
+     * flow; a realm page passes the realm's end-session endpoint instead.
+     */
+    private function logoutMenuItem(?string $href = null): MenuItem
     {
         return MenuItem::make(__('common.action.log-out'))
-            ->href(route('logout', absolute: false))
+            ->href($href ?? route('logout', absolute: false))
             ->prefix(Affix::icon('log-out'))
             ->method(HttpMethod::Post);
     }

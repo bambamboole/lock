@@ -27,7 +27,6 @@ final class AppServiceProvider extends ServiceProvider
         Factory::guessFactoryNamesUsing(self::factoryNameFor(...));
 
         $this->configureDefaults();
-        $this->registerSettings();
     }
 
     /**
@@ -70,13 +69,5 @@ final class AppServiceProvider extends ServiceProvider
                 ->symbols()
                 ->uncompromised()
             : null;
-    }
-
-    private function registerSettings(): void
-    {
-        $registry = $this->app->make(SettingsRegistry::class);
-
-        $registry->define('notifications.realm-invitations')->boolean()->default(true);
-        $registry->define('notifications.realm-membership')->boolean()->default(true);
     }
 }
