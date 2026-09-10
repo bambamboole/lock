@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Realms\Enums;
+namespace App\Shared\Realms\Enums;
 
 use App\Shared\Audit\Concerns\IsAuditEvent;
 use App\Shared\Audit\Contracts\AuditEvent;

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Auth\Support\OidcScopeCatalog;
+use App\Shared\Audit\Support\DatabaseAuditSink;
 use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
 use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
 use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
@@ -49,6 +50,14 @@ return [
     // secret `app:bootstrap` reconciles the console client to gets its own key
     // next to the package's OIDC_FIRST_PARTY_CLIENT and OIDC_FIRST_PARTY_TRUSTED.
     'first_party_secret' => env('OIDC_FIRST_PARTY_SECRET'),
+
+    // mergeConfigFrom only merges the top level, so naming a sink here drops
+    // the package's other audit keys unless they are repeated.
+    'audit' => [
+        'enabled' => env('OIDC_AUDIT_ENABLED', true),
+        'sink' => DatabaseAuditSink::class,
+        'log_channel' => env('OIDC_AUDIT_LOG_CHANNEL'),
+    ],
 
     'scopes' => [
         'catalog' => OidcScopeCatalog::class,

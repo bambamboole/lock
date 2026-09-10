@@ -8,6 +8,7 @@ return [
     'back-to-app' => 'My account',
     'account' => 'Account',
     'all-realms' => 'All realms',
+    'events' => 'Events',
     'realms' => 'Realms',
     'roles' => 'Roles',
     'select-realm' => 'Select realm',

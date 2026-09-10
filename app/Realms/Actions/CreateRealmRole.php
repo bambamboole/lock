@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\CreatesRealmRole;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Illuminate\Support\Facades\DB;
 
 final class CreateRealmRole implements CreatesRealmRole

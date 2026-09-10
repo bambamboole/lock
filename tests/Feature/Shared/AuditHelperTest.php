@@ -2,10 +2,10 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 
 it('scopes activities to a realm', function () {
     $realmA = Realm::factory()->create();

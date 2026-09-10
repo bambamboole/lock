@@ -2,6 +2,49 @@
 declare(strict_types=1);
 
 return [
+    'categories' => [
+        'auth' => 'Authentication',
+        'oauth' => 'OAuth',
+        'admin' => 'Administration',
+    ],
+    'types' => [
+        'auth' => [
+            'login' => [
+                'succeeded' => 'Sign-in succeeded',
+                'failed' => 'Sign-in failed',
+            ],
+            'logout' => 'Signed out',
+            'password' => ['reset' => 'Password reset'],
+            'registration' => ['succeeded' => 'Registration completed'],
+            'mfa' => [
+                'challenge-succeeded' => 'Second factor accepted',
+                'challenge-failed' => 'Second factor rejected',
+                'factor-enrollment-started' => 'Factor enrollment started',
+                'factor-confirmed' => 'Factor confirmed',
+                'factor-revoked' => 'Factor revoked',
+                'recovery-code-used' => 'Recovery code used',
+            ],
+        ],
+        'oauth' => [
+            'token' => [
+                'issued' => 'Token issued',
+                'failed' => 'Token request failed',
+                'revoked' => 'Token revoked',
+            ],
+            'consent' => [
+                'approved' => 'Consent granted',
+                'denied' => 'Consent denied',
+            ],
+            'client-auth' => ['failed' => 'Client authentication failed'],
+        ],
+        'admin' => [
+            'client' => [
+                'provisioned' => 'Client provisioned',
+                'registered' => 'Client registered',
+            ],
+            'keys' => ['rotated' => 'Signing keys rotated'],
+        ],
+    ],
     'events' => [
         'model' => [
             'created' => 'Created',

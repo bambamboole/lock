@@ -72,6 +72,7 @@ export const iconNames = [
   "search",
   "send",
   "settings",
+  "shield-alert",
   "shield-check",
   "smartphone",
   "smile",
@@ -161,6 +162,7 @@ declare module "@lattice-php/ui" {
     search: true;
     send: true;
     settings: true;
+    "shield-alert": true;
     "shield-check": true;
     smartphone: true;
     smile: true;

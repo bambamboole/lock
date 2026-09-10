@@ -5,6 +5,44 @@ return [
     'permissions' => [
         'admin' => [
             'access' => 'Access the admin area',
+            'events' => [
+                'heading' => 'Security events',
+                'description' => 'Sign-ins, multi-factor challenges and token activity in :realm.',
+                'empty' => 'No security events recorded yet.',
+                'columns' => [
+                    'when' => 'When',
+                    'actor' => 'Actor',
+                    'type' => 'Event',
+                    'description' => 'Description',
+                    'ip' => 'IP address',
+                ],
+                'filters' => [
+                    'category' => 'Category',
+                    'type' => 'Event',
+                    'failure' => 'Failed',
+                ],
+                'detail' => [
+                    'empty' => 'No additional details recorded.',
+                    'client' => 'Client',
+                    'session' => 'Session',
+                    'ip' => 'IP address',
+                    'user-agent' => 'User agent',
+                ],
+            ],
+            'realm-activity' => [
+                'heading' => 'Realm activity',
+                'description' => 'Configuration changes made to :realm.',
+                'empty' => 'No realm activity yet.',
+                'detail' => [
+                    'empty' => 'No additional details recorded.',
+                ],
+                'columns' => [
+                    'when' => 'When',
+                    'actor' => 'Actor',
+                    'event' => 'Event',
+                    'description' => 'Description',
+                ],
+            ],
             'users' => [
                 'manage' => 'View and manage users',
             ],

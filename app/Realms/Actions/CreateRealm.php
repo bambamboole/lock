@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Bambamboole\LaravelOidc\Server\Shared\SigningKeys\SigningKeyStore;
 use Bambamboole\LaravelOidc\Server\SigningKeys\SigningKeyGenerator;
 use Illuminate\Support\Facades\DB;
