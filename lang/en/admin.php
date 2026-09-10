@@ -70,6 +70,141 @@ return [
         ],
         'already-verified' => 'This user has already verified their email address.',
     ],
+    'clients' => [
+        'heading' => 'Clients',
+        'description' => 'OIDC clients of :realm.',
+        'created' => 'Client created.',
+        'updated' => 'Client updated.',
+        'deleted' => 'Client deleted.',
+        'columns' => [
+            'name' => 'Name',
+            'client-id' => 'Client ID',
+            'type' => 'Type',
+            'grant-types' => 'Grant types',
+            'status' => 'Status',
+        ],
+        'actions' => [
+            'manage' => 'Manage',
+        ],
+        'status' => [
+            'active' => 'Active',
+            'blocked' => 'Blocked',
+        ],
+        'type-badges' => [
+            'public' => 'Public',
+            'confidential' => 'Confidential',
+        ],
+        'types' => [
+            'none' => 'Public (no secret, PKCE only)',
+            'client-secret-basic' => 'Confidential (client_secret_basic)',
+            'client-secret-post' => 'Confidential (client_secret_post)',
+        ],
+        'grant-types' => [
+            'authorization-code' => 'Authorization code (PKCE)',
+            'refresh-token' => 'Refresh token',
+            'client-credentials' => 'Client credentials',
+            'personal-access' => 'Personal access',
+        ],
+        'create' => [
+            'heading' => 'Create client',
+            'description' => 'The client is created in :realm with the realm\'s default and optional scopes.',
+            'submit' => 'Create client',
+        ],
+        'sections' => [
+            'general' => 'Client',
+        ],
+        'fields' => [
+            'name' => [
+                'label' => 'Name',
+            ],
+            'type' => [
+                'label' => 'Client type',
+                'help-text' => 'Confidential clients authenticate at the token endpoint with a secret; public clients rely on PKCE alone.',
+            ],
+            'grant-types' => [
+                'label' => 'Grant types',
+                'help-text' => 'Refresh tokens require the authorization code grant. Client credentials require a confidential client.',
+            ],
+            'redirect-uris' => [
+                'label' => 'Redirect URIs',
+                'help-text' => 'One absolute URI per line. Required for the authorization code grant.',
+            ],
+            'post-logout-redirect-uris' => [
+                'label' => 'Post-logout redirect URIs',
+                'help-text' => 'One absolute URI per line. Where the client may send users after logging out.',
+            ],
+            'consent-required' => [
+                'label' => 'Require consent',
+                'help-text' => 'Ask users to approve the requested scopes before issuing tokens.',
+            ],
+            'backchannel-logout-uri' => [
+                'label' => 'Back-channel logout URI',
+                'help-text' => 'Endpoint that receives a logout token when the user\'s session ends.',
+            ],
+        ],
+        'validation' => [
+            'refresh-token-needs-code' => 'The refresh token grant requires the authorization code grant.',
+            'client-credentials-needs-secret' => 'The client credentials grant requires a confidential client.',
+            'redirect-uri-required' => 'At least one redirect URI is required for the authorization code grant.',
+            'invalid-uri' => 'The URI :uri must be absolute with a scheme and a host and no fragment.',
+        ],
+        'detail' => [
+            'description' => 'Client of :realm.',
+            'created-at' => 'Created',
+            'scopes' => 'Scopes',
+            'summary' => [
+                'heading' => 'Summary',
+            ],
+            'secret' => [
+                'heading' => 'Client secret',
+                'subtitle' => 'Copy the secret now. It is shown only once and cannot be recovered.',
+                'label' => 'Client secret',
+            ],
+            'settings' => [
+                'heading' => 'Settings',
+                'subtitle' => 'Name, type, grant types and URIs of the client.',
+            ],
+            'credentials' => [
+                'heading' => 'Credentials',
+                'subtitle' => 'Rotating the secret invalidates the current one immediately.',
+            ],
+            'danger' => [
+                'heading' => 'Danger',
+                'subtitle' => 'A blocked client cannot obtain new tokens until it is unblocked. Deleting removes its tokens, consents and sessions.',
+            ],
+            'rotate-secret' => [
+                'label' => 'Rotate secret',
+                'done' => 'Client secret rotated.',
+                'confirm' => [
+                    'title' => 'Rotate the client secret?',
+                    'description' => 'The current secret stops working immediately. The new one is shown once.',
+                ],
+            ],
+            'revoke' => [
+                'label' => 'Block client',
+                'done' => 'Client blocked.',
+                'confirm' => [
+                    'title' => 'Block this client?',
+                    'description' => 'The client can no longer start logins or obtain tokens.',
+                ],
+            ],
+            'restore' => [
+                'label' => 'Unblock client',
+                'done' => 'Client unblocked.',
+                'confirm' => [
+                    'title' => 'Unblock this client?',
+                    'description' => 'The client can start logins and obtain tokens again.',
+                ],
+            ],
+            'delete' => [
+                'label' => 'Delete client',
+                'confirm' => [
+                    'title' => 'Delete this client?',
+                    'description' => 'Deletes the client together with its tokens, consents and sessions. This cannot be undone.',
+                ],
+            ],
+        ],
+    ],
     'realms' => [
         'heading' => 'Realms',
         'description' => 'Every realm is an isolated identity boundary with its own users, clients and authentication settings.',
