@@ -45,7 +45,7 @@ final class UpdateRealmForm extends FormDefinition
         $this->updateRealm->handle($realm, ['name' => (string) $data->string('name')]);
 
         return Effects::respond()->toast(__('admin.realms.updated'), Variant::Success)
-            ->toRoute('admin.realms.show', ['realm' => $realm->slug]);
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug]);
     }
 
     private function realm(): Realm

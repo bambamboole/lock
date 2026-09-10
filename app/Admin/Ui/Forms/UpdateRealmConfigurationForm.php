@@ -107,7 +107,7 @@ final class UpdateRealmConfigurationForm extends FormDefinition
         }
 
         return Effects::respond()->toast(__('admin.realms.configuration-saved'), Variant::Success)
-            ->toRoute('admin.realms.show', ['realm' => $realm->slug, 'tabs' => 'configuration']);
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => 'configuration']);
     }
 
     /** @param array<string, mixed> $configuration */

@@ -5,9 +5,11 @@ namespace App\Admin\Ui\Layouts;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Pages\ActivityPage;
+use App\Admin\Ui\Pages\RealmSettingsPage;
 use App\Admin\Ui\Pages\RealmsPage;
-use App\Admin\Ui\Pages\UsersPage;
+use App\Admin\Ui\Pages\RealmUsersPage;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
@@ -19,10 +21,15 @@ use Lattice\Layouts\Components\Outlet;
 use Lattice\Layouts\LayoutDefinition;
 use Lattice\Ui\Components\Breadcrumbs;
 use Lattice\Ui\Components\Button;
+use Lattice\Ui\Components\Component;
+use Lattice\Ui\Components\Dropdown;
+use Lattice\Ui\Components\Icon as IconComponent;
 use Lattice\Ui\Components\Menu;
 use Lattice\Ui\Components\MenuItem;
+use Lattice\Ui\Components\Separator;
 use Lattice\Ui\Components\Sidebar;
 use Lattice\Ui\Components\Stack;
+use Lattice\Ui\Components\Text;
 use Lattice\Ui\Components\Topbar;
 use Lattice\Ui\Enums\Align;
 use Lattice\Ui\Enums\Emphasis;
@@ -30,7 +37,9 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Height;
 use Lattice\Ui\Enums\Icon;
 use Lattice\Ui\Enums\Orientation;
+use Lattice\Ui\Enums\Placement;
 use Lattice\Ui\Enums\Side;
+use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
@@ -45,6 +54,8 @@ final class AdminLayout extends LayoutDefinition
 
         abort_unless($user instanceof User && $user->can(AdminPermission::Access), 403);
 
+        $realm = $this->currentRealm($request);
+
         return $schema->schema([
             Stack::make('admin-shell')
                 ->direction(Orientation::Horizontal)
@@ -53,15 +64,10 @@ final class AdminLayout extends LayoutDefinition
                 ->schema([
                     Sidebar::make('admin-sidebar')->collapsible()->items([
                         BrandMark::wordmark('admin-sidebar-logo'),
-                        Menu::make('admin-sidebar-menu')->items([
-                            ...($user->can(AdminPermission::ViewRealms) ? [
-                                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.realms'))->prefix(Icon::List),
-                            ] : []),
-                            ...($user->can(AdminPermission::ManageUsers) ? [
-                                MenuItem::fromPage(UsersPage::class)->label(__('navigation.users'))->prefix(Affix::icon('users')),
-                            ] : []),
-                            MenuItem::fromPage(ActivityPage::class)->label(__('navigation.activity'))->prefix(Icon::Clock),
-                        ]),
+                        ...($user->can(AdminPermission::ViewRealms) ? [$this->realmSwitcher($realm)] : []),
+                        Menu::make('admin-sidebar-menu')->items(
+                            $realm instanceof Realm ? $this->realmMenuItems($user, $realm) : $this->instanceMenuItems($user),
+                        ),
                     ]),
                     Stack::make('admin-main')
                         ->width(Width::Fill)
@@ -91,6 +97,83 @@ final class AdminLayout extends LayoutDefinition
                         ]),
                 ]),
         ]);
+    }
+
+    /**
+     * The realm a page is scoped to: `/admin/realms/{realm}/…` binds it by slug,
+     * every other admin page is instance-wide.
+     */
+    private function currentRealm(Request $request): ?Realm
+    {
+        $realm = $request->route('realm');
+
+        if ($realm instanceof Realm) {
+            return $realm;
+        }
+
+        return is_string($realm) ? Realm::query()->where('slug', $realm)->first() : null;
+    }
+
+    /**
+     * Keycloak-style: pick a realm here and the sidebar turns into that realm's
+     * console; "all realms" returns to the instance view.
+     */
+    private function realmSwitcher(?Realm $realm): Dropdown
+    {
+        $realms = Realm::query()->orderBy('name')->get();
+
+        return Dropdown::make('realm-switcher')
+            ->placement(Placement::Bottom)
+            ->trigger([
+                Stack::make()
+                    ->direction(Orientation::Horizontal)
+                    ->align(Align::Center)
+                    ->gap(Gap::Small)
+                    ->schema([
+                        Text::make($realm instanceof Realm ? $realm->name : __('navigation.select-realm'), 'realm-switcher-label')
+                            ->size(Size::Sm)
+                            ->hideWhenCollapsed(),
+                        IconComponent::make(Icon::ChevronsUpDown)->size(Size::Sm),
+                    ]),
+            ])
+            ->items([
+                ...$realms->map(fn (Realm $candidate): MenuItem => $this->realmSwitcherItem($candidate, $candidate->is($realm)))->all(),
+                Separator::make(),
+                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.all-realms'))->prefix(Icon::List),
+            ]);
+    }
+
+    private function realmSwitcherItem(Realm $realm, bool $current): MenuItem
+    {
+        $item = MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])->label($realm->name);
+
+        return $current ? $item->prefix(Icon::Check) : $item;
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    private function realmMenuItems(User $user, Realm $realm): array
+    {
+        return [
+            ...($user->can(AdminPermission::ManageUsers) ? [
+                MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])->label(__('navigation.users'))->prefix(Affix::icon('users')),
+            ] : []),
+            MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])->label(__('navigation.settings'))->prefix(Icon::Settings),
+        ];
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    private function instanceMenuItems(User $user): array
+    {
+        return [
+            ...($user->can(AdminPermission::ViewRealms) ? [
+                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.realms'))->prefix(Icon::List),
+            ] : []),
+            MenuItem::fromPage(ActivityPage::class)->label(__('navigation.activity'))->prefix(Icon::Clock),
+        ];
     }
 
     private function backToAppButton(User $user): Button

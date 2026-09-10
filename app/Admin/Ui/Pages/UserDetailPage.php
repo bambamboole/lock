@@ -9,11 +9,13 @@ use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
+use Lattice\Core\Breadcrumb;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\Component;
@@ -33,7 +35,7 @@ use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/users/{user}', name: 'admin.users.show', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
 final class UserDetailPage extends AdminPage
 {
     private ?User $user = null;
@@ -43,10 +45,30 @@ final class UserDetailPage extends AdminPage
         return $this->user?->name;
     }
 
-    public function render(PageSchema $schema, User $user, Request $request): PageSchema
+    /**
+     * @return array<int, Breadcrumb>
+     */
+    public function breadcrumbs(): array
     {
+        if (! $this->user instanceof User) {
+            return [];
+        }
+
+        $realm = $this->user->realm;
+
+        return [
+            Breadcrumb::make($realm->name, route('admin.realms.users', ['realm' => $realm->slug], false)),
+            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
+            Breadcrumb::make($this->user->name, route('admin.realms.users.show', ['realm' => $realm->slug, 'user' => $this->user->id], false)),
+        ];
+    }
+
+    public function render(PageSchema $schema, Realm $realm, User $user, Request $request): PageSchema
+    {
+        abort_unless($user->belongsToRealm($realm), 404);
+
         $this->user = $user;
-        $user->load('realm');
+        $user->setRelation('realm', $realm);
         $currentUser = $request->user();
 
         return $schema->schema([

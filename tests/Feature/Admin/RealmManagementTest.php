@@ -27,7 +27,7 @@ it('creates an independent realm with default configuration through the admin fo
     Realm::master()->settings->set('realm.access_token_lifetime', 120);
 
     $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners'])
-        ->assertRedirect(route('admin.realms.show', ['realm' => 'partners', 'tabs' => 'configuration']));
+        ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'configuration']));
 
     $realm = Realm::query()->where('slug', 'partners')->sole();
 
@@ -52,7 +52,7 @@ it('renames a realm without touching its identifier or configuration', function 
     $realm->settings->set('realm.access_token_lifetime', 300);
 
     $this->submitForm(UpdateRealmForm::class, ['name' => 'External partners'], ['realm' => $realm->slug])
-        ->assertRedirect(route('admin.realms.show', ['realm' => 'partners']));
+        ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners']));
 
     expect($realm->refresh()->name)->toBe('External partners')
         ->and($realm->slug)->toBe('partners')

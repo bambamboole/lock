@@ -13,6 +13,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
+use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\DescriptionList;
@@ -27,14 +28,29 @@ use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}', name: 'admin.realms.show', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
-final class RealmDetailPage extends AdminPage
+#[AsPage(route: '/admin/realms/{realm}/settings', name: 'admin.realms.settings', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+final class RealmSettingsPage extends AdminPage
 {
     private ?Realm $realm = null;
 
     public function title(): ?string
     {
         return $this->realm?->name;
+    }
+
+    /**
+     * @return array<int, Breadcrumb>
+     */
+    public function breadcrumbs(): array
+    {
+        if (! $this->realm instanceof Realm) {
+            return [];
+        }
+
+        return [
+            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
+            Breadcrumb::make(__('navigation.settings'), route('admin.realms.settings', ['realm' => $this->realm->slug], false)),
+        ];
     }
 
     public function render(PageSchema $schema, Realm $realm, Request $request): PageSchema
@@ -48,7 +64,7 @@ final class RealmDetailPage extends AdminPage
                 ->gap(Gap::Large)
                 ->width(Width::Large)
                 ->schema([
-                    PageHeader::make($realm->name, $realm->slug),
+                    PageHeader::make(__('admin.realms.settings.heading'), __('admin.realms.settings.description', ['realm' => $realm->name])),
                     Tabs::make('realm-tabs')
                         ->orientation(Orientation::Vertical)
                         ->defaultValue('general')

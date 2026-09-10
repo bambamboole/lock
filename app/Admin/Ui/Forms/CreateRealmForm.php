@@ -37,6 +37,6 @@ final class CreateRealmForm extends FormDefinition
         $realm = $this->createRealm->handle((string) $data->string('name'), (string) $data->string('slug'));
 
         return Effects::respond()->toast(__('admin.realms.created'), Variant::Success)
-            ->toRoute('admin.realms.show', ['realm' => $realm->slug, 'tabs' => 'configuration']);
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => 'configuration']);
     }
 }

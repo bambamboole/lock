@@ -19,6 +19,11 @@ Realms, their configuration and their users are managed from `app/Admin/Ui/**` b
 realm user gets account pages, never a console. A module that wants to contribute UI to a page it does not own
 hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` instead of importing the page.
 
+The console is Keycloak-shaped: a realm-scoped page lives under `/admin/realms/{realm}/…` and takes the bound
+`Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide whether the sidebar shows
+the instance areas (realms, activity) or the selected realm's areas (users, settings) below the realm switcher.
+Instance-wide pages stay directly under `/admin/…`. There is no cross-realm user list on purpose.
+
 ## Resolve models through registered context, never route parameters or session state
 
 `RealmsServiceProvider` registers `realm` and its dependent model keys with `Lattice::context()`. Definitions use

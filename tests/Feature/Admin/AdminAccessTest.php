@@ -12,9 +12,9 @@ beforeEach(function () {
 });
 
 test('a non-admin cannot reach the admin area', function () {
-    $this->actingAs(User::factory()->create())->get('/admin/users')->assertForbidden();
+    $this->actingAs(User::factory()->create())->get('/admin/realms')->assertForbidden();
 });
 
 test('an admin can reach the admin area', function () {
-    $this->actingAs(globalAdmin())->get('/admin/users')->assertOk();
+    $this->actingAs(globalAdmin())->get('/admin/realms')->assertOk();
 });
