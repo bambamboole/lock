@@ -46,7 +46,10 @@ service-internal values (database host, Redis, `LOG_CHANNEL=stderr`, `APP_ENV=pr
 | `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`                                                                                     | Postgres credentials; the compose file feeds the same values to the `postgres` service.                                                                                                            |
 | `REALM_MASTER_SLUG`                                                                                                             | Slug of the master realm, `admin` by default. Instance administrators live there; it is created by the data migrations. Do not change it after the first deploy.                                   |
 | `OIDC_RP_ISSUER`                                                                                                                | Derived in `compose.yaml` as `APP_URL/realms/REALM_MASTER_SLUG`: the console authenticates against the master realm (see `.ai/rules/realms.md`).                                                   |
-| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_RP_CLIENT_ID`, `OIDC_RP_CLIENT_SECRET`                                                         | The console's own OIDC client, printed by `oidc:client --first-party` on the first deploy.                                                                                                         |
+| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_FIRST_PARTY_SECRET`                                                                            | The console's own OIDC client. Pick both values yourself; every deploy provisions or re-provisions exactly that client. Leave either empty and the client is left as it is.                        |
+| `OIDC_FIRST_PARTY_TRUSTED`                                                                                                      | `true` (the compose default): the console skips its own consent screen. Applied to the master realm on every deploy.                                                                               |
+| `OIDC_RP_CLIENT_ID`, `OIDC_RP_CLIENT_SECRET`                                                                                    | Only for signing the console in against another provider. Unset they fall back to the first-party pair above, which is what self-SSO wants.                                                        |
+| `LOCK_ADMIN_EMAIL`, `LOCK_ADMIN_PASSWORD`, `LOCK_ADMIN_NAME`                                                                    | The first administrator, created in the master realm, verified, and holding Super Admin. The password is re-applied on every deploy; leave it empty to manage the password in the console instead. |
 | `SESSION_SECURE_COOKIE`                                                                                                         | `true` (the compose default). Cookies are only ever sent over HTTPS.                                                                                                                               |
 | `SESSION_DOMAIN`                                                                                                                | Leave empty unless the console and the realms are served from different hosts (they are not today).                                                                                                |
 | `SESSION_LIFETIME`                                                                                                              | Minutes of idle time before a console session expires (default 120).                                                                                                                               |
@@ -65,10 +68,25 @@ move the single shared cookie.
 
 ## First deploy
 
-1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, and the mail settings. Leave the `OIDC_*` client variables empty for
-   now.
+Nothing is provisioned by hand and nothing is written inside the container: the environment carries the console's
+credentials and the first administrator, and `app:deploy` brings the database in line with them.
+
+1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, and the mail settings, plus the four bootstrap variables. Choose the
+   client id and secret and the administrator's address and password yourself — the infrastructure code that
+   provisions the instance already holds them, and they are what it authenticates with afterwards:
+
+    ```bash
+    OIDC_FIRST_PARTY_CLIENT=lock-console
+    OIDC_FIRST_PARTY_SECRET=<generated secret>
+    LOCK_ADMIN_EMAIL=you@example.com
+    LOCK_ADMIN_PASSWORD=<generated password>
+    ```
+
+    The password has to satisfy the master realm's password policy, or the deploy fails with the rule it violated.
+
 2. Start the stack (`docker compose up -d`, or deploy in Coolify). `/up` answers `200` as soon as PHP is up; it does
    not probe the database.
+
 3. Run the release step against the running stack:
 
     ```bash
@@ -76,41 +94,61 @@ move the single shared cookie.
     ```
 
     `app:deploy` runs `migrate --force --isolated`, the data migrations (creates the master realm),
-    `oidc:rotate-keys --if-missing` for every realm, `permission:sync`, and `lattice:discover-cache`. Every step is
-    idempotent and safe to repeat, so the master realm's signing key exists from this point on and no key material
-    goes into the environment (details under [Signing keys](#signing-keys)).
+    `oidc:rotate-keys --if-missing` for every realm, `permission:sync`, `app:bootstrap`, and
+    `lattice:discover-cache`. Every step is idempotent and safe to repeat, so the master realm's signing key exists
+    from this point on and no key material goes into the environment (details under [Signing keys](#signing-keys)).
 
-4. Provision the console's own OIDC client (self-SSO) in the master realm. The command prints the variables; nothing
-   is written inside the container:
+4. Sign in at `APP_URL` with `LOCK_ADMIN_EMAIL` and `LOCK_ADMIN_PASSWORD`. The console client is already provisioned,
+   trusted, and recorded as the master realm's first-party client, so the login skips the consent screen.
 
-    ```bash
-    docker compose run --rm app php artisan oidc:client --first-party --trusted \
-        --name="Lock Console" \
-        --redirect-uri="$APP_URL/login/callback" \
-        --post-logout-redirect-uri="$APP_URL"
-    ```
+That is the whole first deploy. Every later release is: pull the new image, `docker compose run --rm app deploy`,
+restart the three app services. In Coolify, set `php artisan app:deploy` as the pre-deployment command of the `app`
+service. Because the migrations run `--isolated`, concurrently booting instances do not race each other.
 
-    Set `OIDC_FIRST_PARTY_CLIENT`, `OIDC_RP_CLIENT_ID`, and `OIDC_RP_CLIENT_SECRET` from the output and redeploy. A
-    plain re-run creates a second client; re-run with `--adopt=<client_id>` to update the existing one, and add
-    `--rotate` to issue a new secret. (`oidc:install-self` is not usable here: it writes `.env`, which the container
-    does not have.)
+### The environment wins, on every deploy
 
-5. Register the first administrator on the master realm's registration page (`APP_URL/realms/admin/auth/register`),
-   verify the address, then grant the global role:
+`app:bootstrap` (the step `app:deploy` runs, also runnable on its own) reconciles rather than installs:
 
-    ```bash
-    docker compose run --rm app php artisan admin:grant you@example.com
-    ```
+- **Every variable is optional, and unset means unmanaged.** No `OIDC_FIRST_PARTY_SECRET` and the client is left
+  exactly as it is; no `LOCK_ADMIN_PASSWORD` and an existing administrator's password is not touched; no
+  `LOCK_ADMIN_EMAIL` and no user is created. That is what makes the step safe to run on every release.
+- **What is set is applied, every time.** A client secret changed in the environment is written to the client on the
+  next deploy, and **an administrator password left in the environment is re-applied on every deploy** — a password
+  changed in the console is overwritten by the next release. Rotate by changing the variable, or clear the variable
+  once the administrator manages their own password.
+- **The administrator is created whenever the address is missing** from the master realm, however many other users
+  exist. It is not a first-deploy-only step.
+- **It converges.** Re-running creates nothing twice: the console client is matched by its provisioning key and then
+  by its id, and the administrator by their address in the master realm. The command prints `created`, `updated`,
+  `unchanged`, or `skipped (unset)` per item and never prints a secret.
 
-    The console is at `APP_URL`. Revoke by clearing the user's global roles in the admin UI.
+The console client carries the `authorization_code`, `refresh_token`, and `client_credentials` grants: the same
+credentials that sign an administrator in interactively are the ones an automated caller uses to get a token from
+`APP_URL/realms/admin/oauth/token`. Treat `OIDC_FIRST_PARTY_SECRET` as a production secret.
 
-6. In the console, open the `admin` realm's settings and add the console client id to **Trusted clients** so the
-   console login skips the consent screen. (`oidc:install-self` would record it as the realm's first-party client,
-   but see step 4.)
+### Without the bootstrap variables
 
-Every later release is: pull the new image, `docker compose run --rm app deploy`, restart the three app services.
-In Coolify, set `php artisan app:deploy` as the pre-deployment command of the `app` service. Because the migrations
-run `--isolated`, concurrently booting instances do not race each other.
+Leaving `OIDC_FIRST_PARTY_SECRET` empty keeps the manual path open. Provision the client once and set
+`OIDC_FIRST_PARTY_CLIENT`, `OIDC_RP_CLIENT_ID`, and `OIDC_RP_CLIENT_SECRET` from the output, then add the client id
+to the master realm's **Trusted clients** in the console so the login skips consent:
+
+```bash
+docker compose run --rm app php artisan oidc:client --first-party --trusted \
+    --name="Lock Console" \
+    --redirect-uri="$APP_URL/login/callback" \
+    --post-logout-redirect-uri="$APP_URL"
+```
+
+A plain re-run creates a second client; re-run with `--adopt=<client_id>` to update the existing one, and add
+`--rotate` to issue a new secret. Register the first administrator on the master realm's registration page
+(`APP_URL/realms/admin/auth/register`), verify the address, then grant the global role:
+
+```bash
+docker compose run --rm app php artisan admin:grant you@example.com
+```
+
+`oidc:install-self` is the local-development equivalent of `app:bootstrap` and stays supported there; it is not
+usable in a container, because it writes the credentials it generates to a `.env` the image does not have.
 
 ## Realms and SaaS clients
 
@@ -208,4 +246,12 @@ docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml
 ```
 
 Then open `http://localhost:8080/realms/admin/.well-known/openid-configuration` and its `jwks.json`, which the deploy
-step has already keyed. Every value in `docker/local.env` is a public throwaway; never reuse it.
+step has already keyed, and sign in at `http://localhost:8080` with the `LOCK_ADMIN_EMAIL` and `LOCK_ADMIN_PASSWORD`
+from `docker/local.env`. The same file's client id and secret get a machine token:
+
+```bash
+curl -s -X POST http://localhost:8080/realms/admin/oauth/token \
+    -d grant_type=client_credentials -d client_id=lock-console -d client_secret=local-console-secret
+```
+
+Every value in `docker/local.env` is a public throwaway; never reuse it.
