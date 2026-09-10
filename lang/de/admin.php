@@ -5,6 +5,44 @@ return [
     'permissions' => [
         'admin' => [
             'access' => 'Auf den Admin-Bereich zugreifen',
+            'events' => [
+                'heading' => 'Sicherheitsereignisse',
+                'description' => 'Anmeldungen, Zwei-Faktor-Prüfungen und Token-Aktivität in :realm.',
+                'empty' => 'Noch keine Sicherheitsereignisse aufgezeichnet.',
+                'columns' => [
+                    'when' => 'Wann',
+                    'actor' => 'Akteur',
+                    'type' => 'Ereignis',
+                    'description' => 'Beschreibung',
+                    'ip' => 'IP-Adresse',
+                ],
+                'filters' => [
+                    'category' => 'Kategorie',
+                    'type' => 'Ereignis',
+                    'failure' => 'Fehlgeschlagen',
+                ],
+                'detail' => [
+                    'empty' => 'Keine weiteren Details aufgezeichnet.',
+                    'client' => 'Client',
+                    'session' => 'Sitzung',
+                    'ip' => 'IP-Adresse',
+                    'user-agent' => 'User-Agent',
+                ],
+            ],
+            'realm-activity' => [
+                'heading' => 'Realm-Aktivität',
+                'description' => 'Konfigurationsänderungen an :realm.',
+                'empty' => 'Noch keine Realm-Aktivität.',
+                'detail' => [
+                    'empty' => 'Keine weiteren Details aufgezeichnet.',
+                ],
+                'columns' => [
+                    'when' => 'Wann',
+                    'actor' => 'Akteur',
+                    'event' => 'Ereignis',
+                    'description' => 'Beschreibung',
+                ],
+            ],
             'users' => [
                 'manage' => 'Benutzer einsehen und verwalten',
             ],
