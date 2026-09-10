@@ -14,6 +14,7 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\KeySettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ScopeSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
@@ -183,6 +184,23 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
             totpSecretLength: $settings->integer('realm.totp_secret_length'),
             totpWindow: $settings->integer('realm.totp_window'),
             recoveryCodes: $settings->integer('realm.recovery_codes'),
+            password: $this->passwordPolicy(),
+        );
+    }
+
+    public function passwordPolicy(): PasswordPolicy
+    {
+        $settings = $this->settings;
+        $maxAgeDays = $settings->integer('realm.password_max_age_days');
+
+        return new PasswordPolicy(
+            minLength: $settings->integer('realm.password_min_length'),
+            mixedCase: $settings->boolean('realm.password_mixed_case'),
+            numbers: $settings->boolean('realm.password_numbers'),
+            symbols: $settings->boolean('realm.password_symbols'),
+            uncompromised: $settings->boolean('realm.password_uncompromised'),
+            history: $settings->integer('realm.password_history'),
+            maxAgeDays: $maxAgeDays > 0 ? $maxAgeDays : null,
         );
     }
 

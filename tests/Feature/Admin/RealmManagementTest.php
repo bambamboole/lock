@@ -107,6 +107,49 @@ it('saves configuration for the signed realm while preserving its identity', fun
         ->and($activity->getProperty('changes.access_token_lifetime.new'))->toBe(300);
 })->with(['admin', 'partners']);
 
+it('saves the password policy of the signed realm and audits the change', function () {
+    $realm = Realm::factory()->create(['slug' => 'partners']);
+    $other = Realm::master();
+
+    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [
+        'password_min_length' => 12,
+        'password_mixed_case' => true,
+        'password_numbers' => true,
+        'password_history' => 5,
+        'password_max_age_days' => 90,
+    ]), ['realm' => $realm->slug])->assertRedirect();
+
+    $policy = $realm->refresh()->credentials()->password;
+
+    expect($policy->minLength)->toBe(12)
+        ->and($policy->mixedCase)->toBeTrue()
+        ->and($policy->numbers)->toBeTrue()
+        ->and($policy->symbols)->toBeFalse()
+        ->and($policy->history)->toBe(5)
+        ->and($policy->maxAgeDays)->toBe(90)
+        ->and($other->credentials()->password->minLength)->toBe(8)
+        ->and($other->credentials()->password->maxAgeDays)->toBeNull();
+
+    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole();
+
+    expect($activity->getProperty('changes.password_min_length'))->toBe(['old' => 8, 'new' => 12])
+        ->and($activity->getProperty('changes.password_max_age_days'))->toBe(['old' => 0, 'new' => 90]);
+});
+
+it('rejects an out-of-range password policy without saving it', function (string $field, int $value) {
+    $realm = Realm::master();
+    $before = $realm->configuration();
+
+    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [$field => $value]), ['realm' => $realm->slug])
+        ->assertInvalid([$field]);
+
+    expect($realm->refresh()->configuration())->toBe($before);
+})->with([
+    'too short a minimum' => ['password_min_length', 5],
+    'negative history' => ['password_history', -1],
+    'negative age' => ['password_max_age_days', -1],
+]);
+
 it('rejects a realm configuration atomically when session timings conflict', function () {
     $realm = Realm::master();
 

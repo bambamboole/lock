@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared;
 
+use App\Realms\Models\Realm;
 use App\Shared\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -57,15 +58,19 @@ final class AppServiceProvider extends ServiceProvider
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
+        Password::defaults(fn (): ?Password => Realm::fromContext()?->passwordPolicy()->rule() ?? $this->passwordRuleOutsideRealms());
+    }
+
+    private function passwordRuleOutsideRealms(): ?Password
+    {
+        return app()->isProduction()
             ? Password::min(12)
                 ->mixedCase()
                 ->letters()
                 ->numbers()
                 ->symbols()
                 ->uncompromised()
-            : null,
-        );
+            : null;
     }
 
     private function registerSettings(): void
