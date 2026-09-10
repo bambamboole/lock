@@ -8,6 +8,7 @@ use App\Shared\Settings\SettingsRegistry;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
 use Illuminate\Validation\Rule;
@@ -22,6 +23,7 @@ final class RealmConfiguration
         $sessions = new SessionSettings;
         $credentials = new CredentialSettings;
         $clients = new ClientSettings;
+        $password = PasswordPolicy::fromConfig();
 
         return [
             'access_token_lifetime' => $tokens->accessTokenLifetime,
@@ -36,6 +38,13 @@ final class RealmConfiguration
             'totp_secret_length' => $credentials->totpSecretLength,
             'totp_window' => $credentials->totpWindow,
             'recovery_codes' => $credentials->recoveryCodes,
+            'password_min_length' => $password->minLength,
+            'password_mixed_case' => $password->mixedCase,
+            'password_numbers' => $password->numbers,
+            'password_symbols' => $password->symbols,
+            'password_uncompromised' => $password->uncompromised,
+            'password_history' => $password->history,
+            'password_max_age_days' => $password->maxAgeDays ?? 0,
             'dynamic_registration' => $clients->dynamicRegistration,
             'allowed_redirect_schemes' => $clients->allowedRedirectSchemes,
             'allowed_redirect_domains' => $clients->allowedRedirectDomains,
@@ -81,6 +90,13 @@ final class RealmConfiguration
             'totp_secret_length' => ['required', 'integer', 'min:16', 'max:64', 'multiple_of:8'],
             'totp_window' => ['required', 'integer', 'min:0', 'max:10'],
             'recovery_codes' => ['required', 'integer', 'min:1', 'max:20'],
+            'password_min_length' => ['required', 'integer', 'min:6', 'max:128'],
+            'password_mixed_case' => ['required', 'boolean'],
+            'password_numbers' => ['required', 'boolean'],
+            'password_symbols' => ['required', 'boolean'],
+            'password_uncompromised' => ['required', 'boolean'],
+            'password_history' => ['required', 'integer', 'min:0', 'max:24'],
+            'password_max_age_days' => ['required', 'integer', 'min:0', 'max:3650'],
             'dynamic_registration' => ['required', 'boolean'],
             'allowed_redirect_schemes' => ['present', 'array', 'list', 'max:100'],
             'allowed_redirect_schemes.*' => ['required', 'string', 'max:64', 'distinct', 'regex:/^[a-z][a-z0-9+.-]*$/', 'not_in:javascript,data,vbscript,file'],
