@@ -97,6 +97,17 @@ return [
             'account-actions' => [
                 'heading' => 'Kontoaktionen',
             ],
+            'realm-roles' => [
+                'heading' => 'Realm-Rollen',
+                'subtitle' => 'Werden als roles-Claim in jedem ID- und Access-Token dieses Benutzers ausgegeben.',
+                'none' => 'Keine Realm-Rollen zugewiesen.',
+                'define' => 'Zuerst die Rollen dieses Realms anlegen',
+                'field' => [
+                    'label' => 'Rollen',
+                ],
+                'update' => 'Realm-Rollen aktualisieren',
+                'updated' => 'Realm-Rollen aktualisiert.',
+            ],
             'roles' => [
                 'field' => [
                     'label' => 'Globale Rollen',
@@ -492,6 +503,43 @@ return [
                 'label' => 'Vertrauenswürdige Clients',
                 'help-text' => 'Eine Client-Kennung aus diesem Realm pro Zeile. Diese Clients überspringen die Zustimmung.',
             ],
+        ],
+    ],
+    'roles' => [
+        'heading' => 'Rollen',
+        'description' => 'Realm-Rollen von :realm, ausgegeben als roles-Claim in jedem ID- und Access-Token.',
+        'created' => 'Rolle angelegt.',
+        'updated' => 'Rolle aktualisiert.',
+        'deleted' => 'Rolle gelöscht.',
+        'columns' => [
+            'name' => 'Name',
+            'description' => 'Beschreibung',
+            'users' => 'Benutzer',
+        ],
+        'create' => [
+            'label' => 'Rolle anlegen',
+        ],
+        'edit' => [
+            'label' => 'Bearbeiten',
+        ],
+        'delete' => [
+            'label' => 'Löschen',
+            'confirm' => [
+                'title' => 'Diese Rolle löschen?',
+                'description' => 'Die Rolle wird allen Benutzern entzogen, die sie tragen. Bereits ausgestellte Tokens behalten sie bis zum Ablauf.',
+            ],
+        ],
+        'fields' => [
+            'name' => [
+                'label' => 'Name',
+                'help-text' => 'Der Wert, den Relying Parties im roles-Claim erhalten, zum Beispiel admin oder member.',
+            ],
+            'description' => [
+                'label' => 'Beschreibung',
+            ],
+        ],
+        'validation' => [
+            'name-format' => 'Der Name darf nur Buchstaben, Ziffern und die Zeichen _ . : - enthalten und muss mit einem Buchstaben oder einer Ziffer beginnen.',
         ],
     ],
 ];

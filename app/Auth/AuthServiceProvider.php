@@ -15,6 +15,7 @@ use App\Auth\Support\DatabaseRealmRepository;
 use App\Auth\Support\DatabaseRealmResolver;
 use App\Auth\Support\PermissionRepository;
 use App\Auth\Support\RealmPasswordBrokerManager;
+use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
@@ -32,6 +33,7 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
+use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -107,5 +109,7 @@ final class AuthServiceProvider extends ServiceProvider
                 $api->deny('blocked');
             }
         });
+
+        RealmRolesTokenClaim::register($this->app->make(AccessTokenPipeline::class));
     }
 }

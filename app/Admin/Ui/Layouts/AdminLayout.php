@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Layouts;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Pages\ActivityPage;
 use App\Admin\Ui\Pages\RealmClientsPage;
+use App\Admin\Ui\Pages\RealmRolesPage;
 use App\Admin\Ui\Pages\RealmSettingsPage;
 use App\Admin\Ui\Pages\RealmsPage;
 use App\Admin\Ui\Pages\RealmUsersPage;
@@ -161,6 +162,7 @@ final class AdminLayout extends LayoutDefinition
                 MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])->label(__('navigation.users'))->prefix(Affix::icon('users')),
             ] : []),
             ...($user->can(AdminPermission::ManageRealms) ? [MenuItem::fromPage(RealmClientsPage::class, ['realm' => $realm->slug])->label(__('navigation.clients'))->prefix(Affix::icon('key-round'))] : []),
+            ...($user->can(AdminPermission::ManageUsers) ? [MenuItem::fromPage(RealmRolesPage::class, ['realm' => $realm->slug])->label(__('navigation.roles'))->prefix(Affix::icon('shield-check'))] : []),
             MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])->label(__('navigation.settings'))->prefix(Icon::Settings),
         ];
     }

@@ -51,6 +51,7 @@ final readonly class DeleteUser implements DeletesUser
             $user->passkeys()->delete();
             $user->notifications()->delete();
             $user->roles()->detach();
+            $user->realmRoles()->detach();
 
             DB::table('password_reset_tokens')
                 ->where('realm_id', $user->realm_id)

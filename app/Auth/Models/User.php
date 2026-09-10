@@ -6,6 +6,7 @@ namespace App\Auth\Models;
 
 use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
+use App\Realms\Models\RealmRole;
 use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
@@ -49,6 +50,8 @@ use Laravel\Passkeys\Passkey;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, Passkey> $passkeys
  * @property-read int|null $passkeys_count
+ * @property-read Collection<int, RealmRole> $realmRoles
+ * @property-read int|null $realm_roles_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
@@ -90,6 +93,26 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'user_role')->select('roles.*')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<RealmRole, $this>
+     */
+    public function realmRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(RealmRole::class, 'realm_role_user')->withTimestamps();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function realmRoleNames(): array
+    {
+        return array_values($this->realmRoles()
+            ->orderBy('realm_roles.name')
+            ->pluck('realm_roles.name')
+            ->map(fn (mixed $name): string => (string) $name)
+            ->all());
     }
 
     public function belongsToRealm(Realm $realm): bool

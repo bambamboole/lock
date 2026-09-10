@@ -39,7 +39,7 @@ it('turns the sidebar into the selected realm console', function () {
     $response = $this->actingAs(globalAdmin())->get(route('admin.realms.settings', ['realm' => 'acme']))->assertOk();
 
     expect(menuItemHrefs(adminLayout($response)->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
-        ->toBe(['/admin/realms/acme/users', '/admin/realms/acme/clients', '/admin/realms/acme/settings']);
+        ->toBe(['/admin/realms/acme/users', '/admin/realms/acme/clients', '/admin/realms/acme/roles', '/admin/realms/acme/settings']);
 });
 
 it('lists every realm in the switcher and marks the selected one', function () {

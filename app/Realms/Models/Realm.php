@@ -38,6 +38,8 @@ use Illuminate\Support\Facades\Context;
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
+ * @property-read Collection<int, RealmRole> $realmRoles
+ * @property-read int|null $realm_roles_count
  *
  * @method static \Database\Factories\RealmFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newModelQuery()
@@ -123,6 +125,14 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    /**
+     * @return HasMany<RealmRole, $this>
+     */
+    public function realmRoles(): HasMany
+    {
+        return $this->hasMany(RealmRole::class);
     }
 
     /**

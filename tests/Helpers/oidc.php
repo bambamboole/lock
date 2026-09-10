@@ -72,3 +72,30 @@ function loginAccessToken(TestCase $test): string
         'code_verifier' => $verifier,
     ])->json('access_token');
 }
+
+/**
+ * The payload of a signed JWT as the relying party reads it, without
+ * validating the signature — the tests only inspect what was minted.
+ *
+ * @return array<string, mixed>
+ */
+function jwtClaims(mixed $jwt): array
+{
+    if (! is_string($jwt)) {
+        throw new RuntimeException('Expected a JWT string.');
+    }
+
+    $segments = explode('.', $jwt);
+
+    if (count($segments) !== 3) {
+        throw new RuntimeException('The token is not a compact JWS.');
+    }
+
+    $payload = json_decode(base64_decode(strtr($segments[1], '-_', '+/'), true) ?: '', true, flags: JSON_THROW_ON_ERROR);
+
+    if (! is_array($payload)) {
+        throw new RuntimeException('The JWT payload is not an object.');
+    }
+
+    return $payload;
+}
