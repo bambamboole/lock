@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Auth;
 
 use App\Auth\Actions\CreateNewUser;
+use App\Auth\Actions\DeleteUser;
+use App\Auth\Actions\EndUserSessions;
+use App\Auth\Actions\ResetUserMfa;
 use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Console\Commands\InstallSelfCommand;
 use App\Auth\Models\User;
@@ -15,7 +18,13 @@ use App\Auth\Support\RealmPasswordBrokerManager;
 use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
+use App\Shared\Auth\Contracts\DeletesUser;
+use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Contracts\PermissionCatalog;
+use App\Shared\Auth\Contracts\ResetsUserMfa;
+use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginApi;
+use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
+use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
 use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
 use Bambamboole\LaravelOidc\Server\Installation\Commands\InstallSelfCommand as PackageInstallSelfCommand;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
@@ -43,6 +52,9 @@ final class AuthServiceProvider extends ServiceProvider
         $this->app->bind(PackageInstallSelfCommand::class, InstallSelfCommand::class);
         $this->app->bind(CreateUser::class, CreateNewUser::class);
         $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
+        $this->app->bind(DeletesUser::class, DeleteUser::class);
+        $this->app->bind(EndsUserSessions::class, EndUserSessions::class);
+        $this->app->bind(ResetsUserMfa::class, ResetUserMfa::class);
         $this->app->bind(ClaimsResolver::class, UserClaimsResolver::class);
 
         if ($this->app->environment('local')) {
@@ -84,5 +96,16 @@ final class AuthServiceProvider extends ServiceProvider
                 : null;
         });
 
+        /*
+         * The user provider already hides blocked users from credential and
+         * session lookups; this covers the interactive logins that resolve the
+         * user another way (a passkey ceremony, a social account, a fresh
+         * registration) so they fail before a session is ever established.
+         */
+        $this->app->make(PostLoginPipeline::class)->register(function (LoginEvent $event, LoginApi $api): void {
+            if ($event->user instanceof User && $event->user->isBlocked()) {
+                $api->deny('blocked');
+            }
+        });
     }
 }

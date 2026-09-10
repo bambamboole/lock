@@ -10,7 +10,9 @@ use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\PageHeader;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
+use Lattice\Facades\Effects;
 use Lattice\Table\Components\Table;
+use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
@@ -48,7 +50,10 @@ final class RealmUsersPage extends AdminPage
             Stack::make('admin-realm-users-page')
                 ->gap(Gap::Large)
                 ->schema([
-                    PageHeader::make(__('admin.users.heading'), __('admin.users.description', ['realm' => $realm->name])),
+                    PageHeader::make(__('admin.users.heading'), __('admin.users.description', ['realm' => $realm->name]), [
+                        Button::make(__('admin.users.create.submit'))
+                            ->effects(Effects::redirect(route('admin.realms.users.create', ['realm' => $realm->slug], false))),
+                    ]),
                     Table::use(AdminUsersTable::class, ['realm' => $realm->slug]),
                 ]),
         ]);

@@ -28,6 +28,16 @@ return [
             ],
             'password-reset' => ['sent' => 'Passwort-Reset gesendet'],
             'verification' => ['resent' => 'Bestätigungs-E-Mail erneut gesendet'],
+            'user' => [
+                'created' => 'Benutzer angelegt',
+                'updated' => 'Benutzer aktualisiert',
+                'blocked' => 'Benutzer gesperrt',
+                'unblocked' => 'Sperre aufgehoben',
+                'deleted' => 'Benutzer gelöscht',
+                'mfa-reset' => 'Mehrfaktor-Authentifizierung zurückgesetzt',
+                'session-ended' => 'Sitzung beendet',
+                'sessions-ended' => 'Alle Sitzungen beendet',
+            ],
         ],
     ],
 ];

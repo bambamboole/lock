@@ -5,9 +5,16 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Ui\Actions\BlockUserAction;
+use App\Admin\Ui\Actions\DeleteUserAction;
+use App\Admin\Ui\Actions\EndAllUserSessionsAction;
 use App\Admin\Ui\Actions\ResendUserVerification;
+use App\Admin\Ui\Actions\ResetUserMfaAction;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
+use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
+use App\Admin\Ui\Forms\UpdateUserForm;
+use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\PageHeader;
@@ -17,9 +24,13 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Core\Enums\ColorName;
+use Lattice\Form\Components\Form;
+use Lattice\Table\Components\Table;
+use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\DescriptionList;
+use Lattice\Ui\Components\Entries\BadgeEntry;
 use Lattice\Ui\Components\Entries\ComponentEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
@@ -70,17 +81,22 @@ final class UserDetailPage extends AdminPage
         $this->user = $user;
         $user->setRelation('realm', $realm);
         $currentUser = $request->user();
+        $context = ['realm' => $realm->slug, 'user' => $user->id];
 
         return $schema->schema([
             Stack::make('admin-user-detail-page')
                 ->gap(Gap::Large)
-                ->width(Width::Medium)
+                ->width(Width::Large)
                 ->schema([
-                    PageHeader::make($user->name),
+                    PageHeader::make($user->name, null, [
+                        Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)->visible($user->isBlocked()),
+                    ]),
                     $this->summaryCard($user),
-                    $this->realmCard($user),
+                    $this->profileCard($context),
                     $this->adminRolesCard($user, $currentUser),
-                    $this->accountActionsCard($user),
+                    $this->accountActionsCard($user, $context),
+                    $this->sessionsCard($context),
+                    $this->dangerCard($context),
                 ]),
         ]);
     }
@@ -91,6 +107,17 @@ final class UserDetailPage extends AdminPage
             DescriptionList::make('user-summary')->bleed()->schema([
                 TextEntry::make('name', __('common.field.name'))->value($user->name),
                 ComponentEntry::make('email', __('common.field.email-address'))->value($this->emailValue($user)),
+                TextEntry::make('realm', __('admin.users.detail.realm'))->value($user->realm->name),
+                BadgeEntry::make('status', __('admin.users.detail.status'))
+                    ->value($user->isBlocked() ? __('admin.users.status.blocked') : __('admin.users.status.active'))
+                    ->color($user->isBlocked() ? ColorName::Danger : ColorName::Success),
+                BadgeEntry::make('mfa', __('admin.users.detail.mfa'))
+                    ->value($user->hasSecondFactor() ? __('admin.users.status.mfa-enabled') : __('admin.users.status.mfa-disabled'))
+                    ->color($user->hasSecondFactor() ? ColorName::Success : ColorName::Muted),
+                DateEntry::make('blocked_at', __('admin.users.detail.blocked-at'))
+                    ->value($user->blocked_at?->toIso8601String())
+                    ->style(DateTimeStyle::Long)
+                    ->visible($user->isBlocked()),
                 DateEntry::make('created_at', __('admin.users.detail.created-at'))
                     ->value($user->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),
@@ -98,12 +125,13 @@ final class UserDetailPage extends AdminPage
         ]);
     }
 
-    private function realmCard(User $user): Card
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function profileCard(array $context): Card
     {
-        return Card::make(__('admin.users.detail.realms.heading'))->schema([
-            DescriptionList::make('user-realm')->bleed()->schema([
-                TextEntry::make('realm', __('admin.users.detail.realm'))->value($user->realm->name),
-            ]),
+        return Card::make(__('admin.users.detail.profile.heading'), __('admin.users.detail.profile.subtitle'))->schema([
+            Form::use(UpdateUserForm::class, $context),
         ]);
     }
 
@@ -116,17 +144,55 @@ final class UserDetailPage extends AdminPage
             ]);
     }
 
-    private function accountActionsCard(User $user): Card
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function accountActionsCard(User $user, array $context): Card
     {
         return Card::make(__('admin.users.detail.account-actions.heading'))->schema([
             Stack::make()
                 ->direction(Orientation::Horizontal)
                 ->gap(Gap::Small)
                 ->schema([
-                    Action::use(ResendUserVerification::class, ['user' => $user->id])
-                        ->visible(! $user->hasVerifiedEmail()),
-                    Action::use(SendUserPasswordReset::class, ['user' => $user->id]),
+                    Action::use(ResendUserVerification::class, $context)
+                        ->visible(! $user->hasVerifiedEmail() && ! $user->isBlocked()),
+                    Action::use(SendUserPasswordReset::class, $context)
+                        ->visible(! $user->isBlocked()),
+                    Action::use(ResetUserMfaAction::class, $context)
+                        ->visible($user->hasSecondFactor()),
+                    Action::use(BlockUserAction::class, $context)
+                        ->visible(! $user->isBlocked()),
+                    Action::use(UnblockUserAction::class, $context)
+                        ->visible($user->isBlocked()),
                 ]),
+        ]);
+    }
+
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function sessionsCard(array $context): Card
+    {
+        return Card::make(__('admin.users.detail.sessions.heading'), __('admin.users.detail.sessions.subtitle'))->schema([
+            Stack::make()->gap(Gap::Medium)->schema([
+                Table::use(UserSessionsTable::class, $context),
+                Stack::make()
+                    ->direction(Orientation::Horizontal)
+                    ->gap(Gap::Small)
+                    ->schema([
+                        Action::use(EndAllUserSessionsAction::class, $context),
+                    ]),
+            ]),
+        ]);
+    }
+
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function dangerCard(array $context): Card
+    {
+        return Card::make(__('admin.users.detail.delete.heading'), __('admin.users.detail.delete.subtitle'))->schema([
+            Action::use(DeleteUserAction::class, $context),
         ]);
     }
 
