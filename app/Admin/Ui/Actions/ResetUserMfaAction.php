@@ -13,7 +13,6 @@ use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
-use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\Variant;
 
 #[AsAction('admin.users.reset-mfa', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
@@ -25,8 +24,6 @@ final class ResetUserMfaAction extends ActionDefinition
     {
         return $action
             ->label(__('admin.users.detail.reset-mfa.label'))
-            ->variant(Variant::Danger)
-            ->emphasis(Emphasis::Outline)
             ->confirm(__('admin.users.detail.reset-mfa.confirm.title'), __('admin.users.detail.reset-mfa.confirm.description'));
     }
 

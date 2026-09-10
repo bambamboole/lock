@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 return [
     'action' => [
+        'more' => 'More actions',
         'save' => 'Save',
         'log-in' => 'Log in',
         'log-out' => 'Log out',

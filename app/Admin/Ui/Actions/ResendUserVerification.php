@@ -21,8 +21,7 @@ final class ResendUserVerification extends ActionDefinition
     public function definition(Action $action): Action
     {
         return $action
-            ->label(__('admin.users.detail.resend-verification'))
-            ->variant(Variant::Secondary);
+            ->label(__('admin.users.detail.resend-verification'));
     }
 
     public function handle(Request $request): ActionResult

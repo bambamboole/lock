@@ -29,16 +29,15 @@ final class DeleteUserAction extends ActionDefinition
         return $action
             ->label(__('admin.users.detail.delete.label'))
             ->method(HttpMethod::Delete)
-            ->variant(Variant::Danger)
             ->confirm(__('admin.users.detail.delete.confirm.title'), __('admin.users.detail.delete.confirm.description'));
     }
 
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $target = $this->contextModelOrNull('user');
+        $target = $this->contextStringOrNull('user');
 
-        return $target instanceof User && $target->isNot($this->currentUser());
+        return $target !== null && $target !== $this->currentUser()->id;
     }
 
     public function handle(Request $request): ActionResult

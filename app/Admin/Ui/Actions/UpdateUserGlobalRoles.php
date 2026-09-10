@@ -33,7 +33,6 @@ final class UpdateUserGlobalRoles extends ActionDefinition
         return $action
             ->label(__('admin.users.detail.update-roles'))
             ->method(HttpMethod::Patch)
-            ->variant(Variant::Secondary)
             ->form([
                 CheckboxGroup::make('role_ids', __('admin.users.detail.roles.field.label'))
                     ->options(

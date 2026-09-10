@@ -7,6 +7,7 @@ namespace App\Admin\Ui\Pages;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Realms\Models\Realm;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -50,10 +51,10 @@ final class RealmUsersPage extends AdminPage
             Stack::make('admin-realm-users-page')
                 ->gap(Gap::Large)
                 ->schema([
-                    PageHeader::make(__('admin.users.heading'), __('admin.users.description', ['realm' => $realm->name]), [
+                    PageHeader::make(__('admin.users.heading'), __('admin.users.description', ['realm' => $realm->name]), ActionBar::make(primary: [
                         Button::make(__('admin.users.create.submit'))
                             ->effects(Effects::redirect(route('admin.realms.users.create', ['realm' => $realm->slug], false))),
-                    ]),
+                    ])),
                     Table::use(AdminUsersTable::class, ['realm' => $realm->slug]),
                 ]),
         ]);

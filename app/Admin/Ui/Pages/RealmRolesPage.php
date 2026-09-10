@@ -7,6 +7,7 @@ use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateRealmRoleAction;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Realms\Models\Realm;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
@@ -49,9 +50,9 @@ final class RealmRolesPage extends AdminPage
             Stack::make('admin-realm-roles-page')
                 ->gap(Gap::Large)
                 ->schema([
-                    PageHeader::make(__('admin.roles.heading'), __('admin.roles.description', ['realm' => $realm->name]), [
+                    PageHeader::make(__('admin.roles.heading'), __('admin.roles.description', ['realm' => $realm->name]), ActionBar::make(primary: [
                         Action::use(CreateRealmRoleAction::class, ['realm' => $realm->slug]),
-                    ]),
+                    ])),
                     Table::use(AdminRealmRolesTable::class, ['realm' => $realm->slug]),
                 ]),
         ]);

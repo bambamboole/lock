@@ -26,7 +26,6 @@ final class RotateClientSecret extends ActionDefinition
     {
         return $action
             ->label(__('admin.clients.detail.rotate-secret.label'))
-            ->variant(Variant::Secondary)
             ->confirm(__('admin.clients.detail.rotate-secret.confirm.title'), __('admin.clients.detail.rotate-secret.confirm.description'));
     }
 

@@ -22,7 +22,6 @@ final class UnblockUserAction extends ActionDefinition
     {
         return $action
             ->label(__('admin.users.detail.unblock.label'))
-            ->variant(Variant::Secondary)
             ->confirm(__('admin.users.detail.unblock.confirm.title'), __('admin.users.detail.unblock.confirm.description'));
     }
 
