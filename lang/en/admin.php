@@ -75,9 +75,6 @@ return [
             ],
         ],
         'detail' => [
-            'summary' => [
-                'heading' => 'Summary',
-            ],
             'created-at' => 'Joined',
             'blocked-at' => 'Blocked since',
             'status' => 'Status',
@@ -88,8 +85,7 @@ return [
             ],
             'profile' => [
                 'heading' => 'Profile',
-                'subtitle' => 'Name, email address and verification state.',
-                'submit' => 'Save user',
+                'subtitle' => 'Name, email address, verification state and realm membership.',
             ],
             'admin-roles' => [
                 'heading' => 'Admin roles',

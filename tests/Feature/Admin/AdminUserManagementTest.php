@@ -10,7 +10,9 @@ use App\Admin\Ui\Actions\EndUserSessionAction;
 use App\Admin\Ui\Actions\ResetUserMfaAction;
 use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Admin\Ui\Forms\CreateUserForm;
-use App\Admin\Ui\Forms\UpdateUserForm;
+use App\Admin\Ui\Forms\UpdateUserEmailForm;
+use App\Admin\Ui\Forms\UpdateUserNameForm;
+use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
@@ -153,30 +155,49 @@ test('creating a user is forbidden without users-manage', function () {
         ->assertForbidden();
 });
 
-test('editing changes name, email and verification and records what changed', function () {
+test('each profile row saves on its own and records only what it changed', function () {
     $target = User::factory()->for($this->realm)->unverified()->create(['name' => 'Old Name', 'email' => 'old@example.com']);
+    $context = ['realm' => 'acme', 'user' => $target->id];
 
-    $this->actingAs(globalAdmin())->submitForm(UpdateUserForm::class, [
-        'name' => 'New Name',
-        'email' => 'new@example.com',
-        'email_verified' => true,
-    ], ['realm' => 'acme', 'user' => $target->id])->assertRedirect();
+    $this->actingAs(globalAdmin());
+    $this->submitForm(UpdateUserNameForm::class, ['name' => 'New Name'], $context)->assertRedirect();
+    $this->submitForm(UpdateUserEmailForm::class, ['email' => 'new@example.com'], $context)->assertRedirect();
+    $this->submitForm(UpdateUserVerificationForm::class, ['email_verified' => true], $context)->assertRedirect();
 
     $target->refresh();
-    $activity = Activity::global()->where('event', AdminAuditEvent::UserUpdated->eventName())->sole();
+    $changes = Activity::global()->where('event', AdminAuditEvent::UserUpdated->eventName())->orderBy('id')->get();
 
     expect($target->name)->toBe('New Name')
         ->and($target->email)->toBe('new@example.com')
         ->and($target->hasVerifiedEmail())->toBeTrue()
-        ->and($activity->getProperty('before'))->toBe(['name' => 'Old Name', 'email' => 'old@example.com', 'verified' => false])
-        ->and($activity->getProperty('after'))->toBe(['name' => 'New Name', 'email' => 'new@example.com', 'verified' => true]);
+        ->and($changes->map(fn (Activity $activity): mixed => $activity->getProperty('before'))->all())->toBe([
+            ['name' => 'Old Name'],
+            ['email' => 'old@example.com'],
+            ['verified' => false],
+        ])
+        ->and($changes->map(fn (Activity $activity): mixed => $activity->getProperty('after'))->all())->toBe([
+            ['name' => 'New Name'],
+            ['email' => 'new@example.com'],
+            ['verified' => true],
+        ]);
+});
+
+test('a row rejects an address already used inside the realm', function () {
+    $target = User::factory()->for($this->realm)->create();
+    $taken = User::factory()->for($this->realm)->create();
+
+    $this->actingAs(globalAdmin())
+        ->submitForm(UpdateUserEmailForm::class, ['email' => $taken->email], ['realm' => 'acme', 'user' => $target->id])
+        ->assertInvalid(['email']);
+
+    expect($target->refresh()->email)->not->toBe($taken->email);
 });
 
 test('editing a user is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->create();
 
     $this->actingAs(User::factory()->create())
-        ->submitDeniedForm(UpdateUserForm::class, ['name' => 'X', 'email' => $target->email, 'email_verified' => true], ['realm' => 'acme', 'user' => $target->id])
+        ->submitDeniedForm(UpdateUserNameForm::class, ['name' => 'X'], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 });
 

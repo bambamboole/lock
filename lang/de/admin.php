@@ -75,9 +75,6 @@ return [
             ],
         ],
         'detail' => [
-            'summary' => [
-                'heading' => 'Übersicht',
-            ],
             'created-at' => 'Beigetreten',
             'blocked-at' => 'Gesperrt seit',
             'status' => 'Status',
@@ -88,8 +85,7 @@ return [
             ],
             'profile' => [
                 'heading' => 'Profil',
-                'subtitle' => 'Name, E-Mail-Adresse und Verifizierungsstatus.',
-                'submit' => 'Benutzer speichern',
+                'subtitle' => 'Name, E-Mail-Adresse, Verifizierungsstatus und Realm-Zugehörigkeit.',
             ],
             'admin-roles' => [
                 'heading' => 'Admin-Rollen',

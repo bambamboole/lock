@@ -14,7 +14,9 @@ use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Admin\Ui\Actions\UpdateUserRealmRoles;
-use App\Admin\Ui\Forms\UpdateUserForm;
+use App\Admin\Ui\Forms\UpdateUserEmailForm;
+use App\Admin\Ui\Forms\UpdateUserNameForm;
+use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -29,22 +31,16 @@ use Lattice\Form\Components\Form;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
-use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\BadgeEntry;
-use Lattice\Ui\Components\Entries\ComponentEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
-use Lattice\Ui\Components\Icon as IconComponent;
 use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
-use Lattice\Ui\Enums\Align;
 use Lattice\Ui\Enums\DateTimeStyle;
 use Lattice\Ui\Enums\Gap;
-use Lattice\Ui\Enums\Icon;
 use Lattice\Ui\Enums\Orientation;
-use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
@@ -93,8 +89,7 @@ final class UserDetailPage extends AdminPage
                     PageHeader::make($user->name, null, [
                         Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)->visible($user->isBlocked()),
                     ]),
-                    $this->summaryCard($user),
-                    $this->profileCard($context),
+                    $this->profileCard($user, $context),
                     $this->adminRolesCard($user, $currentUser),
                     $this->realmRolesCard($user, $context),
                     $this->accountActionsCard($user, $context),
@@ -104,37 +99,38 @@ final class UserDetailPage extends AdminPage
         ]);
     }
 
-    private function summaryCard(User $user): Card
-    {
-        return Card::make(__('admin.users.detail.summary.heading'))->schema([
-            DescriptionList::make('user-summary')->bleed()->schema([
-                TextEntry::make('name', __('common.field.name'))->value($user->name),
-                ComponentEntry::make('email', __('common.field.email-address'))->value($this->emailValue($user)),
-                TextEntry::make('realm', __('admin.users.detail.realm'))->value($user->realm->name),
-                BadgeEntry::make('status', __('admin.users.detail.status'))
-                    ->value($user->isBlocked() ? __('admin.users.status.blocked') : __('admin.users.status.active'))
-                    ->color($user->isBlocked() ? ColorName::Danger : ColorName::Success),
-                BadgeEntry::make('mfa', __('admin.users.detail.mfa'))
-                    ->value($user->hasSecondFactor() ? __('admin.users.status.mfa-enabled') : __('admin.users.status.mfa-disabled'))
-                    ->color($user->hasSecondFactor() ? ColorName::Success : ColorName::Muted),
-                DateEntry::make('blocked_at', __('admin.users.detail.blocked-at'))
-                    ->value($user->blocked_at?->toIso8601String())
-                    ->style(DateTimeStyle::Long)
-                    ->visible($user->isBlocked()),
-                DateEntry::make('created_at', __('admin.users.detail.created-at'))
-                    ->value($user->created_at?->toIso8601String())
-                    ->style(DateTimeStyle::Long),
-            ]),
-        ]);
-    }
-
     /**
      * @param  array<string, string>  $context
      */
-    private function profileCard(array $context): Card
+    private function profileCard(User $user, array $context): Card
     {
         return Card::make(__('admin.users.detail.profile.heading'), __('admin.users.detail.profile.subtitle'))->schema([
-            Form::use(UpdateUserForm::class, $context),
+            DescriptionList::make('user-profile')->bleed()->schema([
+                TextEntry::make('name', __('common.field.name'), 'user-name')
+                    ->value($user->name)
+                    ->disclosure([Form::use(UpdateUserNameForm::class, $context)]),
+                TextEntry::make('email', __('common.field.email-address'), 'user-email')
+                    ->value($user->email)
+                    ->disclosure([Form::use(UpdateUserEmailForm::class, $context)]),
+                BadgeEntry::make('email_verified', __('admin.users.fields.email-verified.label'), 'user-email-verified')
+                    ->value($user->hasVerifiedEmail() ? __('common.value.yes') : __('common.value.no'))
+                    ->color($user->hasVerifiedEmail() ? ColorName::Success : ColorName::Warning)
+                    ->disclosure([Form::use(UpdateUserVerificationForm::class, $context)]),
+                TextEntry::make('realm', __('admin.users.detail.realm'), 'user-realm')->value($user->realm->name),
+                BadgeEntry::make('status', __('admin.users.detail.status'), 'user-status')
+                    ->value($user->isBlocked() ? __('admin.users.status.blocked') : __('admin.users.status.active'))
+                    ->color($user->isBlocked() ? ColorName::Danger : ColorName::Success),
+                BadgeEntry::make('mfa', __('admin.users.detail.mfa'), 'user-mfa')
+                    ->value($user->hasSecondFactor() ? __('admin.users.status.mfa-enabled') : __('admin.users.status.mfa-disabled'))
+                    ->color($user->hasSecondFactor() ? ColorName::Success : ColorName::Muted),
+                DateEntry::make('blocked_at', __('admin.users.detail.blocked-at'), 'user-blocked-at')
+                    ->value($user->blocked_at?->toIso8601String())
+                    ->style(DateTimeStyle::Long)
+                    ->visible($user->isBlocked()),
+                DateEntry::make('created_at', __('admin.users.detail.created-at'), 'user-created-at')
+                    ->value($user->created_at?->toIso8601String())
+                    ->style(DateTimeStyle::Long),
+            ]),
         ]);
     }
 
@@ -220,22 +216,5 @@ final class UserDetailPage extends AdminPage
         return Card::make(__('admin.users.detail.delete.heading'), __('admin.users.detail.delete.subtitle'))->schema([
             Action::use(DeleteUserAction::class, $context),
         ]);
-    }
-
-    private function emailValue(User $user): Component
-    {
-        $status = $user->hasVerifiedEmail()
-            ? IconComponent::make(Icon::Check)->size(Size::Sm)->color(ColorName::Success)
-            : IconComponent::make(Icon::X)->size(Size::Sm)->color(ColorName::Warning);
-
-        return Stack::make()
-            ->direction(Orientation::Horizontal)
-            ->width(Width::Auto)
-            ->align(Align::Center)
-            ->gap(Gap::Small)
-            ->schema([
-                Text::make($user->email),
-                $status,
-            ]);
     }
 }
