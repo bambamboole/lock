@@ -3,12 +3,12 @@
 declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
@@ -22,7 +22,7 @@ beforeEach(function () {
 test('a roles-manage admin can grant a global role to a user', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
@@ -34,13 +34,13 @@ test('a roles-manage admin can grant a global role to a user', function () {
 test('global roles cannot be granted to a user outside the master realm', function () {
     $admin = globalAdmin();
     $target = User::factory()->create();
-    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callDeniedAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
     ], ['user' => $target->id])->assertForbidden();
 
-    expect($target->refresh()->globalRoles()->exists())->toBeFalse();
+    expect($target->refresh()->roles()->exists())->toBeFalse();
 });
 
 test('clearing a user\'s global roles revokes their admin access', function () {
@@ -69,35 +69,6 @@ test('a support admin cannot manage global roles', function () {
     $this->actingAs($support)->callDeniedAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [],
     ], ['user' => $target->id])->assertForbidden();
-});
-
-test('updating global roles does not touch the target user\'s realm roles', function () {
-    $admin = globalAdmin();
-    $realm = Realm::master();
-    $target = User::factory()->for($realm)->create();
-    $realmRole = Role::factory()->for($realm)->create(['name' => 'Support']);
-    $target->roles()->attach($realmRole);
-    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
-
-    $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
-        'role_ids' => [$superAdminRole->id],
-    ], ['user' => $target->id]);
-
-    expect($target->refresh()->rolesFor($realm)->pluck('id')->all())->toBe([$realmRole->id]);
-});
-
-test('a realm-scoped role id submitted for global roles is not attached', function () {
-    $admin = globalAdmin();
-    $target = User::factory()->for(Realm::master())->create();
-    $realm = Realm::factory()->create();
-    $realmRole = Role::factory()->for($realm)->create(['name' => 'Support']);
-
-    $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
-        'role_ids' => [$realmRole->id],
-    ], ['user' => $target->id]);
-
-    expect($target->refresh()->globalRoles()->pluck('roles.id')->all())->toBeEmpty()
-        ->and($target->roles()->pluck('roles.id')->all())->not->toContain($realmRole->id);
 });
 
 test('a users-manage admin can resend verification for an unverified user', function () {

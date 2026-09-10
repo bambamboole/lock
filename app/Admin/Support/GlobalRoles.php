@@ -25,6 +25,7 @@ final class GlobalRoles
             self::SUPPORT => [
                 AdminPermission::Access->value,
                 AdminPermission::ManageUsers->value,
+                AdminPermission::ViewRealms->value,
             ],
         ];
     }

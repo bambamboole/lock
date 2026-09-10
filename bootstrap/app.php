@@ -34,13 +34,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance']);
 
-        /*
-         * Already-authenticated users hitting a guest route must not be sent to
-         * the framework's route('dashboard') probe: that route is realm-scoped
-         * ({current_realm}/dashboard) and has no default for the parameter here.
-         * /dashboard (dashboard.home) resolves the realm and forwards.
-         */
-        $middleware->redirectUsersTo('/dashboard');
+        // The framework default probes route('dashboard'), which does not exist;
+        // the home route sends admins and realm users to their own landing.
+        $middleware->redirectUsersTo('/');
 
         $middleware->web(append: [
             HandleAppearance::class,
@@ -73,7 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // developer-facing message — on token-facing paths that is an
         // authorization problem, not a server error.
         $exceptions->render(fn (MissingRealmContext $exception, Request $request) => $request->is('api/*')
-            ? response()->json(['message' => __('realm.api.no-realm-context')], 403)
+            ? response()->json(['message' => __('common.api.no-realm-context')], 403)
             : null);
     })
     ->withCommands([

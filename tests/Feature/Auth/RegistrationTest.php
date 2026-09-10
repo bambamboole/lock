@@ -5,7 +5,8 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 test('new users can register', function () {
-    $response = $this->post(route('identity.register.store', ['realm' => Realm::default()->slug]), [
+    $realm = Realm::factory()->create();
+    $response = $this->post(route('identity.register.store', ['realm' => $realm->slug]), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
@@ -17,7 +18,7 @@ test('new users can register', function () {
     $this->assertAuthenticatedAs($user, 'identity');
     $this->assertGuest('web');
     expect($user->name)->toBe('Test User')
-        ->and($user->realm->slug)->toBe(config('realm.default_slug'));
+        ->and($user->realm_id)->toBe($realm->id);
     $response->assertRedirect('/login');
 });
 

@@ -114,15 +114,6 @@ it('purges settings when a hard-deleted owner is removed', function () {
     expect(Setting::query()->where('key', 'k')->exists())->toBeFalse();
 });
 
-it('keeps settings when a soft-deletable owner is soft-deleted', function () {
-    $realm = Realm::factory()->create();
-    $realm->settings->set('k', 'v');
-
-    $realm->delete();
-
-    expect(Setting::query()->where('key', 'k')->exists())->toBeTrue();
-});
-
 it('exposes typed getters that coerce and fall back to the given default', function () {
     $realm = Realm::factory()->create();
 

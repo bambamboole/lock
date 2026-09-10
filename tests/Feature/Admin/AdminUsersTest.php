@@ -64,5 +64,5 @@ test('a user holding both global roles is flagged as admin in the table', functi
     $row = collect(is_array($rows) ? $rows : [])->firstWhere('id', $admin->id);
 
     expect($row)->not->toBeNull()
-        ->and(data_get($row, 'global_roles_exists'))->toBeTrue();
+        ->and(data_get($row, 'roles_exists'))->toBeTrue();
 });

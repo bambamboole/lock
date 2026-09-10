@@ -21,7 +21,6 @@ return new class extends Migration
             // stricter of the two rules — lowercase, no leading/trailing dash.
             $table->string('slug')->unique();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

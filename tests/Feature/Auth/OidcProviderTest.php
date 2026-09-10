@@ -8,10 +8,10 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 
-it('serves discovery with the realm scopes included', function () {
-    $discovery = $this->getJson(route('oidc.discovery'))->assertOk();
-
-    expect($discovery->json('scopes_supported'))->toContain('member:view');
+it('serves discovery under the admin realm issuer', function () {
+    $this->getJson(route('oidc.discovery'))->assertOk()
+        ->assertJsonPath('issuer', config('app.url').'/realms/admin')
+        ->assertJsonPath('token_endpoint', config('app.url').'/realms/admin/oauth/token');
 });
 
 it('returns app-specific claims from userinfo', function () {

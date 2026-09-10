@@ -89,7 +89,7 @@ it('answers an api request without a realm context with a 403 instead of a 500',
 
     $this->getJson('/api/scoping-probe')
         ->assertForbidden()
-        ->assertJson(['message' => __('realm.api.no-realm-context')]);
+        ->assertJson(['message' => __('common.api.no-realm-context')]);
 });
 
 it('stamps the realm on the audit trail of a scoped record', function () {

@@ -14,7 +14,7 @@ it('shows persisted notifications in the topbar bell', function () {
 
     $this->actingAs($user);
 
-    $page = visit('/dashboard');
+    $page = visit('/profile');
 
     $page->assertPresent('[data-test=notifications-trigger]')
         ->assertSeeIn('[data-test=notifications-badge]', '1')

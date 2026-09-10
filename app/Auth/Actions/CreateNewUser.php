@@ -6,6 +6,7 @@ namespace App\Auth\Actions;
 use App\Auth\Concerns\PasswordValidationRules;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Exceptions\MissingRealmContext;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -20,10 +21,9 @@ final class CreateNewUser implements CreateUser
      */
     public function __invoke(array $input): User
     {
-        // Registration lands in the realm the request resolved; the configured
-        // default only covers callers that resolve none. Uniqueness follows the
-        // realm: the same address may already exist in a different one.
-        $realm = Realm::fromContext() ?? Realm::default();
+        // Registration lands in the realm named by the request path. Uniqueness
+        // follows the realm: the same address may already exist in a different one.
+        $realm = Realm::fromContext() ?? throw new MissingRealmContext;
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],

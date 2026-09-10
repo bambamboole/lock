@@ -8,20 +8,10 @@ return [
             'updated' => 'Aktualisiert',
             'deleted' => 'Gelöscht',
         ],
-        'realm' => ['updated' => 'Realm aktualisiert'],
-        'invitation' => [
-            'created' => 'Einladung gesendet',
-            'cancelled' => 'Einladung storniert',
-            'resent' => 'Einladung erneut gesendet',
-        ],
-        'member' => [
-            'role-changed' => 'Mitgliederrolle geändert',
-            'removed' => 'Mitglied entfernt',
-        ],
-        'role' => [
-            'created' => 'Rolle erstellt',
-            'updated' => 'Rolle aktualisiert',
-            'deleted' => 'Rolle gelöscht',
+        'realm' => [
+            'created' => 'Realm angelegt',
+            'updated' => 'Realm aktualisiert',
+            'deleted' => 'Realm gelöscht',
         ],
         'admin' => [
             'roles' => [

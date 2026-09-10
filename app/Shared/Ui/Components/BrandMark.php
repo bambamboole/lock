@@ -26,6 +26,6 @@ final class BrandMark
     private static function link(string $key): Link
     {
         return Link::make((string) config('app.name'), $key)
-            ->href(route('dashboard.home', absolute: false));
+            ->href(route('home', absolute: false));
     }
 }

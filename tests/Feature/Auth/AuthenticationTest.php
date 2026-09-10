@@ -1,18 +1,20 @@
 <?php
 declare(strict_types=1);
 
+use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
-test('the root path leads to the console dashboard of the signed-in user realm', function () {
-    $user = User::factory()->create();
-    $dashboard = route('dashboard', ['current_realm' => $user->realm->slug]);
+use function Tests\Helpers\globalAdmin;
 
-    $this->actingAs($user)->get('/')->assertRedirect(route('dashboard.home'));
-    $this->actingAs($user)->get(route('dashboard.home'))->assertRedirect($dashboard);
-    $this->actingAs($user)->get($dashboard)->assertOk();
+test('the root path sends a realm user to their profile and an admin to the realms console', function () {
+    (new GlobalRoleSeeder)->run();
+
+    $this->get('/')->assertRedirect(route('login'));
+    $this->actingAs(User::factory()->create())->get('/')->assertRedirect(route('profile.edit'));
+    $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
 test('users can logout', function () {
@@ -64,7 +66,7 @@ test('provider discovery failure still persists both local session logouts', fun
 
     Auth::forgetGuards();
 
-    $this->get('/dashboard')->assertRedirect(route('login'));
+    $this->get('/profile')->assertRedirect(route('login'));
 
     Auth::forgetGuards();
 

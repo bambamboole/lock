@@ -6,13 +6,14 @@ namespace App\Realms\Actions;
 
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
-use App\Realms\Support\RealmConfiguration;
 use App\Shared\Audit\Audit;
+use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
+use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-final class UpdateRealmConfiguration
+final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
 {
     /** @param array<string, mixed> $data */
     public function handle(Realm $realm, array $data): void
@@ -48,7 +49,7 @@ final class UpdateRealmConfiguration
             }
 
             if ($changes !== []) {
-                Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, properties: ['changes' => $changes]);
+                Audit::record(RealmAuditEvent::RealmUpdated, $realm, properties: ['changes' => $changes]);
             }
         });
 

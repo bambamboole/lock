@@ -9,10 +9,8 @@ use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Auth\Models\User;
-use App\Realms\Models\Role;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
@@ -51,13 +49,6 @@ final class UserDetailPage extends AdminPage
         $user->load('realm');
         $currentUser = $request->user();
 
-        $roleLabelsByRealm = $user->roles()
-            ->whereNotNull('roles.realm_id')
-            ->get()
-            ->groupBy('realm_id')
-            ->map(fn (Collection $roles) => $roles->map(fn (Role $role) => $role->displayName())->implode(', '))
-            ->all();
-
         return $schema->schema([
             Stack::make('admin-user-detail-page')
                 ->gap(Gap::Large)
@@ -65,7 +56,7 @@ final class UserDetailPage extends AdminPage
                 ->schema([
                     PageHeader::make($user->name),
                     $this->summaryCard($user),
-                    $this->membershipsCard($user, $roleLabelsByRealm),
+                    $this->realmCard($user),
                     $this->adminRolesCard($user, $currentUser),
                     $this->accountActionsCard($user),
                 ]),
@@ -85,22 +76,12 @@ final class UserDetailPage extends AdminPage
         ]);
     }
 
-    /**
-     * @param  array<int, string>  $roleLabelsByRealm
-     */
-    private function membershipsCard(User $user, array $roleLabelsByRealm): Card
+    private function realmCard(User $user): Card
     {
         return Card::make(__('admin.users.detail.realms.heading'))->schema([
-            DescriptionList::make('user-realms')
-                ->bleed()
-                ->emptyLabel(__('admin.users.detail.no-realms'))
-                ->schema(
-                    [
-                        TextEntry::make('realm-'.$user->realm->id, $user->realm->name)
-                            ->value($roleLabelsByRealm[$user->realm->id] ?? null)
-                            ->placeholder(__('admin.users.detail.no-roles')),
-                    ],
-                ),
+            DescriptionList::make('user-realm')->bleed()->schema([
+                TextEntry::make('realm', __('admin.users.detail.realm'))->value($user->realm->name),
+            ]),
         ]);
     }
 

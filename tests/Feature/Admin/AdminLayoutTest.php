@@ -28,10 +28,10 @@ function adminSidebarHrefs(TestResponse $response): array
 }
 
 it('scopes the admin sidebar to the areas the admin may manage', function (string $roleName, array $hrefs) {
-    $response = $this->actingAs(globalAdmin($roleName))->get(route('admin.dashboard'))->assertOk();
+    $response = $this->actingAs(globalAdmin($roleName))->get(route('admin.users'))->assertOk();
 
     expect(adminSidebarHrefs($response))->toBe($hrefs);
 })->with([
-    'support admin' => [GlobalRoleSeeder::SUPPORT, ['/admin', '/admin/users', '/admin/activity']],
-    'super admin' => [GlobalRoleSeeder::SUPER_ADMIN, ['/admin', '/admin/users', '/admin/realms', '/admin/activity']],
+    'support admin' => [GlobalRoleSeeder::SUPPORT, ['/admin/realms', '/admin/users', '/admin/activity']],
+    'super admin' => [GlobalRoleSeeder::SUPER_ADMIN, ['/admin/realms', '/admin/users', '/admin/activity']],
 ]);

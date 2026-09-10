@@ -19,7 +19,7 @@ use Lattice\Ui\Enums\Emphasis;
 /**
  * @extends EloquentTableDefinition<Realm>
  */
-#[AsTable('admin.realms', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsTable('admin.realms', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
 final class AdminRealmsTable extends EloquentTableDefinition
 {
     /**
@@ -27,12 +27,10 @@ final class AdminRealmsTable extends EloquentTableDefinition
      */
     public function builder(TableQuery $query): Builder
     {
-        $builder = Realm::query()
-            ->withCount('users')
-            ->withOwnerName();
+        $builder = Realm::query()->withCount('users');
 
         if ($query->sorts === []) {
-            $builder->latest('id');
+            $builder->orderBy('name');
         }
 
         return $builder;
@@ -41,10 +39,9 @@ final class AdminRealmsTable extends EloquentTableDefinition
     public function columns(): array
     {
         return [
-            TextColumn::make('name')->label(__('admin.realms.columns.name'))->searchable(),
+            TextColumn::make('name')->label(__('admin.realms.columns.name'))->searchable()->sortable(),
             TextColumn::make('slug')->label(__('admin.realms.columns.slug'))->searchable(),
             NumberColumn::make('users_count')->label(__('admin.realms.columns.users')),
-            TextColumn::make('owner_name')->label(__('admin.realms.columns.owner')),
             TextColumn::make('created_at')->label(__('admin.realms.columns.created-at'))->dateTime()->sortable(),
         ];
     }

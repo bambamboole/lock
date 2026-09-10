@@ -41,11 +41,11 @@ a **path** every realm shares one cookie, so a login in one realm is a login in 
 scoped per realm. Nothing does that yet — `config/session.php` sets no `path`, so the framework default `/` applies.
 Scoping it is the first thing that has to land alongside the path segment, not after it.
 
-Everything that resolves a realm reads it from `Context` (`Realm::currentId()` / `Realm::fromContext()`), and falls
-back to `realm.default_slug` for a request that names none. `App\Auth\Actions\CreateNewUser` is the pattern: it
-registers into the current realm and into the default only while requests carry no realm. Do not reintroduce a host
-assumption — three comments carried one and were corrected; the two resolutions have different security properties
-and are not interchangeable.
+Everything that resolves a realm reads it from `Context` (`Realm::currentId()` / `Realm::fromContext()`).
+`SetCurrentRealm` fills it from the `/realms/{realm}` path on package routes and from the signed-in user's own realm
+everywhere else; there is no fallback realm, so `App\Auth\Actions\CreateNewUser` throws `MissingRealmContext`
+when no realm is current. Do not reintroduce a host assumption — three comments carried one and were corrected; the
+two resolutions have different security properties and are not interchangeable.
 
 ## laravel-oidc reads realms from the database
 

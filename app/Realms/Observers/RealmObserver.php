@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Realms\Observers;
 
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
-use App\Realms\Support\RealmConfiguration;
+use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Support\Str;
+use LogicException;
 
 final class RealmObserver
 {
@@ -20,45 +20,34 @@ final class RealmObserver
     public function updating(Realm $realm): void
     {
         if ($realm->isDirty('slug')) {
-            throw new \LogicException('Realm identifiers cannot be changed.');
+            throw new LogicException('Realm identifiers cannot be changed.');
         }
     }
 
     public function deleting(Realm $realm): void
     {
         if ($realm->isMaster()) {
-            throw new \LogicException('The administration realm cannot be deleted.');
+            throw new LogicException('The administration realm cannot be deleted.');
         }
     }
 
     public function created(Realm $realm): void
     {
-        Role::seedPresetsFor($realm);
-
         foreach (RealmConfiguration::defaults() as $key => $value) {
             $realm->storedSettings()->create(['key' => 'realm.'.$key, 'value' => $value]);
         }
     }
 
-    /**
-     * Soft-deleted realms keep their slug, so the candidate query includes them —
-     * a recycled slug would resolve two realms once the old one is restored.
-     */
-    private function generateUniqueSlug(string $name, ?string $excludeId = null): string
+    private function generateUniqueSlug(string $name): string
     {
         $defaultSlug = Str::slug($name);
 
-        $query = Realm::withTrashed()
+        $existingSlugs = Realm::query()
             ->where(function ($query) use ($defaultSlug) {
                 $query->where('slug', $defaultSlug)
                     ->orWhere('slug', 'like', $defaultSlug.'-%');
-            });
-
-        if ($excludeId) {
-            $query->where('id', '!=', $excludeId);
-        }
-
-        $existingSlugs = $query->pluck('slug');
+            })
+            ->pluck('slug');
 
         $maxSuffix = $existingSlugs
             ->map(function (string $slug) use ($defaultSlug): ?int {

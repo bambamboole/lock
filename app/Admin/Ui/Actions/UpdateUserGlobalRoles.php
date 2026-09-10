@@ -6,8 +6,8 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Models\Role;
 use App\Auth\Models\User;
-use App\Realms\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
@@ -37,12 +37,12 @@ final class UpdateUserGlobalRoles extends ActionDefinition
             ->form([
                 CheckboxGroup::make('role_ids', __('admin.users.detail.roles.field.label'))
                     ->options(
-                        Role::query()->whereNull('realm_id')
+                        Role::query()
                             ->get()
-                            ->map(fn (Role $role) => CheckboxGroup::option($role->displayName(), (string) $role->id))
+                            ->map(fn (Role $role) => CheckboxGroup::option($role->name, (string) $role->id))
                             ->all(),
                     )
-                    ->value($target->globalRoles()->pluck('roles.id')->all(), editable: true),
+                    ->value($target->roles()->pluck('roles.id')->all(), editable: true),
             ]);
     }
 
@@ -59,18 +59,17 @@ final class UpdateUserGlobalRoles extends ActionDefinition
         /** @var User $target */
         $target = $this->contextModel('user');
 
-        $globalRoleIds = Role::query()->whereNull('realm_id')
+        $globalRoleIds = Role::query()
             ->whereIn('id', array_map(strval(...), (array) ($data['role_ids'] ?? [])))
             ->pluck('id');
 
-        $before = $target->globalRoles()->get();
-        $after = Role::query()->whereNull('realm_id')->whereIn('id', $globalRoleIds)->get();
+        $before = $target->roles()->get();
+        $after = Role::query()->whereIn('id', $globalRoleIds)->get();
 
-        $added = $after->whereNotIn('id', $before->pluck('id'))->map(fn (Role $role) => $role->displayName())->values()->all();
-        $removed = $before->whereNotIn('id', $after->pluck('id'))->map(fn (Role $role) => $role->displayName())->values()->all();
+        $added = $after->whereNotIn('id', $before->pluck('id'))->map(fn (Role $role) => $role->name)->values()->all();
+        $removed = $before->whereNotIn('id', $after->pluck('id'))->map(fn (Role $role) => $role->name)->values()->all();
 
-        $target->roles()->detach(Role::query()->whereNull('realm_id')->pluck('id'));
-        $target->roles()->attach($globalRoleIds);
+        $target->roles()->sync($globalRoleIds);
 
         if ($added !== [] || $removed !== []) {
             Audit::record(

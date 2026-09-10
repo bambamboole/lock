@@ -24,7 +24,7 @@ it('applies database registration rules only to the configured realm', function 
     app(UpdateRealmConfiguration::class)->handle($realm, [
         'dynamic_registration' => true,
         'allowed_redirect_domains' => ['partner.test'],
-        'default_scopes' => ['openid', 'member:view'],
+        'default_scopes' => ['openid', 'profile'],
     ]);
 
     $this->postJson('/realms/admin/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
@@ -32,7 +32,7 @@ it('applies database registration rules only to the configured realm', function 
         ->assertBadRequest()->assertJsonPath('error', 'invalid_redirect_uri');
 
     $response = $this->postJson('/realms/partners/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])
-        ->assertCreated()->assertJsonPath('scope', 'openid member:view');
+        ->assertCreated()->assertJsonPath('scope', 'openid profile');
 
     expect(Client::query()->where('client_id', $response->json('client_id'))->sole()->realm_id)->toBe('partners');
 
@@ -49,7 +49,7 @@ it('uses each realms persisted token lifetime and rejects clients from another r
         'grant_type' => 'client_credentials',
         'client_id' => $client->client_id,
         'client_secret' => $client->plainSecret,
-        'scope' => 'member:view',
+        'scope' => 'profile',
     ];
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['client_credentials_lifetime' => 120]);

@@ -14,6 +14,9 @@ return [
         'password' => 'Passwort',
         'role' => 'Rolle',
     ],
+    'api' => [
+        'no-realm-context' => 'Dieses Token ist an keinen Realm gebunden.',
+    ],
     'placeholder' => [
         'password' => 'Passwort',
         'full-name' => 'Vollständiger Name',

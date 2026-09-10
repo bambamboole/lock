@@ -35,18 +35,21 @@ function userMenuHrefs(User $user): array
     return menuItemHrefs(appLayoutSchema($user)->firstOfTypeOrFail('dropdown', 'user-menu'));
 }
 
-it('adds an admin entry to the user menu only for admins', function () {
+it('adds an admin entry to the user menu only for admins', function (string $roleName) {
     (new GlobalRoleSeeder)->run();
 
     $user = User::factory()->for(Realm::master())->create();
     $hrefsBefore = userMenuHrefs($user);
 
-    grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
+    grantGlobalRole($user, $roleName);
     $hrefsAfter = userMenuHrefs($user->refresh());
 
     expect($hrefsBefore)->toBe(['/profile', '/logout'])
-        ->and($hrefsAfter)->toBe(['/profile', '/admin', '/logout']);
-});
+        ->and($hrefsAfter)->toBe(['/profile', '/admin/realms', '/logout']);
+})->with([
+    'super admin' => [GlobalRoleSeeder::SUPER_ADMIN],
+    'support admin' => [GlobalRoleSeeder::SUPPORT],
+]);
 
 it('lets a module add its own sidebar entry through the app.navigation slot', function () {
     $user = User::factory()->create();

@@ -3,14 +3,17 @@ declare(strict_types=1);
 
 namespace App\Realms\Http\Middleware;
 
-use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Puts the request's realm into the context every scoped query reads. The
+ * package's realm routes name it in the path; everywhere else the realm is
+ * the signed-in user's own, and a guest has none.
+ */
 final class SetCurrentRealm
 {
     /** @param Closure(Request): Response $next */
@@ -25,15 +28,7 @@ final class SetCurrentRealm
         }
 
         Context::forget('realm_id');
-        $user = $request->user();
-
-        if ($user instanceof User) {
-            $slug = $request->route('current_realm');
-            $realm = is_string($slug) ? Realm::where('slug', $slug)->firstOrFail() : $user->realm;
-            abort_unless($user->canAccessRealm($realm), 404);
-            $realm->makeCurrent();
-            URL::defaults(['current_realm' => $realm->slug, 'realm' => $user->realm->slug]);
-        }
+        $request->user()?->realm->makeCurrent();
 
         return $next($request);
     }

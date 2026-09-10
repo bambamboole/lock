@@ -6,8 +6,8 @@ namespace App\Admin\Console\Commands;
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
+use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
 use App\Shared\Audit\Audit;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -32,7 +32,7 @@ final class GrantAdminCommand extends Command
             return self::FAILURE;
         }
 
-        $role = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->first();
+        $role = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->first();
 
         if ($role === null) {
             $this->components->error('The Super Admin role is not seeded. Run db:seed or app install first.');
@@ -48,7 +48,7 @@ final class GrantAdminCommand extends Command
             Audit::record(
                 AdminAuditEvent::SuperAdminGranted,
                 $user,
-                properties: ['actor' => 'console:admin:grant', 'added' => [$role->displayName()], 'removed' => []],
+                properties: ['actor' => 'console:admin:grant', 'added' => [$role->name], 'removed' => []],
             );
         }
 
