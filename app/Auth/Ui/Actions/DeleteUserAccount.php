@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Ui\Actions;
 
+use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,8 @@ use Lattice\Ui\Enums\Emphasis;
 final class DeleteUserAccount extends ActionDefinition
 {
     use ResolvesCurrentUser;
+
+    public function __construct(private readonly DeletesUser $deleteUser) {}
 
     public function definition(Action $action): Action
     {
@@ -38,7 +41,7 @@ final class DeleteUserAccount extends ActionDefinition
 
         Auth::logout();
 
-        $user->delete();
+        $this->deleteUser->handle($user);
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

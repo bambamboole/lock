@@ -36,6 +36,7 @@ use Laravel\Passkeys\Passkey;
  * @property string $name
  * @property string $email
  * @property CarbonImmutable|null $email_verified_at
+ * @property CarbonImmutable|null $blocked_at
  * @property string $password
  * @property string|null $remember_token
  * @property CarbonImmutable|null $created_at
@@ -96,6 +97,20 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->realm_id === $realm->id;
     }
 
+    public function isBlocked(): bool
+    {
+        return $this->blocked_at !== null;
+    }
+
+    /**
+     * A confirmed authenticator app or a passkey: the factors the login
+     * challenges, which is what "MFA active" means to an administrator.
+     */
+    public function hasSecondFactor(): bool
+    {
+        return $this->totpFactors()->whereNotNull('confirmed_at')->exists() || $this->passkeys()->exists();
+    }
+
     /**
      * Global permissions come from instance-wide roles, which only users of the
      * master realm can hold: every other realm is data to the admin console.
@@ -131,6 +146,7 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     {
         return [
             'email_verified_at' => 'datetime',
+            'blocked_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
