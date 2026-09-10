@@ -6,7 +6,6 @@ namespace App\Shared\Ui\Pages;
 use App\Realms\Models\Realm;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use App\Shared\Ui\Components\PageHeader;
-use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Ui\Components\Stack;
@@ -14,7 +13,7 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: 'dashboard', name: 'dashboard')]
+#[AsPage(route: '/console/{current_realm}/dashboard', name: 'dashboard')]
 final class DashboardPage extends RealmPage
 {
     use ResolvesCurrentUser;
@@ -43,11 +42,11 @@ final class DashboardPage extends RealmPage
         ];
     }
 
-    public function render(PageSchema $schema, Request $request): PageSchema
+    public function render(PageSchema $schema, Realm $current_realm): PageSchema
     {
         $user = $this->currentUser();
 
-        $this->realm = $user->realm;
+        $this->realm = $current_realm;
 
         return $schema->schema([
             Stack::make('dashboard-page')
@@ -56,7 +55,7 @@ final class DashboardPage extends RealmPage
                 ->schema([
                     PageHeader::make(
                         __('dashboard.heading'),
-                        __('dashboard.welcome', ['name' => $user->name, 'realm' => $user->realm->name]),
+                        __('dashboard.welcome', ['name' => $user->name, 'realm' => $current_realm->name]),
                     ),
                 ]),
         ]);

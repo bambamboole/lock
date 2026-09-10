@@ -83,7 +83,7 @@ test('the actor name is the causing user when one is authenticated', function ()
 
 test('granting a global role is logged with the role diff', function () {
     $admin = globalAdmin();
-    $target = User::factory()->create();
+    $target = User::factory()->for(Realm::master())->create();
     $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
@@ -101,7 +101,7 @@ test('granting a global role is logged with the role diff', function () {
 
 test('a role update that changes nothing is not logged', function () {
     $admin = globalAdmin();
-    $target = User::factory()->create();
+    $target = User::factory()->for(Realm::master())->create();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [],

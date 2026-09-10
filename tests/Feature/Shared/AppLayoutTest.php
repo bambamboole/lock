@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use App\Shared\Ui\Layouts\AppLayout;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Support\Testing\ComponentNode;
@@ -37,7 +38,7 @@ function userMenuHrefs(User $user): array
 it('adds an admin entry to the user menu only for admins', function () {
     (new GlobalRoleSeeder)->run();
 
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     $hrefsBefore = userMenuHrefs($user);
 
     grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);

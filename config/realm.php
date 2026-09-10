@@ -6,7 +6,7 @@ return [
      * The realm whose users administer the instance. Its members carry the
      * global permissions; every other realm is data to them.
      */
-    'master_slug' => env('REALM_MASTER_SLUG', 'master'),
+    'master_slug' => env('REALM_MASTER_SLUG', 'admin'),
 
     /*
      * Where self-service registration lands while the realm is not yet derived

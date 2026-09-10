@@ -51,7 +51,7 @@ final class UpdateUserGlobalRoles extends ActionDefinition
     {
         $target = $this->contextModelOrNull('user');
 
-        return $target instanceof User && $target->isNot($this->currentUser());
+        return $target instanceof User && $target->realm->isMaster() && $target->isNot($this->currentUser());
     }
 
     public function handle(FormData $data): ActionResult

@@ -19,7 +19,7 @@ it('renders the realm settings tabs as a select on a mobile viewport', function 
 
     $this->actingAs($user);
 
-    $page = visit('/settings/realm')->on()->mobile();
+    $page = visit("/console/{$user->realm->slug}/settings")->on()->mobile();
 
     $page->assertPresent('[data-test=tabs-select]')
         ->assertNoJavaScriptErrors();

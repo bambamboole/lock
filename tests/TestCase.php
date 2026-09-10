@@ -3,7 +3,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Keys\SigningKeyGenerator;
+use Bambamboole\LaravelOidc\Server\Shared\Keys\GeneratedSigningKeys;
+use Bambamboole\LaravelOidc\Server\Testing\InteractsWithOidc;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Lattice\Support\Testing\InteractsWithLatticeComponents;
@@ -11,9 +13,12 @@ use Lattice\Support\Testing\InteractsWithLatticeComponents;
 abstract class TestCase extends BaseTestCase
 {
     use InteractsWithLatticeComponents;
+    use InteractsWithOidc;
     use RefreshDatabase {
         migrateDatabases as private baseMigrateDatabases;
     }
+
+    private static ?GeneratedSigningKeys $signingKeys = null;
 
     /**
      * Rendering a real route resolves @vite, which throws without
@@ -28,7 +33,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->ensureSystemRealmsExist();
+        $this->ensureOidcKeysExist();
 
         if ($this->stubsVite) {
             $this->withoutVite();
@@ -48,15 +53,19 @@ abstract class TestCase extends BaseTestCase
         $this->artisan('migrate', ['--path' => 'database/data-migrations'])->run();
     }
 
-    /**
-     * The master and default realms are structural: admin lookups and
-     * self-service registration resolve them by slug and fail without them.
-     * The seeder creates them in a real install, so tests get them too.
-     */
-    private function ensureSystemRealmsExist(): void
+    private function ensureOidcKeysExist(): void
     {
-        foreach ([config('realm.master_slug') => 'Master', config('realm.default_slug') => 'Default'] as $slug => $name) {
-            Realm::firstOrCreate(['slug' => $slug], ['name' => $name]);
+        $generator = app(SigningKeyGenerator::class);
+
+        if ($generator->hasKeys()) {
+            return;
         }
+
+        $keys = self::$signingKeys ??= $generator->generate();
+
+        config([
+            'oidc.keys.private_key' => $keys->privateKeyPem,
+            'oidc.keys.public_key' => $keys->publicKeyPem,
+        ]);
     }
 }

@@ -6,14 +6,23 @@ namespace App\Auth;
 
 use App\Auth\Actions\CreateNewUser;
 use App\Auth\Actions\ResetUserPassword;
+use App\Auth\Console\Commands\InstallSelfCommand;
 use App\Auth\Models\User;
+use App\Auth\Support\DatabaseRealmRepository;
+use App\Auth\Support\DatabaseRealmResolver;
 use App\Auth\Support\PermissionRepository;
 use App\Auth\Support\RealmPasswordBrokerManager;
 use App\Auth\Support\RealmUserProvider;
+use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
 use App\Shared\Auth\Contracts\PermissionCatalog;
 use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
-use Bambamboole\LaravelOidc\Server\Users\UserActionManager;
+use Bambamboole\LaravelOidc\Server\Installation\InstallSelfCommand as PackageInstallSelfCommand;
+use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimsResolver;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
+use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
+use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -29,6 +38,12 @@ final class AuthServiceProvider extends ServiceProvider
     {
         $this->app->singleton(PermissionRepository::class);
         $this->app->alias(PermissionRepository::class, PermissionCatalog::class);
+        $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
+        $this->app->singleton(RealmResolver::class, DatabaseRealmResolver::class);
+        $this->app->bind(PackageInstallSelfCommand::class, InstallSelfCommand::class);
+        $this->app->bind(CreateUser::class, CreateNewUser::class);
+        $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
+        $this->app->bind(ClaimsResolver::class, UserClaimsResolver::class);
 
         if ($this->app->environment('local')) {
             $this->app->bind(LoginView::class, DevLoginPage::class);
@@ -69,8 +84,5 @@ final class AuthServiceProvider extends ServiceProvider
                 : null;
         });
 
-        $userActions = $this->app->make(UserActionManager::class);
-        $userActions->createUsersUsing(CreateNewUser::class);
-        $userActions->resetUserPasswordsUsing(ResetUserPassword::class);
     }
 }

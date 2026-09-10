@@ -7,10 +7,14 @@ declare(strict_types=1);
  */
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Consents\Views\AuthorizationViewResponse;
-use Bambamboole\LaravelOidc\Server\Tokens\Middleware\CheckAudience;
+use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentPrompt;
+use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentView;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
+use Bambamboole\LaravelOidc\Server\Tokens\Http\Middleware\CheckAudience;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -19,43 +23,30 @@ use function Tests\Helpers\loginAccessToken;
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
 
-    // The oidc guard only accepts an exchanged token whose `aud` it serves;
-    // a resource server has to declare its own audiences.
-    config(['oidc.resource.audiences' => ['https://api.internal/orders']]);
-    // The real consent view is a Lattice page; loginAccessToken() only needs the
-    // auth token out of it, so swap the response for JSON.
-    app()->bind(AuthorizationViewResponse::class, fn () => new class implements AuthorizationViewResponse
+    config(['oidc.protected_resources' => ['orders' => ['scopes' => ['openid']]]]);
+    $this->audience = app(IssuerResolver::class)->url().'/orders';
+    app()->bind(ConsentView::class, fn () => new class implements ConsentView
     {
-        /** @var array<string, mixed> */
-        private array $parameters = [];
-
-        public function withParameters(array $parameters = []): static
+        public function respond(ConsentPrompt $prompt, Request $request): JsonResponse
         {
-            $this->parameters = $parameters;
-
-            return $this;
-        }
-
-        public function toResponse($request)
-        {
-            return response()->json(['authToken' => $this->parameters['authToken']]);
+            return response()->json(['authToken' => $prompt->authToken]);
         }
     });
 
-    $this->user = User::factory()->create();
+    $this->user = User::factory()->for(Realm::master())->create();
     $this->client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('RP', ['https://rp.test/callback']);
     $this->client->forceFill([
         'grant_types' => [...$this->client->grant_types, 'urn:ietf:params:oauth:grant-type:token-exchange'],
-        'allowed_exchange_audiences' => ['https://api.internal/orders'],
+        'allowed_exchange_audiences' => [$this->audience],
     ])->save();
 
-    Route::middleware(['auth:oidc', CheckAudience::using('https://api.internal/orders')])
+    Route::middleware(['auth:oidc', CheckAudience::using($this->audience)])
         ->get('/api/test/orders', fn (Request $request) => response()->json([
             'user' => $request->user()?->getAuthIdentifier(),
         ]));
 });
 
-it('exchanges a first-party login token and enforces the audience on a CheckAudience-only route', function () {
+it('exchanges a starter-kit login token and enforces the audience on a CheckAudience-only route', function () {
     $subject = loginAccessToken($this);
 
     $exchanged = $this->post(route('oidc.token'), [
@@ -64,7 +55,7 @@ it('exchanges a first-party login token and enforces the audience on a CheckAudi
         'client_secret' => $this->client->plainSecret,
         'subject_token' => $subject,
         'subject_token_type' => 'urn:ietf:params:oauth:token-type:access_token',
-        'audience' => 'https://api.internal/orders',
+        'audience' => $this->audience,
         'scope' => 'openid',
     ])->assertOk()->json('access_token');
 
@@ -72,8 +63,13 @@ it('exchanges a first-party login token and enforces the audience on a CheckAudi
         ->assertOk()
         ->assertJson(['user' => $this->user->id]);
 
-    $this->getJson('/api/test/orders', ['Authorization' => "Bearer $subject"])
-        ->assertForbidden();
+    $otherAudience = $this->issueTokenFor($this->user, $this->client, audience: [app(IssuerResolver::class)->url()]);
+    auth()->forgetGuards();
+
+    $rejected = $this->getJson('/api/test/orders', ['Authorization' => "Bearer $otherAudience"])
+        ->assertUnauthorized();
+
+    expect($rejected->headers->get('WWW-Authenticate'))->toContain('error="invalid_token"');
 
     // The oidc guard caches its resolved user and only gets a refreshed request,
     // never a reset. Real requests each build a fresh container; a test reuses

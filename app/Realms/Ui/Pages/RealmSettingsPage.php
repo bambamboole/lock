@@ -18,7 +18,7 @@ use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 use Lattice\Ui\Slot;
 
-#[AsPage(route: 'settings/realm', name: 'realm.settings.edit')]
+#[AsPage(route: '/console/{current_realm}/settings', name: 'realm.settings.edit')]
 final class RealmSettingsPage extends RealmPage
 {
     use ResolvesCurrentUser;
@@ -45,10 +45,8 @@ final class RealmSettingsPage extends RealmPage
         )];
     }
 
-    public function render(PageSchema $schema): PageSchema
+    public function render(PageSchema $schema, Realm $current_realm): PageSchema
     {
-        $current_realm = $this->currentUser()->realm;
-
         $this->realm = $current_realm;
 
         return $schema->schema([

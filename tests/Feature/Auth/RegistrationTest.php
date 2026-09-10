@@ -5,7 +5,7 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 test('new users can register', function () {
-    $response = $this->post(route('identity.register.store'), [
+    $response = $this->post(route('identity.register.store', ['realm' => Realm::default()->slug]), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
@@ -21,15 +21,15 @@ test('new users can register', function () {
     $response->assertRedirect('/login');
 });
 
-test('registration lands in the realm the request resolved', function () {
+test('registration lands in the realm the request path names', function () {
     $acme = Realm::factory()->create(['slug' => 'acme']);
 
-    $acme->runAsCurrent(fn () => $this->post(route('identity.register.store'), [
+    $this->post(route('identity.register.store', ['realm' => $acme->slug]), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-    ]));
+    ]);
 
     expect(User::where('email', 'test@example.com')->firstOrFail()->realm_id)->toBe($acme->id);
 });
@@ -40,12 +40,12 @@ test('the same address can register in two realms', function () {
 
     foreach ([$acme, $globex] as $realm) {
         auth()->forgetGuards();
-        $realm->runAsCurrent(fn () => $this->post(route('identity.register.store'), [
+        $this->post(route('identity.register.store', ['realm' => $realm->slug]), [
             'name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-        ])->assertSessionHasNoErrors());
+        ])->assertSessionHasNoErrors();
     }
 
     expect(User::where('email', 'test@example.com')->pluck('realm_id')->all())

@@ -10,6 +10,8 @@ use App\Shared\Realms\Contracts\RealmMemberDirectory;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Support\Collection;
 use Lattice\Core\Attributes\AsPage;
+use Lattice\Facades\Effects;
+use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\DateEntry;
@@ -39,7 +41,10 @@ final class RealmDetailPage extends AdminPage
                 ->gap(Gap::Large)
                 ->width(Width::Medium)
                 ->schema([
-                    PageHeader::make($realm->name),
+                    PageHeader::make($realm->name, null, [
+                        Button::make(__('admin.realms.actions.configure'))
+                            ->effects(Effects::redirect(route('realm.settings.edit', ['current_realm' => $realm->slug, 'tabs' => 'configuration'], false))),
+                    ]),
                     $this->summaryCard($realm),
                     $this->membersCard($memberRoles->rows($realm)),
                 ]),

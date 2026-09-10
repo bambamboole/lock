@@ -15,7 +15,7 @@ final readonly class RealmPolicy
 
     public function view(User $user, Realm $realm): bool
     {
-        return $user->belongsToRealm($realm);
+        return $user->canAccessRealm($realm);
     }
 
     public function delete(User $user, Realm $realm): bool

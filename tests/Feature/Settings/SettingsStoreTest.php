@@ -111,7 +111,7 @@ it('purges settings when a hard-deleted owner is removed', function () {
 
     $user->delete();
 
-    expect(Setting::query()->count())->toBe(0);
+    expect(Setting::query()->where('key', 'k')->exists())->toBeFalse();
 });
 
 it('keeps settings when a soft-deletable owner is soft-deleted', function () {
@@ -120,7 +120,7 @@ it('keeps settings when a soft-deletable owner is soft-deleted', function () {
 
     $realm->delete();
 
-    expect(Setting::query()->count())->toBe(1);
+    expect(Setting::query()->where('key', 'k')->exists())->toBeTrue();
 });
 
 it('exposes typed getters that coerce and fall back to the given default', function () {

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Support;
 
-use Bambamboole\LaravelOidc\Server\Scopes\ScopeCatalog;
+use Bambamboole\LaravelOidc\Server\Shared\Scopes\ScopeCatalog;
 
 /**
  * Serves the OAuth scope catalog straight from the permission catalog: every

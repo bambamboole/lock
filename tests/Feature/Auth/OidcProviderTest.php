@@ -7,7 +7,6 @@ declare(strict_types=1);
  */
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Facades\Oidc;
 
 it('serves discovery with the realm scopes included', function () {
     $discovery = $this->getJson(route('oidc.discovery'))->assertOk();
@@ -17,9 +16,9 @@ it('serves discovery with the realm scopes included', function () {
 
 it('returns app-specific claims from userinfo', function () {
     $user = User::factory()->create(['locale' => 'de', 'timezone' => 'Europe/Berlin']);
-    Oidc::actingAs($user, ['openid', 'profile', 'email'], 'oidc');
+    $token = $this->issueTokenFor($user, scopes: ['openid', 'profile', 'email']);
 
-    $this->getJson(route('oidc.userinfo'))
+    $this->withToken($token)->getJson(route('oidc.userinfo'))
         ->assertOk()
         ->assertJsonPath('sub', (string) $user->id)
         ->assertJsonPath('email', $user->email)

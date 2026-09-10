@@ -49,10 +49,13 @@ it, and the provider argument is what binds the client to the guard's user provi
 
 ## Authenticate API tests against the oidc guard
 
-`Oidc::actingAs($user, $scopes, 'oidc')`. The token it attaches is never persisted, so
-`currentAccessToken()->token` has no key — code that reads the token row has to tolerate that. Between two
-differently-authenticated requests in one test, call `auth()->forgetGuards()`: the oidc guard caches its resolved
-user and only gets a refreshed request, so the previous bearer token would otherwise still authenticate.
+`Tests\TestCase` carries the package's `InteractsWithOidc` trait: `$this->withToken($this->issueTokenFor($user,
+scopes: [...]))` mints and persists a real signed token, `$this->actingAsOidcUser($user, $scopes)` sets the guard's
+user without a token row — code that reads the token row has to tolerate that. Users have to live in the master
+realm (`User::factory()->for(Realm::master())`) for any flow that goes through the identity login, since the
+package authenticates against `/realms/admin`. Between two differently-authenticated requests in one test, call
+`auth()->forgetGuards()`: the oidc guard caches its resolved user and only gets a refreshed request, so the previous
+bearer token would otherwise still authenticate.
 
 ## What a test must earn
 

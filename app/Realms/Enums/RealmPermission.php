@@ -18,6 +18,8 @@ enum RealmPermission: string implements PermissionEnum
      * are what a relying party may request on the consent screen. Global
      * permissions never become scopes.
      */
+    case ManageSettings = 'realm-settings:manage';
+
     case UpdateRealm = 'realm:update';
 
     case DeleteRealm = 'realm:delete';
