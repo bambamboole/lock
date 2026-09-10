@@ -16,7 +16,6 @@
         "bambamboole/laravel-oidc": "^0.23.0",
         "inertiajs/inertia-laravel": "^3.3.3",
         "laravel/framework": "^13.31.0",
-        "laravel/reverb": "^1.11.1",
         "laravel/tinker": "^3.0.2",
         "lattice-php/lattice": "^0.75.0",
         "spatie/laravel-activitylog": "^5.1.1"

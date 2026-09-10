@@ -1,6 +1,5 @@
 /// <reference types="@lattice-php/lattice/svg-sprite-client" />
 import { createInertiaApp } from "@inertiajs/react";
-import { configureEcho } from "@laravel/echo-react";
 import {
     createLayoutResolver,
     createPageResolver,
@@ -13,16 +12,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import sprite from "virtual:svg-sprite";
 import { i18nNamespaces, registry } from "@/registry";
-
-configureEcho({
-    broadcaster: "reverb",
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: Number(import.meta.env.VITE_REVERB_PORT ?? 80),
-    wssPort: Number(import.meta.env.VITE_REVERB_PORT ?? 443),
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? "https") === "https",
-    enabledTransports: ["ws", "wss"],
-});
 
 const applicationName = import.meta.env.VITE_APP_NAME || "Laravel";
 

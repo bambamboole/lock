@@ -35,8 +35,7 @@ x-app: &app
     CACHE_STORE: redis
     SESSION_DRIVER: redis
     QUEUE_CONNECTION: redis
-    # No Reverb service in this stack; broadcasts are logged, not delivered.
-    BROADCAST_CONNECTION: log
+    BROADCAST_CONNECTION: "null"
 
     SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
     SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}

@@ -4,7 +4,7 @@
   served locally with **Herd** at `http://lock.test`. PHP `^8.4`.
 - First-time setup: `composer setup` (installs deps, copies `.env`, generates the app key, runs migrations, generates
   OIDC signing keys into `.env` via `oidc:rotate-keys --if-missing`, installs npm deps, builds the frontend). Day-to-day, run
-  everything with `composer dev` (concurrently runs the queue, Reverb, Pail logs, and Vite — Herd serves the app, so
+  everything with `composer dev` (concurrently runs the queue, Pail logs, and Vite — Herd serves the app, so
   `artisan serve` is excluded).
 - Data changes and backfills live in `database/data-migrations/`, not in the schema-only `database/migrations/` (see
   `.ai/rules/data-migrations.md`). They run through the normal Migrator on a separate path; on a deploy
