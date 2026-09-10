@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace Tests;
 
-use Bambamboole\LaravelOidc\Server\Keys\SigningKeyGenerator;
-use Bambamboole\LaravelOidc\Server\Shared\Keys\GeneratedSigningKeys;
 use Bambamboole\LaravelOidc\Server\Testing\InteractsWithOidc;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -17,8 +15,6 @@ abstract class TestCase extends BaseTestCase
     use RefreshDatabase {
         migrateDatabases as private baseMigrateDatabases;
     }
-
-    private static ?GeneratedSigningKeys $signingKeys = null;
 
     /**
      * Rendering a real route resolves @vite, which throws without
@@ -33,7 +29,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->ensureOidcKeysExist();
+        $this->installSigningKey();
 
         if ($this->stubsVite) {
             $this->withoutVite();
@@ -51,21 +47,5 @@ abstract class TestCase extends BaseTestCase
         $this->baseMigrateDatabases();
 
         $this->artisan('migrate', ['--path' => 'database/data-migrations'])->run();
-    }
-
-    private function ensureOidcKeysExist(): void
-    {
-        $generator = app(SigningKeyGenerator::class);
-
-        if ($generator->hasKeys()) {
-            return;
-        }
-
-        $keys = self::$signingKeys ??= $generator->generate();
-
-        config([
-            'oidc.keys.private_key' => $keys->privateKeyPem,
-            'oidc.keys.public_key' => $keys->publicKeyPem,
-        ]);
     }
 }

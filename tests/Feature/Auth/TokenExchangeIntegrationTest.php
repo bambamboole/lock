@@ -23,7 +23,7 @@ use function Tests\Helpers\loginAccessToken;
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
 
-    config(['oidc.protected_resources' => ['orders' => ['scopes' => ['openid']]]]);
+    config(['oidc.resources' => ['orders' => ['scopes' => ['openid']]]]);
     $this->audience = app(IssuerResolver::class)->url().'/orders';
     app()->bind(ConsentView::class, fn () => new class implements ConsentView
     {

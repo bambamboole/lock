@@ -3,7 +3,8 @@
 - Lock is a full **Laravel 13 + Inertia + React + Lattice** application (Lattice provides server-driven UI). It is
   served locally with **Herd** at `http://lock.test`. PHP `^8.4`.
 - First-time setup: `composer setup` (installs deps, copies `.env`, generates the app key, runs migrations, generates
-  OIDC signing keys into `.env` via `oidc:rotate-keys --if-missing`, installs npm deps, builds the frontend). Day-to-day, run
+  the master realm's OIDC signing key into `oidc_signing_keys` via `oidc:rotate-keys --if-missing`, installs npm deps,
+  builds the frontend). Day-to-day, run
   everything with `composer dev` (concurrently runs the queue, Pail logs, and Vite — Herd serves the app, so
   `artisan serve` is excluded).
 - Data changes and backfills live in `database/data-migrations/`, not in the schema-only `database/migrations/` (see
@@ -12,8 +13,10 @@
   `bin/create-worktree.sh`, `DatabaseSeeder` (and therefore `composer fresh`), and `Tests\TestCase` all already run
   the folder.
 - **Deploys run one command: `php artisan app:deploy`.** It runs `migrate --force --isolated`, the data migrations,
-  `permission:sync` (rebuilds the forever-cached permission catalog and creates/re-syncs the protected global
-  `Super Admin`/`Support` roles from `App\Admin\Support\GlobalRoles`), and `lattice:discover-cache`. Every step is
+  `oidc:rotate-keys --if-missing` for every realm (signing keys live in `oidc_signing_keys`, one keypair per realm,
+  and the data migrations create the master realm the first deploy needs one for), `permission:sync` (rebuilds the
+  forever-cached permission catalog and creates/re-syncs the protected global `Super Admin`/`Support` roles from
+  `App\Admin\Support\GlobalRoles`), and `lattice:discover-cache`. Every step is
   idempotent and the migrations run isolated, so concurrently booting instances are safe. Bytecode caches
   (`config:cache`, routes, views) stay with the deploy platform. Grant the first admin with
   `php artisan admin:grant {email}` (revoke by clearing the user's global roles in the admin UI).

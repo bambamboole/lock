@@ -15,6 +15,7 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\KeySettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ResourceSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ScopeSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
@@ -252,6 +253,11 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function brokering(): BrokeringSettings
     {
         return BrokeringSettings::fromConfig();
+    }
+
+    public function resources(): ResourceSettings
+    {
+        return ResourceSettings::fromConfig();
     }
 
     public function scopes(): ScopeSettings

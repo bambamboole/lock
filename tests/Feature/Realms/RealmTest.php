@@ -5,12 +5,24 @@ use App\Auth\Models\User;
 use App\Realms\Actions\CreateRealm;
 use App\Realms\Actions\DeleteRealm;
 use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Database\QueryException;
 
 test('realms can be created', function () {
     $realm = app(CreateRealm::class)->handle('Test Realm');
 
     $this->assertDatabaseHas('realms', ['id' => $realm->id, 'name' => 'Test Realm']);
+});
+
+test('a new realm gets its own signing key and serves it from its own JWKS', function () {
+    $realm = app(CreateRealm::class)->handle('Test Realm');
+
+    $kid = SigningKey::query()->inRealm($realm->slug)->sole()->kid;
+
+    $this->getJson(route('oidc.jwks', ['realm' => $realm->slug]))
+        ->assertOk()
+        ->assertJsonCount(1, 'keys')
+        ->assertJsonPath('keys.0.kid', $kid);
 });
 
 test('realm slug uses next available suffix', function () {
