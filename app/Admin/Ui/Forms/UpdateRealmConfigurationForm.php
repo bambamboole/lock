@@ -71,6 +71,17 @@ final class UpdateRealmConfigurationForm extends FormDefinition
                     $this->number('recovery_codes', $configuration),
                 ]),
             ]),
+            Card::make(__('admin.realms.sections.passwords'))->schema([
+                Grid::make('realm-password-fields')->columns(3)->schema([
+                    $this->number('password_min_length', $configuration),
+                    $this->number('password_history', $configuration),
+                    $this->number('password_max_age_days', $configuration),
+                ]),
+                $this->checkbox('password_mixed_case', $configuration),
+                $this->checkbox('password_numbers', $configuration),
+                $this->checkbox('password_symbols', $configuration),
+                $this->checkbox('password_uncompromised', $configuration),
+            ]),
             Card::make(__('admin.realms.sections.clients'))->schema([
                 $this->checkbox('dynamic_registration', $configuration),
                 $this->checkbox('token_exchange', $configuration),

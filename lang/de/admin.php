@@ -123,6 +123,7 @@ return [
             'tokens' => 'Token-Laufzeiten',
             'sessions' => 'Sitzungen',
             'mfa' => 'Mehrfaktor-Authentifizierung',
+            'passwords' => 'Passwörter',
             'clients' => 'Client-Regeln',
         ],
         'factors' => [
@@ -184,6 +185,34 @@ return [
             'recovery-codes' => [
                 'label' => 'Anzahl der Wiederherstellungscodes',
                 'help-text' => 'Anzahl der Codes beim Erstellen neuer Wiederherstellungscodes.',
+            ],
+            'password-min-length' => [
+                'label' => 'Mindestlänge des Passworts',
+                'help-text' => 'Zeichen, die ein neues Passwort mindestens haben muss.',
+            ],
+            'password-history' => [
+                'label' => 'Passwort-Historie',
+                'help-text' => 'Frühere Passwörter, die ein neues Passwort nicht wiederholen darf, einschließlich des aktuellen. 0 deaktiviert die Prüfung.',
+            ],
+            'password-max-age-days' => [
+                'label' => 'Maximales Passwortalter',
+                'help-text' => 'Tage, nach denen ein Passwort als abgelaufen gilt. 0 bedeutet, dass Passwörter nie ablaufen.',
+            ],
+            'password-mixed-case' => [
+                'label' => 'Groß- und Kleinbuchstaben verlangen',
+                'help-text' => 'Ein neues Passwort muss mindestens einen Groß- und einen Kleinbuchstaben enthalten.',
+            ],
+            'password-numbers' => [
+                'label' => 'Ziffer verlangen',
+                'help-text' => 'Ein neues Passwort muss mindestens eine Ziffer enthalten.',
+            ],
+            'password-symbols' => [
+                'label' => 'Sonderzeichen verlangen',
+                'help-text' => 'Ein neues Passwort muss mindestens ein Sonderzeichen enthalten.',
+            ],
+            'password-uncompromised' => [
+                'label' => 'Geleakte Passwörter ablehnen',
+                'help-text' => 'Passwörter ablehnen, die in einem öffentlichen Datenleck gefunden wurden. Beim Setzen eines Passworts wird dafür die Range-API von Have I Been Pwned abgefragt.',
             ],
             'dynamic-registration' => [
                 'label' => 'Dynamische Client-Registrierung erlauben',

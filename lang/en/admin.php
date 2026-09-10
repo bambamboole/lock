@@ -123,6 +123,7 @@ return [
             'tokens' => 'Token lifetimes',
             'sessions' => 'Sessions',
             'mfa' => 'Multi-factor authentication',
+            'passwords' => 'Passwords',
             'clients' => 'Client rules',
         ],
         'factors' => [
@@ -184,6 +185,34 @@ return [
             'recovery-codes' => [
                 'label' => 'Recovery code count',
                 'help-text' => 'Number of codes generated when users create recovery codes.',
+            ],
+            'password-min-length' => [
+                'label' => 'Minimum password length',
+                'help-text' => 'Characters a new password needs at least.',
+            ],
+            'password-history' => [
+                'label' => 'Password history',
+                'help-text' => 'Previous passwords a new password may not repeat, including the current one. 0 disables the check.',
+            ],
+            'password-max-age-days' => [
+                'label' => 'Maximum password age',
+                'help-text' => 'Days after which a password counts as expired. 0 means passwords never expire.',
+            ],
+            'password-mixed-case' => [
+                'label' => 'Require upper and lower case letters',
+                'help-text' => 'A new password must contain at least one upper and one lower case letter.',
+            ],
+            'password-numbers' => [
+                'label' => 'Require a number',
+                'help-text' => 'A new password must contain at least one digit.',
+            ],
+            'password-symbols' => [
+                'label' => 'Require a symbol',
+                'help-text' => 'A new password must contain at least one special character.',
+            ],
+            'password-uncompromised' => [
+                'label' => 'Reject leaked passwords',
+                'help-text' => 'Reject passwords found in a public data breach. This queries the Have I Been Pwned range API when a password is set.',
             ],
             'dynamic-registration' => [
                 'label' => 'Allow dynamic client registration',
