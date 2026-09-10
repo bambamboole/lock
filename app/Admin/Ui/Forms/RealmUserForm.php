@@ -1,0 +1,54 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Admin\Ui\Forms;
+
+use App\Admin\Actions\UpdateRealmUser;
+use App\Auth\Models\User;
+use Lattice\Facades\Effects;
+use Lattice\Form\Components\Form as FormComponent;
+use Lattice\Form\FormDefinition;
+use Lattice\Http\LatticeResponse;
+use Lattice\Ui\Enums\HttpMethod;
+use Lattice\Ui\Enums\Variant;
+
+/**
+ * One field of a realm user. The action writes name, address and verification
+ * state together, so an untouched field is passed back as it stands rather
+ * than left out.
+ */
+abstract class RealmUserForm extends FormDefinition
+{
+    public function __construct(private readonly UpdateRealmUser $updateUser) {}
+
+    protected function userForm(FormComponent $form): FormComponent
+    {
+        return $form
+            ->method(HttpMethod::Patch)
+            ->submitLabel(__('common.action.save'));
+    }
+
+    protected function user(): User
+    {
+        $user = $this->contextModel('user');
+
+        abort_unless($user instanceof User, 404);
+
+        return $user;
+    }
+
+    protected function save(?string $name = null, ?string $email = null, ?bool $verified = null): LatticeResponse
+    {
+        $user = $this->user();
+
+        $this->updateUser->handle(
+            $user,
+            $name ?? $user->name,
+            $email ?? $user->email,
+            $verified ?? $user->hasVerifiedEmail(),
+        );
+
+        return Effects::respond()->toast(__('admin.users.updated'), Variant::Success)
+            ->toRoute('admin.realms.users.show', ['realm' => $user->realm->slug, 'user' => $user->id]);
+    }
+}

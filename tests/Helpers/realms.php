@@ -7,19 +7,13 @@ namespace Tests\Helpers;
 use App\Realms\Models\Realm;
 
 /**
- * The configuration form payload for a realm as the form itself would submit
- * it: list settings joined line by line, overrides on top.
+ * The submission of one realm setting as `RealmSettingForm` receives it:
+ * the payload and the context that names the field, ready to spread into
+ * `submitForm()`.
  *
- * @param  array<string, mixed>  $overrides
- * @return array<string, mixed>
+ * @return array{0: array<string, mixed>, 1: array<string, string>}
  */
-function realmFormData(Realm $realm, array $overrides = []): array
+function realmSetting(Realm $realm, string $field, mixed $value): array
 {
-    $data = $realm->configuration();
-
-    foreach (['allowed_redirect_schemes', 'allowed_redirect_domains', 'default_scopes', 'optional_scopes', 'trusted_clients'] as $key) {
-        $data[$key] = implode("\n", array_filter($realm->settings->array('realm.'.$key), is_string(...)));
-    }
-
-    return [...$data, ...$overrides];
+    return [[$field => $value], ['realm' => $realm->slug, 'field' => $field]];
 }

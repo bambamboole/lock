@@ -21,14 +21,18 @@ use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\CodeBlock;
+use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\DescriptionList;
+use Lattice\Ui\Components\Entries\BadgeEntry;
 use Lattice\Ui\Components\Entries\ComponentEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
+use Lattice\Ui\Enums\Align;
 use Lattice\Ui\Enums\DateTimeStyle;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Justify;
 use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
@@ -91,9 +95,7 @@ final class ClientDetailPage extends AdminPage
                 ->schema([
                     PageHeader::make($client->name, __('admin.clients.detail.description', ['realm' => $realm->name])),
                     ...(is_string($secret) ? [$this->secretCard($client, $secret)] : []),
-                    $this->summaryCard($client),
-                    Card::make(__('admin.clients.detail.settings.heading'), __('admin.clients.detail.settings.subtitle'))
-                        ->schema([Form::use(UpdateClientForm::class, $context)]),
+                    $this->settingsCard($client, $context),
                     Card::make(__('admin.clients.detail.credentials.heading'), __('admin.clients.detail.credentials.subtitle'))
                         ->visible($client->confidential())
                         ->schema([Action::use(RotateClientSecret::class, $context)]),
@@ -123,29 +125,87 @@ final class ClientDetailPage extends AdminPage
         ]);
     }
 
-    private function summaryCard(Client $client): Card
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function settingsCard(Client $client, array $context): Card
     {
-        return Card::make(__('admin.clients.detail.summary.heading'))->schema([
-            DescriptionList::make('client-summary')->bleed()->schema([
-                ComponentEntry::make('client_id', __('admin.clients.columns.client-id'))
+        return Card::make(__('admin.clients.detail.settings.heading'), __('admin.clients.detail.settings.subtitle'))->schema([
+            DescriptionList::make('client-settings')->bleed()->schema([
+                TextEntry::make('name', __('admin.clients.fields.name.label'), 'client-name')
+                    ->value($client->name)
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'name'])]),
+                ComponentEntry::make('client_id', __('admin.clients.columns.client-id'), 'client-client-id')
                     ->value(Text::make($client->client_id)->copyable()),
-                TextEntry::make('type', __('admin.clients.columns.type'))
-                    ->value(__('admin.clients.types.'.str_replace('_', '-', $client->token_endpoint_auth_method->value))),
-                TextEntry::make('grant_types', __('admin.clients.columns.grant-types'))
-                    ->value(implode(', ', array_map(
+                TextEntry::make('token_endpoint_auth_method', __('admin.clients.columns.type'), 'client-type')
+                    ->value(__('admin.clients.types.'.str_replace('_', '-', $client->token_endpoint_auth_method->value)))
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'token_endpoint_auth_method'])]),
+                ComponentEntry::make('grant_types', __('admin.clients.columns.grant-types'), 'client-grant-types')
+                    ->value($this->badges(array_map(
                         fn (string $grantType): string => __('admin.clients.grant-types.'.str_replace('_', '-', $grantType)),
                         $client->grant_types,
-                    ))),
-                ComponentEntry::make('status', __('admin.clients.columns.status'))
-                    ->value($client->revoked
-                        ? Badge::make(__('admin.clients.status.blocked'))->color(ColorName::Danger)
-                        : Badge::make(__('admin.clients.status.active'))->color(ColorName::Success)),
-                TextEntry::make('scopes', __('admin.clients.detail.scopes'))
-                    ->value(implode(', ', $client->assignedScopes()) ?: '—'),
-                DateEntry::make('created_at', __('admin.clients.detail.created-at'))
+                    )))
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'grant_types'])]),
+                ComponentEntry::make('redirect_uris', __('admin.clients.fields.redirect-uris.label'), 'client-redirect-uris')
+                    ->value($this->uriLines($client->redirect_uris))
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'redirect_uris'])]),
+                ComponentEntry::make('post_logout_redirect_uris', __('admin.clients.fields.post-logout-redirect-uris.label'), 'client-post-logout-redirect-uris')
+                    ->value($this->uriLines($client->post_logout_redirect_uris))
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'post_logout_redirect_uris'])]),
+                BadgeEntry::make('consent_required', __('admin.clients.fields.consent-required.label'), 'client-consent-required')
+                    ->value($client->consent_required ? __('common.value.yes') : __('common.value.no'))
+                    ->color($client->consent_required ? ColorName::Success : ColorName::Muted)
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'consent_required'])]),
+                TextEntry::make('backchannel_logout_uri', __('admin.clients.fields.backchannel-logout-uri.label'), 'client-backchannel-logout-uri')
+                    ->value($client->backchannel_logout_uri)
+                    ->placeholder(__('common.value.none'))
+                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'backchannel_logout_uri'])]),
+                ComponentEntry::make('scopes', __('admin.clients.detail.scopes'), 'client-scopes')
+                    ->value($this->badges($client->assignedScopes())),
+                BadgeEntry::make('status', __('admin.clients.columns.status'), 'client-status')
+                    ->value($client->revoked ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
+                    ->color($client->revoked ? ColorName::Danger : ColorName::Success),
+                DateEntry::make('created_at', __('admin.clients.detail.created-at'), 'client-created-at')
                     ->value($client->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),
             ]),
         ]);
+    }
+
+    /**
+     * @param  array<int, string>  $values
+     */
+    private function badges(array $values): Component
+    {
+        if ($values === []) {
+            return Text::make(__('common.value.none'))->color(ColorName::Muted);
+        }
+
+        return Stack::make()
+            ->direction(Orientation::Horizontal)
+            ->width(Width::Auto)
+            ->align(Align::Center)
+            ->justify(Justify::End)
+            ->gap(Gap::ExtraSmall)
+            ->schema(array_map(fn (string $value): Badge => Badge::make($value), array_values($values)));
+    }
+
+    /**
+     * @param  array<int, string>|null  $uris
+     */
+    private function uriLines(?array $uris): Component
+    {
+        if ($uris === null || $uris === []) {
+            return Text::make(__('common.value.none'))->color(ColorName::Muted);
+        }
+
+        return Stack::make()
+            ->width(Width::Auto)
+            ->align(Align::End)
+            ->gap(Gap::ExtraSmall)
+            ->schema(array_map(
+                fn (string $uri): Text => Text::make($uri)->size(Size::Sm),
+                array_values($uris),
+            ));
     }
 }

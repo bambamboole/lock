@@ -17,6 +17,11 @@ return [
     'api' => [
         'no-realm-context' => 'This token is not bound to a realm.',
     ],
+    'value' => [
+        'yes' => 'Yes',
+        'no' => 'No',
+        'none' => 'None',
+    ],
     'placeholder' => [
         'password' => 'Password',
         'full-name' => 'Full name',

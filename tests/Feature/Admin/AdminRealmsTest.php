@@ -5,14 +5,14 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
-use App\Admin\Ui\Forms\UpdateRealmConfigurationForm;
+use App\Admin\Ui\Forms\RealmSettingForm;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
-use function Tests\Helpers\realmFormData;
+use function Tests\Helpers\realmSetting;
 use function Tests\Helpers\renderedTabKeys;
 
 beforeEach(function () {
@@ -45,8 +45,8 @@ test('only realms-manage admins see the editing tabs, and the admin realm has no
     $master = $this->get('/admin/realms/'.Realm::master()->slug.'/settings')->assertOk();
 
     expect(renderedTabKeys($support))->toBe(['general'])
-        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'configuration', 'danger'])
-        ->and(renderedTabKeys($master))->toBe(['general', 'configuration']);
+        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'tokens', 'sessions', 'mfa', 'passwords', 'clients', 'danger'])
+        ->and(renderedTabKeys($master))->toBe(['general', 'tokens', 'sessions', 'mfa', 'passwords', 'clients']);
 });
 
 test('a support admin cannot create, edit or delete a realm', function () {
@@ -56,9 +56,10 @@ test('a support admin cannot create, edit or delete a realm', function () {
     $this->get('/admin/realms/create')->assertForbidden();
     $this->submitDeniedForm(CreateRealmForm::class, ['name' => 'Forbidden', 'slug' => 'forbidden'])->assertForbidden();
     $this->submitDeniedForm(UpdateRealmForm::class, ['name' => 'Renamed'], ['realm' => $realm->slug])->assertForbidden();
-    $this->submitDeniedForm(UpdateRealmConfigurationForm::class, realmFormData($realm), ['realm' => $realm->slug])->assertForbidden();
+    $this->submitDeniedForm(RealmSettingForm::class, ...realmSetting($realm, 'access_token_lifetime', 300))->assertForbidden();
     $this->submitDeniedForm(DeleteRealmForm::class, ['name' => $realm->name], ['realm' => $realm->slug])->assertForbidden();
 
     expect(Realm::query()->where('slug', 'forbidden')->exists())->toBeFalse()
-        ->and($realm->refresh()->name)->not->toBe('Renamed');
+        ->and($realm->refresh()->name)->not->toBe('Renamed')
+        ->and($realm->tokens()->accessTokenLifetime)->toBe(900);
 });

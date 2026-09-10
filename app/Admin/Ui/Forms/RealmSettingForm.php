@@ -1,0 +1,140 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Admin\Ui\Forms;
+
+use App\Admin\Enums\AdminPermission;
+use App\Realms\Models\Realm;
+use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
+use App\Shared\Realms\Data\RealmSetting;
+use App\Shared\Realms\Enums\RealmSettingType;
+use App\Shared\Realms\Support\RealmConfiguration;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Lattice\Facades\Effects;
+use Lattice\Form\Attributes\AsForm;
+use Lattice\Form\Components\Checkbox;
+use Lattice\Form\Components\CheckboxGroup;
+use Lattice\Form\Components\Field;
+use Lattice\Form\Components\Form as FormComponent;
+use Lattice\Form\Components\NumberInput;
+use Lattice\Form\Components\Textarea;
+use Lattice\Form\Components\TextInput;
+use Lattice\Form\FormData;
+use Lattice\Form\FormDefinition;
+use Lattice\Http\LatticeResponse;
+use Lattice\Ui\Enums\HttpMethod;
+use Lattice\Ui\Enums\Variant;
+
+/**
+ * Edits exactly one realm setting, named by the `field` context. The input is
+ * derived from the setting's declared type, so a new setting in
+ * {@see RealmConfiguration} reaches the console without a form of its own.
+ */
+#[AsForm('admin.realms.setting', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+final class RealmSettingForm extends FormDefinition
+{
+    public function __construct(private readonly UpdatesRealmConfiguration $updateRealm) {}
+
+    public function definition(FormComponent $form, Request $request): FormComponent
+    {
+        $setting = $this->setting();
+        $value = $this->realm()->configuration()[$setting->name];
+
+        return $form
+            ->method(HttpMethod::Patch)
+            ->schema([$this->field($setting, $value)])
+            ->submitLabel(__('common.action.save'));
+    }
+
+    public function handle(FormData $data): LatticeResponse
+    {
+        $realm = $this->realm();
+        $setting = $this->setting();
+
+        try {
+            $this->updateRealm->handle($realm, [$setting->name => $this->submitted($setting, $data)]);
+        } catch (ValidationException $exception) {
+            throw ValidationException::withMessages([
+                $setting->name => array_merge(...array_values($exception->errors())),
+            ]);
+        }
+
+        return Effects::respond()->toast(__('admin.realms.configuration-saved'), Variant::Success)
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => $setting->section->value]);
+    }
+
+    private function field(RealmSetting $setting, mixed $value): Field
+    {
+        $label = __('admin.realms.fields.'.$setting->translationKey().'.label');
+        $helperText = __('admin.realms.fields.'.$setting->translationKey().'.help-text');
+        $rules = $setting->ownRules();
+
+        return match ($setting->type) {
+            RealmSettingType::Duration, RealmSettingType::Days, RealmSettingType::Count => NumberInput::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->step($setting->name === 'totp_secret_length' ? 8 : 1)
+                ->required()
+                ->rules($rules)
+                ->helperText($helperText),
+            RealmSettingType::Text => TextInput::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->rules($rules)
+                ->helperText($helperText),
+            RealmSettingType::Flag => Checkbox::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->rules($rules)
+                ->helperText($helperText),
+            RealmSettingType::Factors => CheckboxGroup::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->options([
+                    CheckboxGroup::option(__('admin.realms.factors.totp'), 'totp'),
+                    CheckboxGroup::option(__('admin.realms.factors.webauthn'), 'webauthn'),
+                ])
+                ->rules($rules)
+                ->helperText($helperText),
+            RealmSettingType::StringList => Textarea::make($setting->name, $label)
+                ->value(implode("\n", is_array($value) ? $value : []), editable: true)
+                ->rows(4)
+                ->rules(['nullable', 'string', 'max:20000'])
+                ->helperText($helperText),
+        };
+    }
+
+    /**
+     * The stored configuration is typed, and the validator compares settings
+     * against each other by both value and type, so a submitted field is cast
+     * to the type its setting holds before it is merged in.
+     */
+    private function submitted(RealmSetting $setting, FormData $data): mixed
+    {
+        return match ($setting->type) {
+            RealmSettingType::Duration, RealmSettingType::Days, RealmSettingType::Count => $data->integer($setting->name),
+            RealmSettingType::Text => (string) $data->string($setting->name),
+            RealmSettingType::Flag => $data->boolean($setting->name),
+            RealmSettingType::Factors => array_values(array_filter((array) $data->get($setting->name, []), is_string(...))),
+            RealmSettingType::StringList => array_values(array_filter(
+                array_map(trim(...), preg_split('/\R/u', (string) $data->string($setting->name)) ?: []),
+                fn (string $line): bool => $line !== '',
+            )),
+        };
+    }
+
+    private function setting(): RealmSetting
+    {
+        $setting = RealmConfiguration::setting($this->contextString('field'));
+
+        abort_unless($setting instanceof RealmSetting, 404);
+
+        return $setting;
+    }
+
+    private function realm(): Realm
+    {
+        $realm = $this->contextModel('realm');
+
+        abort_unless($realm instanceof Realm, 404);
+
+        return $realm;
+    }
+}

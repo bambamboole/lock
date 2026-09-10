@@ -5,6 +5,7 @@ namespace App\Admin\Ui\Forms;
 
 use App\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Enums\RealmSettingSection;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Lattice\Facades\Effects;
@@ -37,6 +38,6 @@ final class CreateRealmForm extends FormDefinition
         $realm = $this->createRealm->handle((string) $data->string('name'), (string) $data->string('slug'));
 
         return Effects::respond()->toast(__('admin.realms.created'), Variant::Success)
-            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => 'configuration']);
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => RealmSettingSection::Tokens->value]);
     }
 }

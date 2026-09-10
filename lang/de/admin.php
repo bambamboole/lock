@@ -75,9 +75,6 @@ return [
             ],
         ],
         'detail' => [
-            'summary' => [
-                'heading' => 'Übersicht',
-            ],
             'created-at' => 'Beigetreten',
             'blocked-at' => 'Gesperrt seit',
             'status' => 'Status',
@@ -88,8 +85,7 @@ return [
             ],
             'profile' => [
                 'heading' => 'Profil',
-                'subtitle' => 'Name, E-Mail-Adresse und Verifizierungsstatus.',
-                'submit' => 'Benutzer speichern',
+                'subtitle' => 'Name, E-Mail-Adresse, Verifizierungsstatus und Realm-Zugehörigkeit.',
             ],
             'admin-roles' => [
                 'heading' => 'Admin-Rollen',
@@ -274,9 +270,6 @@ return [
             'description' => 'Client von :realm.',
             'created-at' => 'Erstellt',
             'scopes' => 'Scopes',
-            'summary' => [
-                'heading' => 'Übersicht',
-            ],
             'secret' => [
                 'heading' => 'Client-Secret',
                 'subtitle' => 'Kopieren Sie das Secret jetzt. Es wird nur einmal angezeigt und kann nicht wiederhergestellt werden.',
@@ -284,7 +277,7 @@ return [
             ],
             'settings' => [
                 'heading' => 'Einstellungen',
-                'subtitle' => 'Name, Typ, Grant-Typen und URIs des Clients.',
+                'subtitle' => 'Öffnen Sie eine Zeile, um die Einstellung zu ändern. Client-ID, Scopes und Status sind fest.',
             ],
             'credentials' => [
                 'heading' => 'Zugangsdaten',
@@ -349,18 +342,19 @@ return [
         ],
         'tabs' => [
             'general' => 'Allgemein',
-            'configuration' => 'Konfiguration',
             'danger' => 'Gefahrenzone',
         ],
+        'values' => [
+            'never' => 'Nie',
+            'generated' => 'Pro Realm generiert',
+        ],
         'summary' => [
-            'heading' => 'Übersicht',
-            'slug' => 'Slug',
             'users' => 'Benutzer',
             'created-at' => 'Erstellt',
         ],
         'general' => [
             'heading' => 'Realm-Details',
-            'subtitle' => 'Benennen Sie den Realm um. Die Kennung bleibt dauerhaft fest.',
+            'subtitle' => 'Öffnen Sie eine Zeile, um sie zu ändern. Die Kennung bleibt dauerhaft fest.',
             'submit' => 'Realm speichern',
         ],
         'danger' => [

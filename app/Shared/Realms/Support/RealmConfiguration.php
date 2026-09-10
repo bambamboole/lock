@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Shared\Realms\Support;
 
+use App\Shared\Realms\Data\RealmSetting;
+use App\Shared\Realms\Enums\RealmSettingSection;
+use App\Shared\Realms\Enums\RealmSettingType;
 use App\Shared\Settings\SettingsRegistry;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
@@ -54,6 +57,62 @@ final class RealmConfiguration
             'first_party_trusted' => $clients->firstPartyTrusted,
             'trusted_clients' => $clients->trustedClients,
         ];
+    }
+
+    /**
+     * Every configurable setting with the section it belongs to and the kind
+     * of value it holds — the one place the admin console reads to build both
+     * a section's rows and the input that edits a single one of them.
+     *
+     * @return array<string, RealmSetting>
+     */
+    public static function settings(): array
+    {
+        $settings = [];
+
+        foreach (self::sectionTypes() as $section => $types) {
+            foreach ($types as $name => $type) {
+                $settings[$name] = new RealmSetting($name, RealmSettingSection::from($section), $type);
+            }
+        }
+
+        return $settings;
+    }
+
+    public static function setting(string $name): ?RealmSetting
+    {
+        return self::settings()[$name] ?? null;
+    }
+
+    /**
+     * @return array<string, list<RealmSetting>>
+     */
+    public static function sections(): array
+    {
+        $sections = [];
+
+        foreach (self::settings() as $setting) {
+            $sections[$setting->section->value][] = $setting;
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Field labels for the validator, so a rule that fails on a setting the
+     * user is not looking at still names it the way the console does.
+     *
+     * @return array<string, string>
+     */
+    public static function attributeNames(): array
+    {
+        $names = ['name' => __('admin.realms.fields.name.label')];
+
+        foreach (self::settings() as $setting) {
+            $names[$setting->name] = __('admin.realms.fields.'.$setting->translationKey().'.label');
+        }
+
+        return $names;
     }
 
     public static function register(SettingsRegistry $registry): void
@@ -110,6 +169,52 @@ final class RealmConfiguration
             'first_party_trusted' => ['required', 'boolean'],
             'trusted_clients' => ['present', 'array', 'list', 'max:100'],
             'trusted_clients.*' => ['required', 'string', 'max:255', 'distinct'],
+        ];
+    }
+
+    /**
+     * @return array<string, array<string, RealmSettingType>>
+     */
+    private static function sectionTypes(): array
+    {
+        return [
+            'tokens' => [
+                'access_token_lifetime' => RealmSettingType::Duration,
+                'id_token_lifetime' => RealmSettingType::Duration,
+                'client_credentials_lifetime' => RealmSettingType::Duration,
+                'refresh_token_lifetime' => RealmSettingType::Duration,
+            ],
+            'sessions' => [
+                'session_cookie_name' => RealmSettingType::Text,
+                'session_absolute_lifetime' => RealmSettingType::Duration,
+                'session_token_ttl' => RealmSettingType::Duration,
+                'session_token_refresh_skew' => RealmSettingType::Duration,
+            ],
+            'mfa' => [
+                'challenge_providers' => RealmSettingType::Factors,
+                'totp_secret_length' => RealmSettingType::Count,
+                'totp_window' => RealmSettingType::Count,
+                'recovery_codes' => RealmSettingType::Count,
+            ],
+            'passwords' => [
+                'password_min_length' => RealmSettingType::Count,
+                'password_history' => RealmSettingType::Count,
+                'password_max_age_days' => RealmSettingType::Days,
+                'password_mixed_case' => RealmSettingType::Flag,
+                'password_numbers' => RealmSettingType::Flag,
+                'password_symbols' => RealmSettingType::Flag,
+                'password_uncompromised' => RealmSettingType::Flag,
+            ],
+            'clients' => [
+                'dynamic_registration' => RealmSettingType::Flag,
+                'token_exchange' => RealmSettingType::Flag,
+                'first_party_trusted' => RealmSettingType::Flag,
+                'allowed_redirect_schemes' => RealmSettingType::StringList,
+                'allowed_redirect_domains' => RealmSettingType::StringList,
+                'default_scopes' => RealmSettingType::StringList,
+                'optional_scopes' => RealmSettingType::StringList,
+                'trusted_clients' => RealmSettingType::StringList,
+            ],
         ];
     }
 
