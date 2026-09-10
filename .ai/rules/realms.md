@@ -34,18 +34,33 @@ through `RealmPasswordBrokerManager`, rebound in `AuthServiceProvider::boot()` a
 `ProviderRepository` re-adds the deferred services after the eager providers run, so a marker dropped in `register()`
 is put straight back and Laravel's `PasswordResetServiceProvider` wins the rebinding.
 
-## The realm comes from the request path, and the session does not follow it
+## The realm comes from the request path, and the session cookie follows it
 
 A realm resolved from a **host** would be isolated by the browser: separate origins, separate session cookies. From
-a **path** every realm shares one cookie, so a login in one realm is a login in all of them unless `session.path` is
-scoped per realm. Nothing does that yet — `config/session.php` sets no `path`, so the framework default `/` applies.
-Scoping it is the first thing that has to land alongside the path segment, not after it.
+a **path** every realm would share one cookie unless something scopes it — and the package's `ResolveRealm`
+middleware does: below `/realms/{realm}` it swaps the session cookie for one named per realm (`realm.session_cookie_name`,
+default `{cookie}-oidc-{slug}`) and scoped to that path, so a login in one realm is a login in that realm alone. The
+application root keeps its own cookie and its `web` guard, which only the master realm's self-SSO fills. Do not
+reintroduce a host assumption — the two resolutions have different security properties and are not interchangeable.
 
 Everything that resolves a realm reads it from `Context` (`Realm::currentId()` / `Realm::fromContext()`).
 `SetCurrentRealm` fills it from the `/realms/{realm}` path on package routes and from the signed-in user's own realm
 everywhere else; there is no fallback realm, so `App\Auth\Actions\CreateNewUser` throws `MissingRealmContext`
-when no realm is current. Do not reintroduce a host assumption — three comments carried one and were corrected; the
-two resolutions have different security properties and are not interchangeable.
+when no realm is current. `App\Auth\Support\DatabaseRealmResolver` only honours the `{realm}` route parameter on the
+package routes (`oidc.*`, `identity.*`), the account page (`account`) and the realm-scoped Lattice endpoints
+(`realm.lattice.*`); an admin page's `{realm}` parameter is data, not the acting realm.
+
+## A realm user's pages live below the realm, and so do their Lattice endpoints
+
+A realm user only ever holds the realm-scoped cookie, so `App\Auth\Ui\Pages\AccountPage` is registered at
+`/realms/{realm}/account` with the package's middleware order — `ResolveRealm`, then `web`, then
+`AuthenticateIdentity:identity` — and `bootstrap/app.php` pins `ResolveRealm` before `StartSession` in the middleware
+priority so a page may list them in any order. The root Lattice endpoints (`/lattice/forms/…`) never see that cookie,
+so `routes/web.php` registers the same endpoints once more below `/realms/{realm}/lattice/…` behind the identity guard,
+and `App\Realms\Support\RealmScopedLatticeEndpoints` (a `URL::formatPathUsing` hook) moves every Lattice URL minted
+during a realm request under the realm. A page rendered below a realm therefore needs no special handling; a page at
+the root keeps the root endpoints. `Realm::login()` sends a realm login home to that account page and a realm logout
+back to the realm's own sign-in — never to `/`, which is the master realm's relying-party entry.
 
 ## laravel-oidc reads realms from the database
 
