@@ -33,9 +33,9 @@ return [
     ],
     'users' => [
         'heading' => 'Users',
+        'description' => 'Users of :realm.',
         'columns' => [
             'member' => 'Member',
-            'realm' => 'Realm',
             'admin' => 'Admin',
             'created-at' => 'Joined',
         ],
@@ -86,6 +86,10 @@ return [
         'updated' => 'Realm updated.',
         'configuration-saved' => 'Realm configuration saved.',
         'deleted' => 'Realm deleted.',
+        'settings' => [
+            'heading' => 'Realm settings',
+            'description' => 'Name, authentication configuration and deletion of :realm.',
+        ],
         'tabs' => [
             'general' => 'General',
             'configuration' => 'Configuration',

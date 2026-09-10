@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Facades\Effects;
@@ -31,7 +32,11 @@ final class AdminUsersTable extends EloquentTableDefinition
      */
     public function builder(TableQuery $query): Builder
     {
-        $builder = User::query()->with('realm')->withExists('roles');
+        $realm = $this->contextModel('realm');
+
+        abort_unless($realm instanceof Realm, 404);
+
+        $builder = $realm->users()->getQuery()->withExists('roles');
 
         if ($query->sorts === []) {
             $builder->latest('id');
@@ -51,7 +56,6 @@ final class AdminUsersTable extends EloquentTableDefinition
                     Text::bound('name'),
                     Text::bound('email')->color(ColorName::Muted)->size(Size::Sm),
                 ]),
-            TextColumn::make('realm.name')->label(__('admin.users.columns.realm')),
             BooleanColumn::make('roles_exists')->label(__('admin.users.columns.admin')),
             TextColumn::make('created_at')->label(__('admin.users.columns.created-at'))->dateTime()->sortable(),
         ];
@@ -62,7 +66,7 @@ final class AdminUsersTable extends EloquentTableDefinition
         return [
             Button::make(__('admin.users.actions.manage'))
                 ->emphasis(Emphasis::Ghost)
-                ->effects(Effects::redirect(route('admin.users.show', ['user' => $row['id']], false))),
+                ->effects(Effects::redirect(route('admin.realms.users.show', ['realm' => $this->contextString('realm'), 'user' => $row['id']], false))),
         ];
     }
 }

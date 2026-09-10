@@ -21,7 +21,7 @@ it('renders the realm tabs as a select on a mobile viewport', function () {
     $realm = Realm::factory()->create(['slug' => 'acme']);
     $this->actingAs(globalAdmin());
 
-    $page = visit("/admin/realms/{$realm->slug}")->on()->mobile();
+    $page = visit("/admin/realms/{$realm->slug}/settings")->on()->mobile();
 
     $page->assertPresent('[data-test=tabs-select]')
         ->assertNoJavaScriptErrors();

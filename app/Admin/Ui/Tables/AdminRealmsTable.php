@@ -51,7 +51,7 @@ final class AdminRealmsTable extends EloquentTableDefinition
         return [
             Button::make(__('admin.realms.actions.manage'))
                 ->emphasis(Emphasis::Ghost)
-                ->effects(Effects::redirect(route('admin.realms.show', ['realm' => $row['slug']], false))),
+                ->effects(Effects::redirect(route('admin.realms.settings', ['realm' => $row['slug']], false))),
         ];
     }
 }

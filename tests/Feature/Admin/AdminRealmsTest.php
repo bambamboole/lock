@@ -25,7 +25,7 @@ test('every admin can list and open realms', function (string $roleName) {
     $this->actingAs(globalAdmin($roleName));
     $this->loadTable(AdminRealmsTable::class)->assertOk();
     $this->get('/admin/realms')->assertOk();
-    $this->get("/admin/realms/{$realm->slug}")->assertOk();
+    $this->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 })->with(['support admin' => GlobalRoleSeeder::SUPPORT, 'super admin' => GlobalRoleSeeder::SUPER_ADMIN]);
 
 test('a realm user reaches neither the realms list nor a realm', function () {
@@ -34,15 +34,15 @@ test('a realm user reaches neither the realms list nor a realm', function () {
     $this->actingAs(User::factory()->create());
     $this->loadDeniedTable(AdminRealmsTable::class)->assertForbidden();
     $this->get('/admin/realms')->assertForbidden();
-    $this->get("/admin/realms/{$realm->slug}")->assertForbidden();
+    $this->get("/admin/realms/{$realm->slug}/settings")->assertForbidden();
 });
 
 test('only realms-manage admins see the editing tabs, and the admin realm has no danger tab', function () {
     $realm = Realm::factory()->create();
 
-    $support = $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get("/admin/realms/{$realm->slug}")->assertOk();
-    $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}")->assertOk();
-    $master = $this->get('/admin/realms/'.Realm::master()->slug)->assertOk();
+    $support = $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $master = $this->get('/admin/realms/'.Realm::master()->slug.'/settings')->assertOk();
 
     expect(renderedTabKeys($support))->toBe(['general'])
         ->and(renderedTabKeys($superAdmin))->toBe(['general', 'configuration', 'danger'])

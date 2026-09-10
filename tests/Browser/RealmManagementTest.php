@@ -17,7 +17,7 @@ it('creates a realm and saves its configuration from the admin console', functio
         ->fill('input[name="slug"]', 'partners')
         ->click('[data-lattice-form="admin.realms.create"]')
         ->assertSee('Realm created.')
-        ->assertPathIs('/admin/realms/partners')
+        ->assertPathIs('/admin/realms/partners/settings')
         ->fill('input[name="session_cookie_name"]', 'partners-identity')
         ->fill('input[name="access_token_lifetime"]', '300')
         ->fill('textarea[name="allowed_redirect_domains"]', "partner.test\nlocalhost")
