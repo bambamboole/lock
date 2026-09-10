@@ -203,7 +203,11 @@ return [
             ],
             'default-scopes' => [
                 'label' => 'Standard-Scopes',
-                'help-text' => 'Erlaubte Scopes für dynamisch registrierte Clients, ein Scope pro Zeile. Eine leere Liste erlaubt alle verfügbaren Scopes.',
+                'help-text' => 'Scopes, die jeder neue Client erhält und ohne Anfrage gewährt bekommt, ein Scope pro Zeile.',
+            ],
+            'optional-scopes' => [
+                'label' => 'Optionale Scopes',
+                'help-text' => 'Scopes, die jeder neue Client anfragen darf, ein Scope pro Zeile. Ein einzelnes * erlaubt jeden Scope aus dem Katalog.',
             ],
             'trusted-clients' => [
                 'label' => 'Vertrauenswürdige Clients',

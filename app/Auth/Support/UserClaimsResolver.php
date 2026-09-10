@@ -7,7 +7,7 @@ namespace App\Auth\Support;
 use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimSet;
 use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimsRequest;
-use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimsResolver;
+use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
 
 final class UserClaimsResolver implements ClaimsResolver
 {

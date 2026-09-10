@@ -28,6 +28,15 @@ return [
             'single_factor' => '1',
             'multi_factor' => '2',
         ],
+        'password' => [
+            'min_length' => 8,
+            'mixed_case' => false,
+            'numbers' => false,
+            'symbols' => false,
+            'uncompromised' => false,
+            'history' => 0,
+            'max_age_days' => null,
+        ],
         'factors' => [
             TotpFactorProvider::class,
             RecoveryCodeProvider::class,

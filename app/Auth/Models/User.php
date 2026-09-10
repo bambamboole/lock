@@ -11,7 +11,7 @@ use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
 use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
-use Bambamboole\LaravelOidc\Server\Tokens\OAuthenticatable;
+use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;

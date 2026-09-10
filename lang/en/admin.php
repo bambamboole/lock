@@ -203,7 +203,11 @@ return [
             ],
             'default-scopes' => [
                 'label' => 'Default scopes',
-                'help-text' => 'Scopes allowed for dynamically registered clients, one per line. An empty list permits all available scopes.',
+                'help-text' => 'Scopes every new client gets and is granted without requesting them, one per line.',
+            ],
+            'optional-scopes' => [
+                'label' => 'Optional scopes',
+                'help-text' => 'Scopes every new client may request, one per line. A single * allows every scope in the catalog.',
             ],
             'trusted-clients' => [
                 'label' => 'Trusted clients',

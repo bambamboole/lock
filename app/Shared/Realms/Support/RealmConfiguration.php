@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Shared\Realms\Support;
 
 use App\Shared\Settings\SettingsRegistry;
-use Bambamboole\LaravelOidc\Server\Scopes\ScopeRepository;
+use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
@@ -40,6 +40,7 @@ final class RealmConfiguration
             'allowed_redirect_schemes' => $clients->allowedRedirectSchemes,
             'allowed_redirect_domains' => $clients->allowedRedirectDomains,
             'default_scopes' => $clients->defaultScopes,
+            'optional_scopes' => $clients->optionalScopes,
             'token_exchange' => $clients->tokenExchange,
             'first_party_trusted' => $clients->firstPartyTrusted,
             'trusted_clients' => $clients->trustedClients,
@@ -86,11 +87,19 @@ final class RealmConfiguration
             'allowed_redirect_domains' => ['present', 'array', 'list', 'max:100'],
             'allowed_redirect_domains.*' => ['required', 'string', 'max:253', 'distinct', 'regex:/\A(\*|[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?|\[[a-f0-9:]+\])\z/'],
             'default_scopes' => ['present', 'array', 'list', 'max:100'],
-            'default_scopes.*' => ['required', 'string', 'max:255', 'distinct', Rule::in(app(ScopeRepository::class)->all()->pluck('id')->all())],
+            'default_scopes.*' => ['required', 'string', 'max:255', 'distinct', Rule::in(self::catalogScopes())],
+            'optional_scopes' => ['present', 'array', 'list', 'max:100'],
+            'optional_scopes.*' => ['required', 'string', 'max:255', 'distinct', Rule::in(['*', ...self::catalogScopes()])],
             'token_exchange' => ['required', 'boolean'],
             'first_party_trusted' => ['required', 'boolean'],
             'trusted_clients' => ['present', 'array', 'list', 'max:100'],
             'trusted_clients.*' => ['required', 'string', 'max:255', 'distinct'],
         ];
+    }
+
+    /** @return list<string> */
+    private static function catalogScopes(): array
+    {
+        return array_values(array_map(strval(...), app(ScopeRepository::class)->all()->pluck('id')->all()));
     }
 }

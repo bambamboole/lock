@@ -53,13 +53,19 @@ runs:
       shell: bash
       run: composer install --no-interaction --no-scripts --no-progress --prefer-dist --optimize-autoloader
 
+    # Mirrors bin/create-worktree.sh: the signing keys live in the database
+    # per realm, so the schema and the admin realm must exist before
+    # oidc:rotate-keys can store them.
     - name: Prepare Application
       if: inputs.build_php == 'true'
       shell: bash
       run: |
         cp .env.example .env
+        touch database/database.sqlite
         php artisan package:discover --ansi
         php artisan key:generate
+        php artisan migrate --force --no-interaction
+        php artisan migrate --path=database/data-migrations --force --no-interaction
         php artisan oidc:rotate-keys --if-missing --no-interaction
 
     - if: inputs.install_js == 'true' || inputs.build_js == 'true'
