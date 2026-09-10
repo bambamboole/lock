@@ -5,7 +5,6 @@ namespace App\Admin\Ui\Layouts;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Pages\ActivityPage;
-use App\Admin\Ui\Pages\AdminDashboardPage;
 use App\Admin\Ui\Pages\RealmsPage;
 use App\Admin\Ui\Pages\UsersPage;
 use App\Auth\Models\User;
@@ -55,7 +54,6 @@ final class AdminLayout extends LayoutDefinition
                     Sidebar::make('admin-sidebar')->collapsible()->items([
                         BrandMark::wordmark('admin-sidebar-logo'),
                         Menu::make('admin-sidebar-menu')->items([
-                            MenuItem::fromPage(AdminDashboardPage::class)->label(__('navigation.admin'))->prefix(Icon::LayoutDashboard),
                             ...($user->can(AdminPermission::ManageUsers) ? [
                                 MenuItem::fromPage(UsersPage::class)->label(__('navigation.users'))->prefix(Affix::icon('users')),
                             ] : []),

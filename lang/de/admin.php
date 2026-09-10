@@ -16,20 +16,6 @@ return [
             ],
         ],
     ],
-    'dashboard' => [
-        'heading' => 'Admin-Dashboard',
-        'cards' => [
-            'users' => [
-                'title' => 'Benutzer',
-            ],
-            'realms' => [
-                'title' => 'Realms',
-            ],
-            'admins' => [
-                'title' => 'Admins',
-            ],
-        ],
-    ],
     'activity' => [
         'heading' => 'Admin-Aktivität',
         'empty' => 'Noch keine Admin-Aktivität.',

@@ -11,10 +11,10 @@ beforeEach(function () {
     (new GlobalRoleSeeder)->run();
 });
 
-test('a non-admin cannot reach the admin dashboard', function () {
-    $this->actingAs(User::factory()->create())->get('/admin')->assertForbidden();
+test('a non-admin cannot reach the admin area', function () {
+    $this->actingAs(User::factory()->create())->get('/admin/users')->assertForbidden();
 });
 
-test('an admin can reach the admin dashboard', function () {
-    $this->actingAs(globalAdmin())->get('/admin')->assertOk();
+test('an admin can reach the admin area', function () {
+    $this->actingAs(globalAdmin())->get('/admin/users')->assertOk();
 });
