@@ -6,11 +6,12 @@ namespace App\Admin\Ui\Pages;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsRealmSettingRows;
-use App\Admin\Ui\Forms\DeleteRealmForm;
+use App\Admin\Ui\Concerns\OpensRealmDeletion;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Enums\RealmSettingSection;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
@@ -33,6 +34,7 @@ use Lattice\Ui\PageSchema;
 final class RealmSettingsPage extends AdminPage
 {
     use BuildsRealmSettingRows;
+    use OpensRealmDeletion;
 
     private ?Realm $realm = null;
 
@@ -67,7 +69,11 @@ final class RealmSettingsPage extends AdminPage
                 ->gap(Gap::Large)
                 ->width(Width::Large)
                 ->schema([
-                    PageHeader::make(__('admin.realms.settings.heading'), __('admin.realms.settings.description', ['realm' => $realm->name])),
+                    PageHeader::make(
+                        __('admin.realms.settings.heading'),
+                        __('admin.realms.settings.description', ['realm' => $realm->name]),
+                        ActionBar::make(overflow: [$this->deleteRealmTrigger($realm->slug)], key: 'admin-realm'),
+                    ),
                     Tabs::make('realm-tabs')
                         ->orientation(Orientation::Vertical)
                         ->defaultValue('general')
@@ -79,12 +85,6 @@ final class RealmSettingsPage extends AdminPage
                                 fn (RealmSettingSection $section): Tab => $this->sectionTab($realm, $section, $manages),
                                 RealmSettingSection::cases(),
                             ),
-                            Tab::make('danger', __('admin.realms.tabs.danger'))
-                                ->visible($manages && ! $realm->isMaster())
-                                ->schema([
-                                    Card::make(__('admin.realms.danger.heading'), __('admin.realms.danger.subtitle'))
-                                        ->schema([Form::use(DeleteRealmForm::class, ['realm' => $realm->slug])]),
-                                ]),
                         ]),
                 ]),
         ]);

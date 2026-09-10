@@ -20,6 +20,7 @@ use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -31,6 +32,7 @@ use Lattice\Form\Components\Form;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
+use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\BadgeEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
@@ -87,14 +89,13 @@ final class UserDetailPage extends AdminPage
                 ->width(Width::Large)
                 ->schema([
                     PageHeader::make($user->name, null, [
-                        Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)->visible($user->isBlocked()),
+                        ...($user->isBlocked() ? [Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)] : []),
+                        ...$this->headerActions($user, $context),
                     ]),
                     $this->profileCard($user, $context),
                     $this->adminRolesCard($user, $currentUser),
                     $this->realmRolesCard($user, $context),
-                    $this->accountActionsCard($user, $context),
                     $this->sessionsCard($context),
-                    $this->dangerCard($context),
                 ]),
         ]);
     }
@@ -139,7 +140,7 @@ final class UserDetailPage extends AdminPage
         return Card::make(__('admin.users.detail.admin-roles.heading'))
             ->visible($currentUser instanceof User && $user->realm->isMaster() && Gate::forUser($currentUser)->allows(AdminPermission::ManageAdminRoles) && $currentUser->isNot($user))
             ->schema([
-                Action::use(UpdateUserGlobalRoles::class, ['user' => $user->id]),
+                ActionBar::button(Action::use(UpdateUserGlobalRoles::class, ['user' => $user->id])),
             ]);
     }
 
@@ -160,34 +161,36 @@ final class UserDetailPage extends AdminPage
                         ? [Text::make(__('admin.users.detail.realm-roles.none'))->color(ColorName::Muted)]
                         : array_map(fn (string $name): Badge => Badge::make($name), $names)),
                 $realm->realmRoles()->exists()
-                    ? Action::use(UpdateUserRealmRoles::class, $context)
+                    ? ActionBar::button(Action::use(UpdateUserRealmRoles::class, $context))
                     : Link::make(__('admin.users.detail.realm-roles.define'))->href(route('admin.realms.roles', ['realm' => $realm->slug], false)),
             ]),
         ]);
     }
 
     /**
+     * A support call is about a password or about locking someone out; every
+     * other action is rarer than the noise it would add to the header.
+     *
      * @param  array<string, string>  $context
+     * @return array<int, Component>
      */
-    private function accountActionsCard(User $user, array $context): Card
+    private function headerActions(User $user, array $context): array
     {
-        return Card::make(__('admin.users.detail.account-actions.heading'))->schema([
-            Stack::make()
-                ->direction(Orientation::Horizontal)
-                ->gap(Gap::Small)
-                ->schema([
-                    Action::use(ResendUserVerification::class, $context)
-                        ->visible(! $user->hasVerifiedEmail() && ! $user->isBlocked()),
-                    Action::use(SendUserPasswordReset::class, $context)
-                        ->visible(! $user->isBlocked()),
-                    Action::use(ResetUserMfaAction::class, $context)
-                        ->visible($user->hasSecondFactor()),
-                    Action::use(BlockUserAction::class, $context)
-                        ->visible(! $user->isBlocked()),
-                    Action::use(UnblockUserAction::class, $context)
-                        ->visible($user->isBlocked()),
-                ]),
-        ]);
+        return ActionBar::make(
+            primary: [
+                ...($user->isBlocked() ? [] : [Action::use(SendUserPasswordReset::class, $context)]),
+                ...($user->isBlocked()
+                    ? [Action::use(UnblockUserAction::class, $context)]
+                    : [Action::use(BlockUserAction::class, $context)]),
+            ],
+            overflow: [
+                ...($user->hasVerifiedEmail() || $user->isBlocked() ? [] : [Action::use(ResendUserVerification::class, $context)]),
+                ...($user->hasSecondFactor() ? [Action::use(ResetUserMfaAction::class, $context)] : []),
+                Action::use(EndAllUserSessionsAction::class, $context),
+                Action::use(DeleteUserAction::class, $context),
+            ],
+            key: 'admin-user',
+        );
     }
 
     /**
@@ -196,25 +199,7 @@ final class UserDetailPage extends AdminPage
     private function sessionsCard(array $context): Card
     {
         return Card::make(__('admin.users.detail.sessions.heading'), __('admin.users.detail.sessions.subtitle'))->schema([
-            Stack::make()->gap(Gap::Medium)->schema([
-                Table::use(UserSessionsTable::class, $context),
-                Stack::make()
-                    ->direction(Orientation::Horizontal)
-                    ->gap(Gap::Small)
-                    ->schema([
-                        Action::use(EndAllUserSessionsAction::class, $context),
-                    ]),
-            ]),
-        ]);
-    }
-
-    /**
-     * @param  array<string, string>  $context
-     */
-    private function dangerCard(array $context): Card
-    {
-        return Card::make(__('admin.users.detail.delete.heading'), __('admin.users.detail.delete.subtitle'))->schema([
-            Action::use(DeleteUserAction::class, $context),
+            Table::use(UserSessionsTable::class, $context),
         ]);
     }
 }

@@ -49,9 +49,6 @@ return [
             'blocked' => 'Blocked',
             'mfa' => 'MFA active',
         ],
-        'actions' => [
-            'manage' => 'Manage',
-        ],
         'status' => [
             'active' => 'Active',
             'blocked' => 'Blocked',
@@ -89,9 +86,6 @@ return [
             ],
             'admin-roles' => [
                 'heading' => 'Admin roles',
-            ],
-            'account-actions' => [
-                'heading' => 'Account actions',
             ],
             'realm-roles' => [
                 'heading' => 'Realm roles',
@@ -201,9 +195,6 @@ return [
             'grant-types' => 'Grant types',
             'status' => 'Status',
         ],
-        'actions' => [
-            'manage' => 'Manage',
-        ],
         'status' => [
             'active' => 'Active',
             'blocked' => 'Blocked',
@@ -279,14 +270,6 @@ return [
                 'heading' => 'Settings',
                 'subtitle' => 'Open a row to change that setting. Client ID, scopes and status are fixed.',
             ],
-            'credentials' => [
-                'heading' => 'Credentials',
-                'subtitle' => 'Rotating the secret invalidates the current one immediately.',
-            ],
-            'danger' => [
-                'heading' => 'Danger',
-                'subtitle' => 'A blocked client cannot obtain new tokens until it is unblocked. Deleting removes its tokens, consents and sessions.',
-            ],
             'rotate-secret' => [
                 'label' => 'Rotate secret',
                 'done' => 'Client secret rotated.',
@@ -329,9 +312,6 @@ return [
             'users' => 'Users',
             'created-at' => 'Created',
         ],
-        'actions' => [
-            'manage' => 'Manage',
-        ],
         'created' => 'Realm created.',
         'updated' => 'Realm updated.',
         'configuration-saved' => 'Realm configuration saved.',
@@ -342,7 +322,6 @@ return [
         ],
         'tabs' => [
             'general' => 'General',
-            'danger' => 'Danger',
         ],
         'values' => [
             'never' => 'Never',

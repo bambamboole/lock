@@ -10,6 +10,7 @@ use App\Admin\Ui\Actions\RevokeClient;
 use App\Admin\Ui\Actions\RotateClientSecret;
 use App\Admin\Ui\Forms\UpdateClientForm;
 use App\Realms\Models\Realm;
+use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
@@ -93,24 +94,36 @@ final class ClientDetailPage extends AdminPage
                 ->gap(Gap::Large)
                 ->width(Width::Large)
                 ->schema([
-                    PageHeader::make($client->name, __('admin.clients.detail.description', ['realm' => $realm->name])),
+                    PageHeader::make(
+                        $client->name,
+                        __('admin.clients.detail.description', ['realm' => $realm->name]),
+                        $this->headerActions($client, $context),
+                    ),
                     ...(is_string($secret) ? [$this->secretCard($client, $secret)] : []),
                     $this->settingsCard($client, $context),
-                    Card::make(__('admin.clients.detail.credentials.heading'), __('admin.clients.detail.credentials.subtitle'))
-                        ->visible($client->confidential())
-                        ->schema([Action::use(RotateClientSecret::class, $context)]),
-                    Card::make(__('admin.clients.detail.danger.heading'), __('admin.clients.detail.danger.subtitle'))->schema([
-                        Stack::make()
-                            ->direction(Orientation::Horizontal)
-                            ->gap(Gap::Small)
-                            ->schema([
-                                Action::use(RevokeClient::class, $context)->visible(! $client->revoked),
-                                Action::use(RestoreClient::class, $context)->visible($client->revoked),
-                                Action::use(DeleteClient::class, $context),
-                            ]),
-                    ]),
                 ]),
         ]);
+    }
+
+    /**
+     * Rotating the secret is the one thing an operator comes here to do; a
+     * client is blocked or deleted rarely enough to sit behind the menu.
+     *
+     * @param  array<string, string>  $context
+     * @return array<int, Component>
+     */
+    private function headerActions(Client $client, array $context): array
+    {
+        return ActionBar::make(
+            primary: $client->confidential() ? [Action::use(RotateClientSecret::class, $context)] : [],
+            overflow: [
+                ...($client->revoked
+                    ? [Action::use(RestoreClient::class, $context)]
+                    : [Action::use(RevokeClient::class, $context)]),
+                Action::use(DeleteClient::class, $context),
+            ],
+            key: 'admin-client',
+        );
     }
 
     private function secretCard(Client $client, string $secret): Card
