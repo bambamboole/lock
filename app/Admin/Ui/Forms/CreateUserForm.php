@@ -9,7 +9,6 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Lattice\Facades\Effects;
 use Lattice\Form\Attributes\AsForm;
 use Lattice\Form\Components\Choice;
@@ -55,7 +54,7 @@ final class CreateUserForm extends FormDefinition
                 ->autoComplete('new-password')
                 ->visibleWhen('credentials', self::PASSWORD)
                 ->requiredWhen('credentials', self::PASSWORD)
-                ->rules(['string', Password::default()]),
+                ->rules(['string', $realm->passwordPolicy()->rule()]),
             Toggle::make('email_verified', __('admin.users.fields.email-verified.label'))
                 ->helperText(__('admin.users.fields.email-verified.help-text')),
         ])->submitLabel(__('admin.users.create.submit'));

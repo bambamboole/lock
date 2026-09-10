@@ -14,6 +14,7 @@ use App\Admin\Ui\Forms\UpdateUserForm;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
+use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\Activity;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
@@ -108,6 +109,24 @@ test('a user can be created with an initial password and a verified address', fu
     Notification::assertNothingSent();
     expect(Hash::check('correct-horse-battery-staple', $user->password))->toBeTrue()
         ->and($user->hasVerifiedEmail())->toBeTrue();
+});
+
+test('an initial password follows the target realm\'s policy, not the admin\'s own', function () {
+    app(UpdateRealmConfiguration::class)->handle($this->realm, ['password_min_length' => 12]);
+    $admin = globalAdmin();
+    $payload = fn (string $email, string $password): array => [
+        'name' => 'Wanda Needle', 'email' => $email, 'credentials' => 'password', 'password' => $password,
+    ];
+
+    $this->actingAs($admin)->submitForm(CreateUserForm::class, $payload('wanda@example.com', 'tencharspw'), ['realm' => 'acme'])
+        ->assertInvalid(['password']);
+    $this->actingAs($admin)->submitForm(CreateUserForm::class, $payload('wanda@example.com', 'tencharspw'), ['realm' => Realm::master()->slug])
+        ->assertRedirect();
+    $this->actingAs($admin)->submitForm(CreateUserForm::class, $payload('wanda@example.com', 'twelvechars12'), ['realm' => 'acme'])
+        ->assertRedirect();
+
+    expect($this->realm->users()->where('email', 'wanda@example.com')->exists())->toBeTrue()
+        ->and(Realm::master()->users()->where('email', 'wanda@example.com')->exists())->toBeTrue();
 });
 
 test('an address is unique within the realm but free in another realm', function () {
