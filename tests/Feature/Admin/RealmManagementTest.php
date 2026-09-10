@@ -78,6 +78,7 @@ it('saves configuration for the signed realm while preserving its identity', fun
         'dynamic_registration' => true,
         'allowed_redirect_domains' => "partner.test\n localhost \n",
         'default_scopes' => "openid\nprofile",
+        'optional_scopes' => 'email',
         'first_party_client_id' => 'injected',
     ]), ['realm' => $realm->slug])->assertRedirect();
 
@@ -96,6 +97,7 @@ it('saves configuration for the signed realm while preserving its identity', fun
         ->and($realm->clients()->dynamicRegistration)->toBeTrue()
         ->and($realm->clients()->allowedRedirectDomains)->toBe(['partner.test', 'localhost'])
         ->and($realm->clients()->defaultScopes)->toBe(['openid', 'profile'])
+        ->and($realm->clients()->optionalScopes)->toBe(['email'])
         ->and($realm->clients()->firstPartyClientId)->toBeNull()
         ->and($other->refresh()->tokens()->accessTokenLifetime)->toBe(900);
 
@@ -129,6 +131,7 @@ it('reports invalid list entries on the matching configuration field', function 
 })->with([
     'invalid cookie name' => ['session_cookie_name', 'invalid cookie'],
     'unknown scope' => ['default_scopes', 'admin:realms:manage'],
+    'wildcard is not a default scope' => ['default_scopes', '*'],
     'unsafe scheme' => ['allowed_redirect_schemes', 'javascript'],
     'URL instead of host' => ['allowed_redirect_domains', 'https://partner.test/path'],
     'unknown trusted client' => ['trusted_clients', 'missing-client'],

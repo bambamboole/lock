@@ -28,7 +28,7 @@ use Lattice\Ui\Enums\Variant;
 #[AsForm('admin.realms.configuration', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class UpdateRealmConfigurationForm extends FormDefinition
 {
-    private const array LIST_FIELDS = ['allowed_redirect_schemes', 'allowed_redirect_domains', 'default_scopes', 'trusted_clients'];
+    private const array LIST_FIELDS = ['allowed_redirect_schemes', 'allowed_redirect_domains', 'default_scopes', 'optional_scopes', 'trusted_clients'];
 
     public function __construct(private readonly UpdatesRealmConfiguration $updateRealm) {}
 

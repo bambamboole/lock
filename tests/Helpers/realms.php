@@ -17,7 +17,7 @@ function realmFormData(Realm $realm, array $overrides = []): array
 {
     $data = $realm->configuration();
 
-    foreach (['allowed_redirect_schemes', 'allowed_redirect_domains', 'default_scopes', 'trusted_clients'] as $key) {
+    foreach (['allowed_redirect_schemes', 'allowed_redirect_domains', 'default_scopes', 'optional_scopes', 'trusted_clients'] as $key) {
         $data[$key] = implode("\n", array_filter($realm->settings->array('realm.'.$key), is_string(...)));
     }
 

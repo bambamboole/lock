@@ -195,6 +195,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
             allowedRedirectSchemes: $this->stringList('allowed_redirect_schemes'),
             allowedRedirectDomains: $this->stringList('allowed_redirect_domains'),
             defaultScopes: $this->stringList('default_scopes'),
+            optionalScopes: $this->stringList('optional_scopes'),
             tokenExchange: $settings->boolean('realm.token_exchange'),
             firstPartyClientId: $settings->string('realm.first_party_client_id') ?: null,
             firstPartyTrusted: $settings->boolean('realm.first_party_trusted'),

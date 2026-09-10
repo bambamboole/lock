@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Auth\Console\Commands;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Installation\InstallSelfCommand as BaseInstallSelfCommand;
+use Bambamboole\LaravelOidc\Server\Installation\Commands\InstallSelfCommand as BaseInstallSelfCommand;
 use Bambamboole\LaravelOidc\Server\Shared\Installation\EnvironmentFile;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Illuminate\Support\Facades\DB;

@@ -25,6 +25,7 @@ it('applies database registration rules only to the configured realm', function 
         'dynamic_registration' => true,
         'allowed_redirect_domains' => ['partner.test'],
         'default_scopes' => ['openid', 'profile'],
+        'optional_scopes' => [],
     ]);
 
     $this->postJson('/realms/admin/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
