@@ -28,6 +28,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Str;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
@@ -145,16 +146,34 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         }
 
         $value = (string) $permission->value;
-        $granted = $this->roles()
-            ->with('permissions')
-            ->get()
-            ->flatMap(fn (Role $role) => $role->permissionValues());
+        $granted = $this->grantedGlobalPermissions();
 
         if ($granted->contains($value)) {
             return true;
         }
 
         return str_ends_with($value, ':view') && $granted->contains(Str::beforeLast($value, ':').':manage');
+    }
+
+    /**
+     * Read through the relation rather than a fresh query on every check: one
+     * console page runs a gate check per action it offers, and a table row
+     * multiplies that by its rows — a users table went from eight queries to
+     * over three hundred when each check re-read the pivot.
+     *
+     * The relation is therefore the cache, and `refresh()` (or a new request,
+     * which resolves the user again) is what picks up a role change made after
+     * a check on the same instance.
+     *
+     * @return SupportCollection<int, string>
+     */
+    private function grantedGlobalPermissions(): SupportCollection
+    {
+        if (! $this->relationLoaded('roles')) {
+            $this->load(['roles.permissions']);
+        }
+
+        return $this->roles->flatMap(fn (Role $role): array => $role->permissionValues());
     }
 
     public function preferredLocale(): ?string
