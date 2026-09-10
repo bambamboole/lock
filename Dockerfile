@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # check=skip=SecretsUsedInArgOrEnv
 
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.5
 ARG NODE_VERSION=22
 
 # ---------------------------------------------------------------------------

@@ -7,7 +7,7 @@ environment; they never share state.
 
 ## The image
 
-- **Base: FrankenPHP (`dunglas/frankenphp:1-php8.4-bookworm`) in classic mode.** One binary serves HTTP and runs PHP,
+- **Base: FrankenPHP (`dunglas/frankenphp:1-php8.5-bookworm`) in classic mode.** One binary serves HTTP and runs PHP,
   so the container needs no nginx/FPM pairing, no supervisor, and no second process to health-check. It runs PHP
   exactly like php-fpm would (a fresh request lifecycle per request), which keeps the app free of worker-mode
   constraints and avoids adding `laravel/octane` as a dependency. Switching to the worker mode later is an
@@ -31,7 +31,7 @@ environment; they never share state.
 | `deploy`    | `php artisan app:deploy` (one-off release step)         |
 | anything    | executed as-is, e.g. `php artisan admin:grant me@x.com` |
 
-Build args: `PHP_VERSION` (default `8.4`; `composer.json` allows `^8.4`, CI runs 8.5), `NODE_VERSION`, and the
+Build args: `PHP_VERSION` (default `8.5`, matching CI and Herd; `composer.json` allows `^8.4`), `NODE_VERSION`, and the
 `VITE_REVERB_*` values if a Reverb server is deployed (see [Reverb](#reverb)).
 
 ## Environment
@@ -154,8 +154,9 @@ staging Lock (to rehearse Lock upgrades themselves) is a topology choice; the co
 
 ## Signing keys
 
-The app resolves `Bambamboole\LaravelOidc\Server\Keys\EnvSigningKeyStore` (`config/oidc.php` does not override
-`keys.store`). That has three consequences for the deployment:
+**Interim path until laravel-oidc 0.24.** The package is moving key storage into the database; once the app is on
+0.24, `oidc:rotate-keys --if-missing` joins the deploy step and the environment variables below go away. Until then
+the app resolves `EnvSigningKeyStore`, which means:
 
 - **The key pair lives in the environment and is shared by every realm** on the instance: `OIDC_PRIVATE_KEY`,
   `OIDC_PUBLIC_KEY`, and `OIDC_PREVIOUS_PUBLIC_KEY`. Paste the quoted, `\n`-escaped values `oidc:rotate-keys --print`
@@ -164,18 +165,9 @@ The app resolves `Bambamboole\LaravelOidc\Server\Keys\EnvSigningKeyStore` (`conf
   configured, prints the current public key as `OIDC_PREVIOUS_PUBLIC_KEY`. Put all three into the deployment, restart
   every app service, and keep the previous public key until every token signed by it has expired (access-token
   lifetime plus the refresh window); then remove it. Without `--print` the command tries to write `.env` and fails
-  inside the container with `Unable to read the environment file at [/app/.env]`, which is also why
-  `oidc:rotate-keys --if-missing` cannot be part of the container's deploy step.
+  inside the container with `Unable to read the environment file at [/app/.env]`.
 - **Backup is the environment**, not the database: keep the deployment's variables in whatever secret store Coolify
   or your platform backs up. Losing the private key invalidates every outstanding token and ID token.
-
-The package also ships `DatabaseSigningKeyStore`, which keeps one active key **per realm** in `oidc_signing_keys`
-(the table already exists), retires the previous key in place so JWKS keeps serving it, and makes
-`oidc:rotate-keys --if-missing` a no-op once a key exists. Switching to it is a one-line change in `config/oidc.php`
-(`'keys' => ['store' => DatabaseSigningKeyStore::class]`); with it, step 4 above becomes
-`docker compose run --rm app php artisan oidc:rotate-keys --if-missing` (and can join the deploy step), rotation is
-`oidc:rotate-keys --force` per realm, and the database backup covers the keys. This is an owner decision because it
-changes where every environment — CI and local included — stores its keys.
 
 ## Database backups
 
