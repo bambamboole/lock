@@ -173,7 +173,8 @@ the app resolves `EnvSigningKeyStore`, which means:
 Postgres is the only state that matters besides the signing keys: users, realms, clients, tokens, sessions, consents,
 roles, settings, and the audit log all live there. Back up the `postgres` volume (or run `pg_dump` from the
 `postgres` service) on a schedule. The `storage` volume only holds uploaded files, of which there are none today, and
-Redis holds only cache, sessions, and queued jobs.
+Redis holds only the cache and queued jobs. Sessions are rows in Postgres on purpose: the account page lists a
+user's browser sessions and signs single ones out, which the Redis driver cannot serve.
 
 ## Monitoring
 

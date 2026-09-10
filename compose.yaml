@@ -33,7 +33,9 @@ x-app: &app
     REDIS_HOST: redis
     REDIS_PORT: "6379"
     CACHE_STORE: redis
-    SESSION_DRIVER: redis
+    # Sessions live in Postgres, not Redis: the account page lists a user's
+    # browser sessions and signs single ones out, which needs rows to read.
+    SESSION_DRIVER: database
     QUEUE_CONNECTION: redis
     BROADCAST_CONNECTION: "null"
 
