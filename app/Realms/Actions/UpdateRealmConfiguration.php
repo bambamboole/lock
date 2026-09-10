@@ -28,7 +28,7 @@ final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
                     ...RealmConfiguration::rules()['trusted_clients.*'],
                     Rule::exists('oidc_clients', 'client_id')->where('realm_id', $realm->slug)->where('revoked', 0),
                 ],
-            ])->validate();
+            ])->setAttributeNames(RealmConfiguration::attributeNames())->validate();
 
             $changes = [];
 

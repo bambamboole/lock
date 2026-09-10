@@ -5,18 +5,20 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
-use App\Admin\Ui\Forms\UpdateRealmConfigurationForm;
+use App\Admin\Ui\Forms\RealmSettingForm;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\globalAdmin;
-use function Tests\Helpers\realmFormData;
+use function Tests\Helpers\realmSetting;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -27,7 +29,7 @@ it('creates an independent realm with default configuration through the admin fo
     Realm::master()->settings->set('realm.access_token_lifetime', 120);
 
     $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners'])
-        ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'configuration']));
+        ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'tokens']));
 
     $realm = Realm::query()->where('slug', 'partners')->sole();
 
@@ -60,27 +62,21 @@ it('renames a realm without touching its identifier or configuration', function 
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
 });
 
-it('saves configuration for the signed realm while preserving its identity', function (string $slug) {
+it('saves one setting at a time for the signed realm and leaves every other realm alone', function (string $slug) {
     $partner = Realm::factory()->create(['name' => 'Partners', 'slug' => 'partners']);
     $realm = $slug === 'admin' ? Realm::master() : $partner;
     $other = $slug === 'admin' ? $partner : Realm::master();
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [
-        'name' => 'Updated realm',
-        'slug' => 'renamed',
-        'access_token_lifetime' => 300,
-        'session_cookie_name' => 'custom-identity',
-        'session_absolute_lifetime' => 86400,
-        'session_token_ttl' => 600,
-        'session_token_refresh_skew' => 30,
-        'challenge_providers' => ['totp'],
-        'recovery_codes' => 10,
-        'dynamic_registration' => true,
-        'allowed_redirect_domains' => "partner.test\n localhost \n",
-        'default_scopes' => "openid\nprofile",
-        'optional_scopes' => 'email',
-        'first_party_client_id' => 'injected',
-    ]), ['realm' => $realm->slug])->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'access_token_lifetime', 300))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'tokens']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'session_cookie_name', 'custom-identity'))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'sessions']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'challenge_providers', ['totp']))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'mfa']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'dynamic_registration', true))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'clients']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'allowed_redirect_domains', "partner.test\n localhost \n"))->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'default_scopes', "openid\nprofile"))->assertRedirect();
 
     $realm->refresh();
 
@@ -89,35 +85,38 @@ it('saves configuration for the signed realm while preserving its identity', fun
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
         ->and($realm->sessions()->cookieName)->toBe('custom-identity')
         ->and($other->sessions()->cookieName)->toBeNull()
-        ->and($realm->sessions()->absoluteLifetime)->toBe(86400)
-        ->and($realm->sessions()->tokenTtl)->toBe(600)
-        ->and($realm->sessions()->tokenRefreshSkew)->toBe(30)
         ->and($realm->credentials()->challengeProviders)->toBe(['totp'])
-        ->and($realm->credentials()->recoveryCodes)->toBe(10)
         ->and($realm->clients()->dynamicRegistration)->toBeTrue()
         ->and($realm->clients()->allowedRedirectDomains)->toBe(['partner.test', 'localhost'])
         ->and($realm->clients()->defaultScopes)->toBe(['openid', 'profile'])
-        ->and($realm->clients()->optionalScopes)->toBe(['email'])
-        ->and($realm->clients()->firstPartyClientId)->toBeNull()
         ->and($other->refresh()->tokens()->accessTokenLifetime)->toBe(900);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole();
+    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
 
-    expect($activity->subject_id)->toBe($realm->id)
-        ->and($activity->getProperty('changes.access_token_lifetime.new'))->toBe(300);
+    expect($activity?->subject_id)->toBe($realm->id)
+        ->and($activity?->getProperty('changes.access_token_lifetime'))->toBe(['old' => 900, 'new' => 300]);
 })->with(['admin', 'partners']);
+
+it('refuses a field the realm configuration does not define', function (string $field) {
+    $realm = Realm::master();
+    $before = $realm->configuration();
+
+    expect(fn () => $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, $field, 'injected')))
+        ->toThrow(NotFoundHttpException::class)
+        ->and($realm->refresh()->configuration())->toBe($before)
+        ->and($realm->name)->toBe('Admin')
+        ->and($realm->slug)->toBe('admin');
+})->with(['first_party_client_id', 'slug', 'name']);
 
 it('saves the password policy of the signed realm and audits the change', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
     $other = Realm::master();
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [
-        'password_min_length' => 12,
-        'password_mixed_case' => true,
-        'password_numbers' => true,
-        'password_history' => 5,
-        'password_max_age_days' => 90,
-    ]), ['realm' => $realm->slug])->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'password_min_length', 12))->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'password_mixed_case', true))->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'password_numbers', true))->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'password_history', 5))->assertRedirect();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'password_max_age_days', 90))->assertRedirect();
 
     $policy = $realm->refresh()->credentials()->password;
 
@@ -130,18 +129,18 @@ it('saves the password policy of the signed realm and audits the change', functi
         ->and($other->credentials()->password->minLength)->toBe(8)
         ->and($other->credentials()->password->maxAgeDays)->toBeNull();
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole();
+    $changes = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
+        ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
 
-    expect($activity->getProperty('changes.password_min_length'))->toBe(['old' => 8, 'new' => 12])
-        ->and($activity->getProperty('changes.password_max_age_days'))->toBe(['old' => 0, 'new' => 90]);
+    expect($changes['password_min_length'])->toBe(['old' => 8, 'new' => 12])
+        ->and($changes['password_max_age_days'])->toBe(['old' => 0, 'new' => 90]);
 });
 
 it('rejects an out-of-range password policy without saving it', function (string $field, int $value) {
     $realm = Realm::master();
     $before = $realm->configuration();
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [$field => $value]), ['realm' => $realm->slug])
-        ->assertInvalid([$field]);
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, $field, $value))->assertInvalid([$field]);
 
     expect($realm->refresh()->configuration())->toBe($before);
 })->with([
@@ -150,16 +149,13 @@ it('rejects an out-of-range password policy without saving it', function (string
     'negative age' => ['password_max_age_days', -1],
 ]);
 
-it('rejects a realm configuration atomically when session timings conflict', function () {
+it('reports a conflict with a setting the form does not show on the field being edited', function () {
     $realm = Realm::master();
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [
-        'access_token_lifetime' => 120,
-        'session_token_ttl' => 60,
-        'session_token_refresh_skew' => 60,
-    ]), ['realm' => $realm->slug])->assertInvalid(['session_token_refresh_skew']);
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'session_token_ttl', 60))
+        ->assertInvalid(['session_token_ttl' => __('admin.realms.fields.session-token-refresh-skew.label')]);
 
-    expect($realm->refresh()->tokens()->accessTokenLifetime)->toBe(900)
+    expect($realm->refresh()->sessions()->tokenTtl)->toBe(3600)
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
 });
 
@@ -167,8 +163,7 @@ it('reports invalid list entries on the matching configuration field', function 
     $realm = Realm::master();
     $before = $realm->configuration();
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, [$field => $value]), ['realm' => $realm->slug])
-        ->assertInvalid([$field]);
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, $field, $value))->assertInvalid([$field]);
 
     expect($realm->refresh()->configuration())->toBe($before);
 })->with([
@@ -186,11 +181,8 @@ it('only trusts active clients belonging to the configured realm', function () {
     $client = $master->runAsCurrent(fn () => app(ClientRepository::class)
         ->createAuthorizationCodeGrantClient('Master client', ['https://rp.test/callback']));
 
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($realm, ['trusted_clients' => $client->client_id]), ['realm' => $realm->slug])
-        ->assertInvalid(['trusted_clients']);
-
-    $this->submitForm(UpdateRealmConfigurationForm::class, realmFormData($master, ['trusted_clients' => $client->client_id]), ['realm' => $master->slug])
-        ->assertRedirect()->assertValid();
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'trusted_clients', $client->client_id))->assertInvalid(['trusted_clients']);
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($master, 'trusted_clients', $client->client_id))->assertRedirect()->assertValid();
 
     expect($master->refresh()->clients()->trustedClients)->toBe([$client->client_id]);
 });
@@ -230,4 +222,9 @@ it('refuses to delete the admin realm', function () {
     $this->submitDeniedForm(DeleteRealmForm::class, ['name' => $master->name], ['realm' => $master->slug])->assertForbidden();
 
     expect(Realm::query()->whereKey($master->id)->exists())->toBeTrue();
+});
+
+it('exposes every stored realm setting through a section of the console', function () {
+    expect(array_keys(RealmConfiguration::settings()))
+        ->toEqualCanonicalizing(array_keys(RealmConfiguration::defaults()));
 });

@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
 
-it('creates a realm and saves its configuration from the admin console', function () {
+it('creates a realm and saves its settings one disclosure row at a time', function () {
     (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
 
@@ -18,20 +18,22 @@ it('creates a realm and saves its configuration from the admin console', functio
         ->click('[data-lattice-form="admin.realms.create"]')
         ->assertSee('Realm created.')
         ->assertPathIs('/admin/realms/partners/settings')
-        ->fill('input[name="session_cookie_name"]', 'partners-identity')
+        ->assertMissing('input[name="access_token_lifetime"]')
+        ->click('[data-test="setting-access-token-lifetime"] button')
         ->fill('input[name="access_token_lifetime"]', '300')
-        ->fill('textarea[name="allowed_redirect_domains"]', "partner.test\nlocalhost")
-        ->click('[data-lattice-form="admin.realms.configuration"]')
+        ->click('[data-test="setting-access-token-lifetime"] [data-test="form-submit"]')
         ->assertSee('Realm configuration saved.')
-        ->refresh()
-        ->assertValue('input[name="session_cookie_name"]', 'partners-identity')
-        ->assertValue('input[name="access_token_lifetime"]', '300')
-        ->assertValue('textarea[name="allowed_redirect_domains"]', "partner.test\nlocalhost")
+        ->assertSee('5 minutes')
+        ->click('Client rules')
+        ->click('[data-test="setting-allowed-redirect-domains"] button')
+        ->fill('textarea[name="allowed_redirect_domains"]', "partner.test\nlocalhost")
+        ->click('[data-test="setting-allowed-redirect-domains"] [data-test="form-submit"]')
+        ->assertSee('Realm configuration saved.')
+        ->assertSee('partner.test')
         ->assertNoJavaScriptErrors();
 
     $realm = Realm::query()->where('slug', 'partners')->sole();
 
     expect($realm->tokens()->accessTokenLifetime)->toBe(300)
-        ->and($realm->sessions()->cookieName)->toBe('partners-identity')
         ->and($realm->clients()->allowedRedirectDomains)->toBe(['partner.test', 'localhost']);
 });

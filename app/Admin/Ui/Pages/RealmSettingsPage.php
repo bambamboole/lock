@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Ui\Concerns\BuildsRealmSettingRows;
 use App\Admin\Ui\Forms\DeleteRealmForm;
-use App\Admin\Ui\Forms\UpdateRealmConfigurationForm;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
@@ -31,6 +32,8 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/settings', name: 'admin.realms.settings', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
 final class RealmSettingsPage extends AdminPage
 {
+    use BuildsRealmSettingRows;
+
     private ?Realm $realm = null;
 
     public function title(): ?string
@@ -75,9 +78,10 @@ final class RealmSettingsPage extends AdminPage
                                     ->visible($manages)
                                     ->schema([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])]),
                             ]),
-                            Tab::make('configuration', __('admin.realms.tabs.configuration'))
-                                ->visible($manages)
-                                ->schema([Form::use(UpdateRealmConfigurationForm::class, ['realm' => $realm->slug])]),
+                            ...array_map(
+                                fn (RealmSettingSection $section): Tab => $this->sectionTab($realm, $section, $manages),
+                                RealmSettingSection::cases(),
+                            ),
                             Tab::make('danger', __('admin.realms.tabs.danger'))
                                 ->visible($manages && ! $realm->isMaster())
                                 ->schema([
@@ -87,6 +91,17 @@ final class RealmSettingsPage extends AdminPage
                         ]),
                 ]),
         ]);
+    }
+
+    private function sectionTab(Realm $realm, RealmSettingSection $section, bool $manages): Tab
+    {
+        return Tab::make($section->value, __('admin.realms.sections.'.$section->value))
+            ->visible($manages)
+            ->schema([
+                Card::make(__('admin.realms.sections.'.$section->value))->schema([
+                    $this->settingRows($realm, $section, $manages),
+                ]),
+            ]);
     }
 
     private function summaryCard(Realm $realm): Card

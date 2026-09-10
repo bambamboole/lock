@@ -349,8 +349,11 @@ return [
         ],
         'tabs' => [
             'general' => 'Allgemein',
-            'configuration' => 'Konfiguration',
             'danger' => 'Gefahrenzone',
+        ],
+        'values' => [
+            'never' => 'Nie',
+            'generated' => 'Pro Realm generiert',
         ],
         'summary' => [
             'heading' => 'Übersicht',

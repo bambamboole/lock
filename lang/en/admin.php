@@ -349,8 +349,11 @@ return [
         ],
         'tabs' => [
             'general' => 'General',
-            'configuration' => 'Configuration',
             'danger' => 'Danger',
+        ],
+        'values' => [
+            'never' => 'Never',
+            'generated' => 'Generated per realm',
         ],
         'summary' => [
             'heading' => 'Summary',
