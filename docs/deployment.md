@@ -47,7 +47,6 @@ service-internal values (database host, Redis, `LOG_CHANNEL=stderr`, `APP_ENV=pr
 | `REALM_MASTER_SLUG`                                                                                                             | Slug of the master realm, `admin` by default. Instance administrators live there; it is created by the data migrations. Do not change it after the first deploy.                                   |
 | `OIDC_RP_ISSUER`                                                                                                                | Derived in `compose.yaml` as `APP_URL/realms/REALM_MASTER_SLUG`: the console authenticates against the master realm (see `.ai/rules/realms.md`).                                                   |
 | `OIDC_FIRST_PARTY_CLIENT`, `OIDC_RP_CLIENT_ID`, `OIDC_RP_CLIENT_SECRET`                                                         | The console's own OIDC client, printed by `oidc:client --first-party` on the first deploy.                                                                                                         |
-| `OIDC_PRIVATE_KEY`, `OIDC_PUBLIC_KEY`, `OIDC_PREVIOUS_PUBLIC_KEY`                                                               | The signing key pair; see [Signing keys](#signing-keys).                                                                                                                                           |
 | `SESSION_SECURE_COOKIE`                                                                                                         | `true` (the compose default). Cookies are only ever sent over HTTPS.                                                                                                                               |
 | `SESSION_DOMAIN`                                                                                                                | Leave empty unless the console and the realms are served from different hosts (they are not today).                                                                                                |
 | `SESSION_LIFETIME`                                                                                                              | Minutes of idle time before a console session expires (default 120).                                                                                                                               |
@@ -66,8 +65,8 @@ move the single shared cookie.
 
 ## First deploy
 
-1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, and the mail settings. Leave the `OIDC_*` client and key variables
-   empty for now.
+1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, and the mail settings. Leave the `OIDC_*` client variables empty for
+   now.
 2. Start the stack (`docker compose up -d`, or deploy in Coolify). `/up` answers `200` as soon as PHP is up; it does
    not probe the database.
 3. Run the release step against the running stack:
@@ -76,19 +75,12 @@ move the single shared cookie.
     docker compose run --rm app deploy
     ```
 
-    `app:deploy` runs `migrate --force --isolated`, the data migrations (creates the master realm), `permission:sync`,
-    and `lattice:discover-cache`. Every step is idempotent and safe to repeat.
+    `app:deploy` runs `migrate --force --isolated`, the data migrations (creates the master realm),
+    `oidc:rotate-keys --if-missing` for every realm, `permission:sync`, and `lattice:discover-cache`. Every step is
+    idempotent and safe to repeat, so the master realm's signing key exists from this point on and no key material
+    goes into the environment (details under [Signing keys](#signing-keys)).
 
-4. Generate the signing key pair and put it into the environment (details under [Signing keys](#signing-keys)):
-
-    ```bash
-    docker compose run --rm app php artisan oidc:rotate-keys --print
-    ```
-
-    Add the printed `OIDC_PRIVATE_KEY` and `OIDC_PUBLIC_KEY` to the deployment variables and redeploy. Until they are
-    set, discovery works but `/.well-known/jwks.json` returns `500`.
-
-5. Provision the console's own OIDC client (self-SSO) in the master realm. The command prints the variables; nothing
+4. Provision the console's own OIDC client (self-SSO) in the master realm. The command prints the variables; nothing
    is written inside the container:
 
     ```bash
@@ -103,7 +95,7 @@ move the single shared cookie.
     `--rotate` to issue a new secret. (`oidc:install-self` is not usable here: it writes `.env`, which the container
     does not have.)
 
-6. Register the first administrator on the master realm's registration page (`APP_URL/realms/admin/auth/register`),
+5. Register the first administrator on the master realm's registration page (`APP_URL/realms/admin/auth/register`),
    verify the address, then grant the global role:
 
     ```bash
@@ -112,9 +104,9 @@ move the single shared cookie.
 
     The console is at `APP_URL`. Revoke by clearing the user's global roles in the admin UI.
 
-7. In the console, open the `admin` realm's settings and add the console client id to **Trusted clients** so the
+6. In the console, open the `admin` realm's settings and add the console client id to **Trusted clients** so the
    console login skips the consent screen. (`oidc:install-self` would record it as the realm's first-party client,
-   but see step 5.)
+   but see step 4.)
 
 Every later release is: pull the new image, `docker compose run --rm app deploy`, restart the three app services.
 In Coolify, set `php artisan app:deploy` as the pre-deployment command of the `app` service. Because the migrations
@@ -123,8 +115,8 @@ run `--isolated`, concurrently booting instances do not race each other.
 ## Realms and SaaS clients
 
 The SaaS uses two realms, `staging` and `production`, next to the master realm `admin`. Create them in the console
-(**Realms → Create realm**) with exactly those slugs. Each realm then exposes its own issuer, discovery document, and
-JWKS:
+(**Realms → Create realm**) with exactly those slugs. Creating a realm mints its signing keypair. Each realm then
+exposes its own issuer, discovery document, and JWKS:
 
 ```text
 https://<host>/realms/staging/.well-known/openid-configuration
@@ -153,24 +145,34 @@ staging Lock (to rehearse Lock upgrades themselves) is a topology choice; the co
 
 ## Signing keys
 
-**Interim path until laravel-oidc 0.24.** The package is moving key storage into the database; once the app is on
-0.24, `oidc:rotate-keys --if-missing` joins the deploy step and the environment variables below go away. Until then
-the app resolves `EnvSigningKeyStore`, which means:
+Keys live in the `oidc_signing_keys` table, never in the environment. There is **one keypair per realm**: the realm
+is the issuer, so a realm signs with its own key and publishes only that key at its own JWKS endpoint.
 
-- **The key pair lives in the environment and is shared by every realm** on the instance: `OIDC_PRIVATE_KEY`,
-  `OIDC_PUBLIC_KEY`, and `OIDC_PREVIOUS_PUBLIC_KEY`. Paste the quoted, `\n`-escaped values `oidc:rotate-keys --print`
-  emits verbatim; the store unescapes them.
-- **Rotation is an environment change.** `oidc:rotate-keys --print` generates a fresh pair and, when a key is
-  configured, prints the current public key as `OIDC_PREVIOUS_PUBLIC_KEY`. Put all three into the deployment, restart
-  every app service, and keep the previous public key until every token signed by it has expired (access-token
-  lifetime plus the refresh window); then remove it. Without `--print` the command tries to write `.env` and fails
-  inside the container with `Unable to read the environment file at [/app/.env]`.
-- **Backup is the environment**, not the database: keep the deployment's variables in whatever secret store Coolify
-  or your platform backs up. Losing the private key invalidates every outstanding token and ID token.
+- **Creation is part of the deploy.** `app:deploy` runs `oidc:rotate-keys --if-missing` for every realm, so the
+  master realm has a key from the first deploy on. A realm created later in the console gets its keypair when it is
+  created; the deploy step is the safety net for a realm that somehow has none.
+- **Rotation is `oidc:rotate-keys`** (no flag), run with the target realm current:
+
+    ```bash
+    docker compose run --rm app php artisan tinker --execute '
+    App\Realms\Models\Realm::query()->where("slug", "admin")->sole()
+        ->runAsCurrent(fn () => Illuminate\Support\Facades\Artisan::call("oidc:rotate-keys", ["--force" => true]));
+    '
+    ```
+
+    The new key signs from that moment; the previous one is retired but stays in the realm's JWKS under its own
+    `kid`, so tokens it signed keep verifying. Delete the retired row once every token signed by it has expired
+    (access-token lifetime plus the refresh window). No restart is needed — nothing is cached in the environment.
+
+- **The private key is encrypted at rest with `APP_KEY`** (the model casts it as `encrypted`). Losing `APP_KEY`
+  therefore loses every signing key along with the sessions and other encrypted values, and every realm has to be
+  re-keyed with `oidc:rotate-keys`, which invalidates every outstanding token and ID token.
+- **Backup is the database backup.** There is nothing else to keep — but the dump is only usable together with the
+  `APP_KEY` that was current when it was taken.
 
 ## Database backups
 
-Postgres is the only state that matters besides the signing keys: users, realms, clients, tokens, sessions, consents,
+Postgres is the only state that matters: users, realms, clients, signing keys, tokens, sessions, consents,
 roles, settings, and the audit log all live there. Back up the `postgres` volume (or run `pg_dump` from the
 `postgres` service) on a schedule. The `storage` volume only holds uploaded files, of which there are none today, and
 Redis holds only the cache and queued jobs. Sessions are rows in Postgres on purpose: the account page lists a
@@ -188,12 +190,13 @@ user's browser sessions and signs single ones out, which the Redis driver cannot
   tokens and codes), `oidc:dispatch-expired-session-logouts`, `oidc:prune-authentication-contexts`, and
   `lattice:notifications:prune`.
 - **Discovery**: probe `APP_URL/realms/<slug>/.well-known/openid-configuration` and `.well-known/jwks.json` per realm;
-  a `500` on JWKS means the signing key is missing or unreadable.
+  a `500` on JWKS means the realm has no signing key (run `app:deploy` again) or `APP_KEY` no longer decrypts it.
 
 ## Staging versus production
 
 Run them as two independent stacks — separate Coolify projects (or compose project names), separate Postgres and
-Redis, separate `APP_KEY`, separate signing keys, separate `APP_URL`. Only the image is shared: pin staging to the
+Redis, separate `APP_KEY`, separate `APP_URL`. Signing keys follow the database, so they are separate by
+construction. Only the image is shared: pin staging to the
 `sha-<commit>` tag you are about to promote, and production to the same tag once staging is verified. Nothing but
 those values distinguishes the two, so a staging stack can be recreated from scratch at any time.
 
@@ -202,9 +205,7 @@ those values distinguishes the two, so a staging stack can be recreated from scr
 ```bash
 docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml up --build -d
 docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml run --rm app deploy
-docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml run --rm app php artisan oidc:rotate-keys --print
 ```
 
-Paste the printed keys into `docker/local.env`, `up -d` again, and open
-`http://localhost:8080/realms/admin/.well-known/openid-configuration`. Every value in `docker/local.env` is a public
-throwaway; never reuse it.
+Then open `http://localhost:8080/realms/admin/.well-known/openid-configuration` and its `jwks.json`, which the deploy
+step has already keyed. Every value in `docker/local.env` is a public throwaway; never reuse it.
