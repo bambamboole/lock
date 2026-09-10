@@ -88,6 +88,40 @@ function triggerIds(ComponentNode $node): array
 }
 
 /**
+ * The row keys the cells of one table column bind to, in render order — what a
+ * rendered cell needs the row payload to carry.
+ *
+ * @return array<int, string>
+ */
+function columnBindings(ComponentNode $table, string $columnKey): array
+{
+    $columns = $table->prop('columns');
+
+    foreach (is_array($columns) ? $columns : [] as $column) {
+        if (data_get($column, 'key') !== $columnKey) {
+            continue;
+        }
+
+        $cells = data_get($column, 'schema');
+        $keys = [];
+
+        foreach (is_array($cells) ? $cells : [] as $cell) {
+            $bindings = data_get($cell, 'props.dataBindings');
+
+            foreach (is_array($bindings) ? $bindings : [] as $key) {
+                if (is_string($key)) {
+                    $keys[] = $key;
+                }
+            }
+        }
+
+        return $keys;
+    }
+
+    throw new RuntimeException("The table has no column keyed [{$columnKey}].");
+}
+
+/**
  * One row of a loaded table response, by its id.
  *
  * @return array<string, mixed>
