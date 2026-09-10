@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Auth\Models;
 
-use App\Admin\Enums\AdminPermission;
-use App\Auth\Support\PermissionRepository;
+use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
 use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
@@ -93,92 +91,32 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->belongsToMany(Role::class, 'user_role')->select('roles.*')->withTimestamps();
     }
 
-    /**
-     * @return BelongsToMany<Role, $this>
-     */
-    public function globalRoles(): BelongsToMany
-    {
-        return $this->roles()->whereNull('roles.realm_id');
-    }
-
-    /**
-     * Roles this user holds in the given realm. A realm other than the user's
-     * own yields nothing — the caller passes a realm so the guard is explicit
-     * at the call site rather than assumed.
-     *
-     * @return Collection<int, Role>
-     */
-    public function rolesFor(Realm $realm): Collection
-    {
-        if (! $this->belongsToRealm($realm)) {
-            return new Collection;
-        }
-
-        return $this->roles()->where('roles.realm_id', $realm->id)->get();
-    }
-
     public function belongsToRealm(Realm $realm): bool
     {
         return $this->realm_id === $realm->id;
     }
 
-    public function canAccessRealm(Realm $realm): bool
-    {
-        return $this->belongsToRealm($realm) || $this->hasGlobalPermission(AdminPermission::ManageRealms);
-    }
-
-    public function ownsRealm(Realm $realm): bool
-    {
-        return $this->rolesFor($realm)->contains(fn (Role $role) => $role->isOwner());
-    }
-
     /**
-     * The owner short-circuit grants every *realm-scoped* permission, never a global
-     * one — owning a realm is not an admin grant, so a global permission reached
-     * through a realm role is refused outright.
+     * Global permissions come from instance-wide roles, which only users of the
+     * master realm can hold: every other realm is data to the admin console.
      */
-    public function hasRealmPermission(Realm $realm, PermissionEnum $permission): bool
-    {
-        $value = (string) $permission->value;
-
-        if (app(PermissionRepository::class)->isGlobal($value)) {
-            return false;
-        }
-
-        if ($this->hasGlobalPermission(AdminPermission::ManageRealms)) {
-            return true;
-        }
-
-        $roles = $this->rolesFor($realm)->load('permissions');
-
-        if ($roles->isEmpty()) {
-            return false;
-        }
-
-        if ($roles->contains(fn (Role $role) => $role->isOwner())) {
-            return true;
-        }
-
-        $granted = $roles->flatMap(fn (Role $role) => $role->permissionValues());
-
-        if ($granted->contains($value)) {
-            return true;
-        }
-
-        return str_ends_with($value, ':view') && $granted->contains(Str::beforeLast($value, ':').':manage');
-    }
-
     public function hasGlobalPermission(PermissionEnum $permission): bool
     {
         if (! $this->realm->isMaster()) {
             return false;
         }
 
-        return $this->globalRoles()
+        $value = (string) $permission->value;
+        $granted = $this->roles()
             ->with('permissions')
             ->get()
-            ->flatMap(fn (Role $role) => $role->permissionValues())
-            ->contains($permission->value);
+            ->flatMap(fn (Role $role) => $role->permissionValues());
+
+        if ($granted->contains($value)) {
+            return true;
+        }
+
+        return str_ends_with($value, ':view') && $granted->contains(Str::beforeLast($value, ':').':manage');
     }
 
     public function preferredLocale(): ?string

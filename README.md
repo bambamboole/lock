@@ -13,9 +13,10 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
   (self-SSO), so the account console runs on the same flows external clients use.
 - **Authentication** — registration, password reset, email verification, **two-factor** (TOTP,
   recovery codes) and **passkeys**, with the prebuilt Lattice auth UI from `laravel-oidc-ui`.
-- **Realms** — the identity boundary. A user belongs to exactly one realm, an address identifies a
-  different person in each, and roles, permissions and invitations are realm-local.
-- **Admin console** — global roles, user and tenant administration, and a cross-tenant activity view.
+- **Realms** — the identity boundary, Keycloak-style. A user belongs to exactly one realm, an address identifies
+  a different person in each, and every realm has its own OIDC issuer, clients and authentication settings.
+- **Admin console** — the `admin` realm's first-party UI: realm CRUD and configuration, user administration,
+  global roles, and a cross-realm activity view.
 - **Audit log** — a tenant-scoped activity trail via
   [spatie/laravel-activitylog](https://spatie.be/docs/laravel-activitylog).
 - **Realtime** — live in-app notifications via [Laravel Reverb](https://laravel.com/docs/reverb).

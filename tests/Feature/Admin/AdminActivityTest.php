@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
+use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
@@ -12,7 +13,6 @@ use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
 use Illuminate\Support\Facades\Notification;
@@ -84,7 +84,7 @@ test('the actor name is the causing user when one is authenticated', function ()
 test('granting a global role is logged with the role diff', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdminRole = Role::query()->whereNull('realm_id')->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],

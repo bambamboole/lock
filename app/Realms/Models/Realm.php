@@ -4,9 +4,8 @@ declare(strict_types=1);
 namespace App\Realms\Models;
 
 use App\Auth\Models\User;
-use App\Realms\Enums\RolePreset;
 use App\Realms\Observers\RealmObserver;
-use App\Realms\Support\RealmConfiguration;
+use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
@@ -23,14 +22,11 @@ use Database\Factories\RealmFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
-use Illuminate\Database\Eloquent\Attributes\Scope;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Context;
 
 /**
@@ -39,28 +35,18 @@ use Illuminate\Support\Facades\Context;
  * @property string $slug
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
- * @property CarbonImmutable|null $deleted_at
- * @property-read Collection<int, RealmInvitation> $invitations
- * @property-read int|null $invitations_count
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
- * @property-read Collection<int, Role> $roles
- * @property-read int|null $roles_count
  *
  * @method static \Database\Factories\RealmFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereDeletedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereIsPersonal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -70,52 +56,16 @@ use Illuminate\Support\Facades\Context;
 final class Realm extends Model implements ProvidesSettings, RealmContract
 {
     /** @use HasFactory<RealmFactory> */
-    use HasFactory, HasSettings, HasUuids, SoftDeletes;
-
-    public function owner(): ?User
-    {
-        $ownerRole = $this->roles()->where('preset', RolePreset::Owner)->first();
-
-        if ($ownerRole === null) {
-            return null;
-        }
-
-        return $ownerRole->users()->first();
-    }
+    use HasFactory, HasSettings, HasUuids;
 
     public static function master(): self
     {
         return self::where('slug', config('realm.master_slug'))->firstOrFail();
     }
 
-    public static function default(): self
-    {
-        return self::where('slug', config('realm.default_slug'))->firstOrFail();
-    }
-
     public function isMaster(): bool
     {
         return $this->slug === config('realm.master_slug');
-    }
-
-    /**
-     * Selects the owner's name as `owner_name` without loading members.
-     *
-     * @param  Builder<Realm>  $query
-     * @return Builder<Realm>
-     */
-    #[Scope]
-    protected function withOwnerName(Builder $query): Builder
-    {
-        return $query->addSelect([
-            'owner_name' => User::query()
-                ->select('users.name')
-                ->join('user_role', 'user_role.user_id', '=', 'users.id')
-                ->join('roles', 'roles.id', '=', 'user_role.role_id')
-                ->whereColumn('roles.realm_id', 'realms.id')
-                ->where('roles.preset', RolePreset::Owner->value)
-                ->limit(1),
-        ]);
     }
 
     public static function fromContext(): ?self
@@ -172,55 +122,6 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
-    }
-
-    /**
-     * @return HasMany<RealmInvitation, $this>
-     */
-    public function invitations(): HasMany
-    {
-        return $this->hasMany(RealmInvitation::class);
-    }
-
-    /**
-     * @return HasMany<Role, $this>
-     */
-    public function roles(): HasMany
-    {
-        return $this->hasMany(Role::class);
-    }
-
-    public function ownerRole(): Role
-    {
-        return $this->roles()->where('preset', RolePreset::Owner)->firstOrFail();
-    }
-
-    public function memberRole(): Role
-    {
-        return $this->roles()->where('preset', RolePreset::Member)->firstOrFail();
-    }
-
-    /**
-     * @return Collection<int, Role>
-     */
-    public function assignableRoles(): Collection
-    {
-        return $this->roles()->where(fn ($query) => $query->whereNull('preset')->orWhere('preset', '!=', RolePreset::Owner))->orderBy('name')->get();
-    }
-
-    public function hasMemberOrPendingInvitation(string $email): bool
-    {
-        $email = strtolower($email);
-
-        if ($this->users()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
-            return true;
-        }
-
-        return $this->invitations()
-            ->whereRaw('LOWER(email) = ?', [$email])
-            ->whereNull('accepted_at')
-            ->where(fn ($query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
-            ->exists();
     }
 
     /**

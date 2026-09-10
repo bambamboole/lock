@@ -15,7 +15,7 @@ adds a level to read past. `App\Shared\AppServiceProvider` is the app-wide one. 
 ## The provider is where a module wires itself into the app
 
 Context resolvers (`Lattice::context('realm', …)`), slot extensions
-(`Lattice::extend('realm.settings.tabs', …)`), container singletons, gate hooks, and middleware appended to a group
+(`Lattice::extend('app.user-menu', …)`), container singletons, gate hooks, and middleware appended to a group
 belong here — that keeps a module's entry points in one file instead of scattered across the slice it happens to
 touch. Register dependent context keys beside their parent domain resolver and resolve the parent through
 `ContextResolutions`. Providers sit outside the domain slices `tests/Feature/ArchitectureTest.php` scans, so

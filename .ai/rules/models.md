@@ -33,4 +33,4 @@ A model that belongs to a realm extends `App\Shared\Models\BusinessModel` — it
 
 A model that must also show shared/global rows (`realm_id` null) carries **both** `#[ScopedBy(GlobalOrRealmScope::class)]` and the `BelongsToRealmOrGlobal` trait — `#[ScopedBy]` adds a scope, it does not replace the strict one, and the trait is what neutralises it. Creation stays realm-bound either way: a shared row is never implicit, it needs the explicit `->asGlobal()` switch.
 
-The realm infrastructure models (Realm, Role, RealmInvitation) deliberately stay unscoped: they are queried from admin and invitation-acceptance paths that have no current realm.
+The identity models (Realm, User, Role) deliberately stay unscoped: the admin console reads them across realms. `Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from.

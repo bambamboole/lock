@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
+use App\Admin\Models\Role;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,14 +17,7 @@ final class RoleFactory extends Factory
     public function definition(): array
     {
         return [
-            'realm_id' => Realm::factory(),
             'name' => fake()->unique()->jobTitle(),
-            'preset' => null,
         ];
-    }
-
-    public function global(): static
-    {
-        return $this->state(['realm_id' => null]);
     }
 }

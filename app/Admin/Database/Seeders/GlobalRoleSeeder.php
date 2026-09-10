@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Database\Seeders;
 
+use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
-use App\Realms\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +24,7 @@ final class GlobalRoleSeeder extends Seeder
         DB::transaction(function (): void {
             foreach (GlobalRoles::grants() as $name => $permissions) {
                 Role::query()
-                    ->firstOrCreate(['realm_id' => null, 'name' => $name])
+                    ->firstOrCreate(['name' => $name])
                     ->syncPermissions($permissions);
             }
         });

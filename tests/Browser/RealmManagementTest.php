@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
 
-it('creates a realm and saves its configuration from the admin interface', function () {
+it('creates a realm and saves its configuration from the admin console', function () {
     (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
 
@@ -17,11 +17,11 @@ it('creates a realm and saves its configuration from the admin interface', funct
         ->fill('input[name="slug"]', 'partners')
         ->click('[data-lattice-form="admin.realms.create"]')
         ->assertSee('Realm created.')
-        ->assertPathIs('/console/partners/settings')
+        ->assertPathIs('/admin/realms/partners')
         ->fill('input[name="session_cookie_name"]', 'partners-identity')
         ->fill('input[name="access_token_lifetime"]', '300')
         ->fill('textarea[name="allowed_redirect_domains"]', "partner.test\nlocalhost")
-        ->click('[data-lattice-form="realms.configuration"]')
+        ->click('[data-lattice-form="admin.realms.configuration"]')
         ->assertSee('Realm configuration saved.')
         ->refresh()
         ->assertValue('input[name="session_cookie_name"]', 'partners-identity')

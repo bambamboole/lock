@@ -32,6 +32,6 @@ it('scopes the admin sidebar to the areas the admin may manage', function (strin
 
     expect(adminSidebarHrefs($response))->toBe($hrefs);
 })->with([
-    'support admin' => [GlobalRoleSeeder::SUPPORT, ['/admin/users', '/admin/activity']],
-    'super admin' => [GlobalRoleSeeder::SUPER_ADMIN, ['/admin/users', '/admin/realms', '/admin/activity']],
+    'support admin' => [GlobalRoleSeeder::SUPPORT, ['/admin/realms', '/admin/users', '/admin/activity']],
+    'super admin' => [GlobalRoleSeeder::SUPER_ADMIN, ['/admin/realms', '/admin/users', '/admin/activity']],
 ]);

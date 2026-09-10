@@ -13,13 +13,11 @@ but does not currently enforce it: `expect([$a, $b])->not->toUse($x)` passes as 
 dependency, and both rules pass an array. Treat the convention as unchecked until that test is rewritten one
 `arch()` per namespace.
 
-## A settings tab is an invokable in Ui/Settings/, registered from the module's provider
+## The admin console is the only management UI
 
-`app/{Domain}/Ui/Settings/{Name}Tab.php` is a small `final` class with a single `__invoke()` returning a `Tab`; the
-domain's service provider hangs it into the `realm.settings.tabs` slot with `Lattice::extend(…, priority:)`. That
-is how a module contributes UI to a page it does not own: a tab class living outside `App\Realms` still renders
-inside the realm settings page.
-There is no `Settings/Tabs/` subfolder: the `Tab` suffix already says what the class is.
+Realms, their configuration and their users are managed from `app/Admin/Ui/**` by users of the master realm; a
+realm user gets account pages, never a console. A module that wants to contribute UI to a page it does not own
+hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` instead of importing the page.
 
 ## Resolve models through registered context, never route parameters or session state
 
@@ -30,19 +28,18 @@ is genuinely needed; do not query from `contextString()` or read `$request->rout
 definition endpoints may run after the page request, so the registered context remains the source of truth.
 
 Give closure resolvers a concrete model return type. Lattice uses it to map bound route models to registered context
-keys. The realm resolver checks the signed-in user against the slug it is handed: the slug arrives from the client on
-lazy table and form requests, so resolving it unchecked would read another realm's data.
+keys. The `realm` resolver in `AdminServiceProvider` is a plain lookup: every realm definition gates itself on an
+`AdminPermission`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
+may not see anyway. A resolver for data that is not admin-only has to check the signed-in user itself.
 
 Context resolvers are pure lookups. A resolver also runs while components are merely being built, once per distinct
 value, so a side effect in it (setting a locale, writing an audit row) fires for records the request is not
 about. Request-wide state keyed to the context belongs in `Definition::activated()`, which Lattice runs once per
-signed endpoint after the gate has passed; realm-scoped definitions get it from the
-`App\Realms\Ui\Concerns\ActivatesRealmContext` trait, which makes the context realm current for the request.
-Page loads are covered by `SetRealmUrlDefaults` and `SwitchesCurrentRealm`; a page has no `activated()`.
+signed endpoint after the gate has passed; a page has no `activated()`.
 
-Declare simple authorization on the definition attribute with the registered subject key:
-`#[AsAction('realms.members.remove', can: RealmPermission::ManageMembers, on: 'realm')]`. Lattice resolves the
-subject before the definition runs and denies a missing subject. Keep `authorize()` only for conditions a gate
+Declare simple authorization on the definition attribute:
+`#[AsForm('admin.realms.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]`. With a registered
+subject key (`on: 'realm'`) Lattice resolves the subject before the definition runs and denies a missing subject. Keep `authorize()` only for conditions a gate
 subject cannot express, and use the nullable context accessor inside it.
 
 ## Reach for the Lattice skills before writing a definition

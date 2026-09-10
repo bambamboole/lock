@@ -1,11 +1,9 @@
 <?php
 
 declare(strict_types=1);
+use App\Admin\Models\Role;
 use App\Auth\Models\User;
-use App\Realms\Actions\RemoveMember;
 use App\Realms\Models\Realm;
-use App\Realms\Models\Role;
-use App\Realms\Observers\RealmInvitationObserver;
 use App\Shared\Auth\Contracts\PermissionCatalog;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -125,17 +123,15 @@ function architectureDomainModels(): array
 }
 
 /**
- * Lattice-as-framework, not UI building: two domain writes send an in-app
- * notification. Additions here need a reason of the same kind.
+ * Lattice-as-framework, not UI building: a domain write that sends an in-app
+ * notification may use Lattice's notification API. Additions here need a
+ * reason of the same kind.
  *
  * @return array<int, class-string>
  */
 function architectureSanctionedLatticeConsumers(): array
 {
-    return [
-        RemoveMember::class,
-        RealmInvitationObserver::class,
-    ];
+    return [];
 }
 
 /**

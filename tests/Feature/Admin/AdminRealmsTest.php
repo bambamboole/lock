@@ -3,109 +3,62 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Ui\Forms\CreateRealmForm;
+use App\Admin\Ui\Forms\DeleteRealmForm;
+use App\Admin\Ui\Forms\UpdateRealmConfigurationForm;
+use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Models\User;
-use App\Realms\Enums\RolePreset;
 use App\Realms\Models\Realm;
-use Illuminate\Http\Response;
-use Illuminate\Testing\TestResponse;
-use Inertia\Testing\AssertableInertia;
-use Lattice\Support\Testing\ComponentNode;
 
-use function Tests\Helpers\addMember;
 use function Tests\Helpers\globalAdmin;
-use function Tests\Helpers\realmMember;
+use function Tests\Helpers\realmFormData;
+use function Tests\Helpers\renderedTabKeys;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
 });
 
-/**
- * The label/value pairs of every description-list entry inside the card titled
- * $title. An entry without a value falls back to its placeholder, which is what
- * the reader actually sees.
- *
- * @param  TestResponse<Response>  $response
- * @return array<int, array<int, string>>
- */
-function detailRowsOf(TestResponse $response, string $title): array
-{
-    $schema = data_get(AssertableInertia::fromTestResponse($response)->toArray(), 'props.lattice.schema');
-
-    $card = ComponentNode::root(is_array($schema) ? $schema : [])
-        ->findOrFail(
-            fn (ComponentNode $node): bool => $node->type() === 'card' && $node->prop('title') === $title,
-            "card titled [{$title}]",
-        );
-
-    return collect($card->findAll(
-        fn (ComponentNode $node): bool => str_starts_with((string) $node->type(), 'entry.'),
-    ))
-        ->map(fn (ComponentNode $entry): array => [
-            (string) $entry->prop('label'),
-            (string) ($entry->prop('value') ?? $entry->prop('placeholder')),
-        ])
-        ->all();
-}
-
-test('a realms-manage admin can load the realms table', function () {
-    $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk();
-});
-
-test('a realms-manage admin can open the realms list page', function () {
-    $this->actingAs(globalAdmin())->get('/admin/realms')->assertOk();
-});
-
-test('the realms table endpoint is forbidden without realms-manage', function (?string $roleName) {
-    $this->actingAs($roleName === null ? User::factory()->create() : globalAdmin($roleName))
-        ->loadDeniedTable(AdminRealmsTable::class)
-        ->assertForbidden();
-})->with(['non-admin' => null, 'support admin' => GlobalRoleSeeder::SUPPORT]);
-
-test('the realms list is unreachable without realms-manage', function (?string $roleName) {
-    $this->actingAs($roleName === null ? User::factory()->create() : globalAdmin($roleName))
-        ->get('/admin/realms')
-        ->assertForbidden();
-})->with(['non-admin' => null, 'support admin' => GlobalRoleSeeder::SUPPORT]);
-
-test('a realms-manage admin can open a realm detail page', function () {
+test('every admin can list and open realms', function (string $roleName) {
     $realm = Realm::factory()->create();
 
-    $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}")->assertOk();
-});
+    $this->actingAs(globalAdmin($roleName));
+    $this->loadTable(AdminRealmsTable::class)->assertOk();
+    $this->get('/admin/realms')->assertOk();
+    $this->get("/admin/realms/{$realm->slug}")->assertOk();
+})->with(['support admin' => GlobalRoleSeeder::SUPPORT, 'super admin' => GlobalRoleSeeder::SUPER_ADMIN]);
 
-test('a realm detail page is unreachable without realms-manage', function (?string $roleName) {
+test('a realm user reaches neither the realms list nor a realm', function () {
     $realm = Realm::factory()->create();
 
-    $this->actingAs($roleName === null ? User::factory()->create() : globalAdmin($roleName))
-        ->get("/admin/realms/{$realm->slug}")
-        ->assertForbidden();
-})->with(['non-admin' => null, 'support admin' => GlobalRoleSeeder::SUPPORT]);
-
-test('the detail page lists the owner first and labels a member without roles', function () {
-    [$owner, $realm] = realmMember(RolePreset::Owner);
-    $owner->update(['name' => 'Zoe Owner']);
-    addMember($realm, User::factory()->for($realm)->create(['name' => 'Alice Member']), RolePreset::Member);
-
-    // A user of the realm holding no role at all.
-    User::factory()->for($realm)->create(['name' => 'Bob Roleless']);
-
-    $response = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}")->assertOk();
-
-    expect(detailRowsOf($response, __('admin.realms.detail.members.heading')))->toBe([
-        ['Zoe Owner', RolePreset::Owner->label()],
-        ['Alice Member', RolePreset::Member->label()],
-        ['Bob Roleless', __('admin.realms.detail.no-roles')],
-    ]);
+    $this->actingAs(User::factory()->create());
+    $this->loadDeniedTable(AdminRealmsTable::class)->assertForbidden();
+    $this->get('/admin/realms')->assertForbidden();
+    $this->get("/admin/realms/{$realm->slug}")->assertForbidden();
 });
 
-test('the detail page reports a realm without an owner or members', function () {
+test('only realms-manage admins see the editing tabs, and the admin realm has no danger tab', function () {
     $realm = Realm::factory()->create();
 
-    $response = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}")->assertOk();
+    $support = $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get("/admin/realms/{$realm->slug}")->assertOk();
+    $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}")->assertOk();
+    $master = $this->get('/admin/realms/'.Realm::master()->slug)->assertOk();
 
-    expect(detailRowsOf($response, __('admin.realms.detail.summary.heading')))
-        ->toContain([__('admin.realms.detail.owner'), __('admin.realms.detail.no-owner')]);
+    expect(renderedTabKeys($support))->toBe(['general'])
+        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'configuration', 'danger'])
+        ->and(renderedTabKeys($master))->toBe(['general', 'configuration']);
+});
 
-    $response->assertSee(__('admin.realms.detail.no-members'), false);
+test('a support admin cannot create, edit or delete a realm', function () {
+    $realm = Realm::factory()->create();
+
+    $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT));
+    $this->get('/admin/realms/create')->assertForbidden();
+    $this->submitDeniedForm(CreateRealmForm::class, ['name' => 'Forbidden', 'slug' => 'forbidden'])->assertForbidden();
+    $this->submitDeniedForm(UpdateRealmForm::class, ['name' => 'Renamed'], ['realm' => $realm->slug])->assertForbidden();
+    $this->submitDeniedForm(UpdateRealmConfigurationForm::class, realmFormData($realm), ['realm' => $realm->slug])->assertForbidden();
+    $this->submitDeniedForm(DeleteRealmForm::class, ['name' => $realm->name], ['realm' => $realm->slug])->assertForbidden();
+
+    expect(Realm::query()->where('slug', 'forbidden')->exists())->toBeFalse()
+        ->and($realm->refresh()->name)->not->toBe('Renamed');
 });

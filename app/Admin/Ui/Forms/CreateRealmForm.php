@@ -24,7 +24,7 @@ final class CreateRealmForm extends FormDefinition
     public function definition(FormComponent $form, Request $request): FormComponent
     {
         return $form->schema([
-            TextInput::make('name', __('common.field.name'))
+            TextInput::make('name', __('admin.realms.fields.name.label'))
                 ->required()->rules(['string', 'max:255']),
             TextInput::make('slug', __('admin.realms.fields.slug.label'))
                 ->helperText(__('admin.realms.fields.slug.help-text'))
@@ -37,6 +37,6 @@ final class CreateRealmForm extends FormDefinition
         $realm = $this->createRealm->handle((string) $data->string('name'), (string) $data->string('slug'));
 
         return Effects::respond()->toast(__('admin.realms.created'), Variant::Success)
-            ->toRoute('realm.settings.edit', ['current_realm' => $realm->slug, 'tabs' => 'configuration']);
+            ->toRoute('admin.realms.show', ['realm' => $realm->slug, 'tabs' => 'configuration']);
     }
 }

@@ -1,25 +1,27 @@
 <?php
 declare(strict_types=1);
 
+use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 
-it('renders the dashboard on a mobile viewport', function () {
-    $user = User::factory()->create();
+use function Tests\Helpers\globalAdmin;
 
-    $this->actingAs($user);
+it('renders the profile on a mobile viewport', function () {
+    $this->actingAs(User::factory()->create());
 
-    $page = visit('/dashboard')->on()->mobile();
+    $page = visit('/profile')->on()->mobile();
 
-    $page->assertSee('Dashboard')
+    $page->assertSee('Profile')
         ->assertNoJavaScriptErrors();
 });
 
-it('renders the realm settings tabs as a select on a mobile viewport', function () {
-    $user = User::factory()->create();
+it('renders the realm tabs as a select on a mobile viewport', function () {
+    (new GlobalRoleSeeder)->run();
+    $realm = Realm::factory()->create(['slug' => 'acme']);
+    $this->actingAs(globalAdmin());
 
-    $this->actingAs($user);
-
-    $page = visit("/console/{$user->realm->slug}/settings")->on()->mobile();
+    $page = visit("/admin/realms/{$realm->slug}")->on()->mobile();
 
     $page->assertPresent('[data-test=tabs-select]')
         ->assertNoJavaScriptErrors();

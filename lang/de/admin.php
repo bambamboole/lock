@@ -9,6 +9,7 @@ return [
                 'manage' => 'Benutzer einsehen und verwalten',
             ],
             'realms' => [
+                'view' => 'Realms ansehen',
                 'manage' => 'Realms einsehen und verwalten',
             ],
             'roles' => [
@@ -40,7 +41,6 @@ return [
         ],
         'actions' => [
             'manage' => 'Verwalten',
-            'configure' => 'Konfigurieren',
         ],
         'detail' => [
             'summary' => [
@@ -50,8 +50,6 @@ return [
             'realms' => [
                 'heading' => 'Realm',
             ],
-            'no-realms' => 'Dieser Benutzer ist gehört zu keinem Realm.',
-            'no-roles' => 'Keine Rollen zugewiesen.',
             'admin-roles' => [
                 'heading' => 'Admin-Rollen',
             ],
@@ -74,33 +72,43 @@ return [
     ],
     'realms' => [
         'heading' => 'Realms',
+        'description' => 'Jeder Realm ist eine eigene Identitätsgrenze mit eigenen Benutzern, Clients und Authentifizierungseinstellungen.',
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
             'users' => 'Benutzer',
-            'owner' => 'Inhaber',
             'created-at' => 'Erstellt',
         ],
         'actions' => [
             'manage' => 'Verwalten',
         ],
-        'detail' => [
-            'summary' => [
-                'heading' => 'Übersicht',
-            ],
-            'slug' => 'Slug',
-            'owner' => 'Inhaber',
-            'no-owner' => 'Kein Inhaber zugewiesen.',
-            'created-at' => 'Erstellt',
-            'members' => [
-                'heading' => 'Mitglieder',
-            ],
-            'no-members' => 'Dieser Realm hat keine Mitglieder.',
-            'no-roles' => 'Keine Rollen zugewiesen.',
-        ],
-        'description' => 'Authentifizierungseinstellungen für jeden Realm verwalten.',
         'created' => 'Realm angelegt.',
-        'updated' => 'Realm-Konfiguration gespeichert.',
+        'updated' => 'Realm aktualisiert.',
+        'configuration-saved' => 'Realm-Konfiguration gespeichert.',
+        'deleted' => 'Realm gelöscht.',
+        'tabs' => [
+            'general' => 'Allgemein',
+            'configuration' => 'Konfiguration',
+            'danger' => 'Gefahrenzone',
+        ],
+        'summary' => [
+            'heading' => 'Übersicht',
+            'slug' => 'Slug',
+            'users' => 'Benutzer',
+            'created-at' => 'Erstellt',
+        ],
+        'general' => [
+            'heading' => 'Realm-Details',
+            'subtitle' => 'Benennen Sie den Realm um. Die Kennung bleibt dauerhaft fest.',
+            'submit' => 'Realm speichern',
+        ],
+        'danger' => [
+            'heading' => 'Realm löschen',
+            'subtitle' => 'Löscht den Realm samt Benutzern, Clients, Sitzungen und Tokens. Das lässt sich nicht rückgängig machen.',
+            'confirm-name' => 'Realm-Namen bestätigen',
+            'name-mismatch' => 'Der Realm-Name stimmt nicht überein.',
+            'submit' => 'Realm löschen',
+        ],
         'create' => [
             'heading' => 'Realm anlegen',
             'description' => 'Neue Realms starten mit den Standardeinstellungen für die Authentifizierung. Nach dem Anlegen können Sie diese konfigurieren.',
@@ -118,6 +126,9 @@ return [
             'webauthn' => 'Sicherheitsschlüssel oder Passkey (WebAuthn)',
         ],
         'fields' => [
+            'name' => [
+                'label' => 'Realm-Name',
+            ],
             'slug' => [
                 'label' => 'Realm-Kennung',
                 'help-text' => 'Wird in den Realm-URLs verwendet. Nur Kleinbuchstaben, Zahlen und einzelne Bindestriche. Später nicht mehr änderbar.',

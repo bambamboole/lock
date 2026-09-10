@@ -9,6 +9,7 @@ return [
                 'manage' => 'View and manage users',
             ],
             'realms' => [
+                'view' => 'View realms',
                 'manage' => 'View and manage realms',
             ],
             'roles' => [
@@ -40,7 +41,6 @@ return [
         ],
         'actions' => [
             'manage' => 'Manage',
-            'configure' => 'Configure',
         ],
         'detail' => [
             'summary' => [
@@ -50,8 +50,6 @@ return [
             'realms' => [
                 'heading' => 'Realm',
             ],
-            'no-realms' => 'This user belongs to no realm.',
-            'no-roles' => 'No roles assigned.',
             'admin-roles' => [
                 'heading' => 'Admin roles',
             ],
@@ -74,33 +72,43 @@ return [
     ],
     'realms' => [
         'heading' => 'Realms',
+        'description' => 'Every realm is an isolated identity boundary with its own users, clients and authentication settings.',
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
             'users' => 'Users',
-            'owner' => 'Owner',
             'created-at' => 'Created',
         ],
         'actions' => [
             'manage' => 'Manage',
         ],
-        'detail' => [
-            'summary' => [
-                'heading' => 'Summary',
-            ],
-            'slug' => 'Slug',
-            'owner' => 'Owner',
-            'no-owner' => 'No owner assigned.',
-            'created-at' => 'Created',
-            'members' => [
-                'heading' => 'Members',
-            ],
-            'no-members' => 'This realm has no members.',
-            'no-roles' => 'No roles assigned.',
-        ],
-        'description' => 'Manage authentication settings for each realm.',
         'created' => 'Realm created.',
-        'updated' => 'Realm configuration saved.',
+        'updated' => 'Realm updated.',
+        'configuration-saved' => 'Realm configuration saved.',
+        'deleted' => 'Realm deleted.',
+        'tabs' => [
+            'general' => 'General',
+            'configuration' => 'Configuration',
+            'danger' => 'Danger',
+        ],
+        'summary' => [
+            'heading' => 'Summary',
+            'slug' => 'Slug',
+            'users' => 'Users',
+            'created-at' => 'Created',
+        ],
+        'general' => [
+            'heading' => 'Realm details',
+            'subtitle' => 'Rename the realm. Its identifier is fixed for life.',
+            'submit' => 'Save realm',
+        ],
+        'danger' => [
+            'heading' => 'Delete realm',
+            'subtitle' => 'Deletes the realm together with its users, clients, sessions and tokens. This cannot be undone.',
+            'confirm-name' => 'Confirm realm name',
+            'name-mismatch' => 'The realm name does not match.',
+            'submit' => 'Delete realm',
+        ],
         'create' => [
             'heading' => 'Create realm',
             'description' => 'New realms start with the default authentication settings. You can configure them after creating the realm.',
@@ -118,6 +126,9 @@ return [
             'webauthn' => 'Security key or passkey (WebAuthn)',
         ],
         'fields' => [
+            'name' => [
+                'label' => 'Realm name',
+            ],
             'slug' => [
                 'label' => 'Realm identifier',
                 'help-text' => 'Used in realm URLs. Lowercase letters, numbers and single hyphens only. Cannot be changed later.',
