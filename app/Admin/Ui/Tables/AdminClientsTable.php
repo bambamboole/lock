@@ -4,19 +4,23 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Ui\Actions\DeleteClient;
+use App\Admin\Ui\Actions\RestoreClient;
+use App\Admin\Ui\Actions\RevokeClient;
+use App\Admin\Ui\Actions\RotateClientSecret;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Data\ClientAttributes;
+use App\Shared\Ui\Components\ActionBar;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Database\Eloquent\Builder;
-use Lattice\Facades\Effects;
+use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BadgeColumn;
 use Lattice\Table\Columns\TextColumn;
+use Lattice\Table\Components\RowClick;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
-use Lattice\Ui\Components\Button;
-use Lattice\Ui\Enums\Emphasis;
 
 /**
  * @extends EloquentTableDefinition<Client>
@@ -101,12 +105,27 @@ final class AdminClientsTable extends EloquentTableDefinition
         return $options;
     }
 
+    #[\Override]
+    public function rowClick(array $row): RowClick
+    {
+        return RowClick::make()->href(route('admin.realms.clients.show', ['realm' => $this->contextString('realm'), 'client' => $row['id']], false));
+    }
+
+    /**
+     * The same actions the client's detail page offers; whether a client is
+     * blocked or holds a secret is read off the row, not re-queried.
+     */
     public function actions(array $row): array
     {
-        return [
-            Button::make(__('admin.clients.actions.manage'))
-                ->emphasis(Emphasis::Ghost)
-                ->effects(Effects::redirect(route('admin.realms.clients.show', ['realm' => $this->contextString('realm'), 'client' => $row['id']], false))),
-        ];
+        $context = ['realm' => $this->contextString('realm'), 'client' => $row['id']];
+        $confidential = $row['token_endpoint_auth_method'] !== TokenEndpointAuthMethod::None->value;
+
+        return array_filter([ActionBar::menu('admin.clients.row-actions', [
+            ...($confidential ? [Action::use(RotateClientSecret::class, $context)] : []),
+            ...((bool) ($row['revoked'] ?? false)
+                ? [Action::use(RestoreClient::class, $context)]
+                : [Action::use(RevokeClient::class, $context)]),
+            Action::use(DeleteClient::class, $context),
+        ])]);
     }
 }
