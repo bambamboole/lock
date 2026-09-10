@@ -9,6 +9,7 @@ return [
     'account' => 'Konto',
     'all-realms' => 'Alle Realms',
     'realms' => 'Realms',
+    'roles' => 'Rollen',
     'select-realm' => 'Realm auswählen',
     'settings' => 'Einstellungen',
     'toggle-sidebar' => 'Seitenleiste umschalten',

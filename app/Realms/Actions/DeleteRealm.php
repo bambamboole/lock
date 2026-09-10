@@ -52,6 +52,8 @@ final class DeleteRealm implements DeletesRealm
         }
 
         DB::transaction(function () use ($realm): void {
+            DB::table('realm_role_user')->whereIn('realm_role_id', $realm->realmRoles()->select('id'))->delete();
+            $realm->realmRoles()->delete();
             $realm->users()->each(fn ($user) => $user->delete());
 
             SessionParticipant::query()

@@ -20,6 +20,14 @@ return [
                 'restored' => 'Client entsperrt',
                 'deleted' => 'Client gelöscht',
             ],
+            'role' => [
+                'created' => 'Realm-Rolle angelegt',
+                'updated' => 'Realm-Rolle aktualisiert',
+                'deleted' => 'Realm-Rolle gelöscht',
+            ],
+            'user' => [
+                'roles-updated' => 'Realm-Rollen aktualisiert',
+            ],
         ],
         'admin' => [
             'roles' => [

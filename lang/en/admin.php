@@ -97,6 +97,17 @@ return [
             'account-actions' => [
                 'heading' => 'Account actions',
             ],
+            'realm-roles' => [
+                'heading' => 'Realm roles',
+                'subtitle' => 'Issued as the roles claim in every ID and access token of this user.',
+                'none' => 'No realm roles assigned.',
+                'define' => 'Define the roles of this realm first',
+                'field' => [
+                    'label' => 'Roles',
+                ],
+                'update' => 'Update realm roles',
+                'updated' => 'Realm roles updated.',
+            ],
             'roles' => [
                 'field' => [
                     'label' => 'Global roles',
@@ -492,6 +503,43 @@ return [
                 'label' => 'Trusted clients',
                 'help-text' => 'One client identifier from this realm per line. These clients skip consent.',
             ],
+        ],
+    ],
+    'roles' => [
+        'heading' => 'Roles',
+        'description' => 'Realm roles of :realm, issued as the roles claim of every ID and access token.',
+        'created' => 'Role created.',
+        'updated' => 'Role updated.',
+        'deleted' => 'Role deleted.',
+        'columns' => [
+            'name' => 'Name',
+            'description' => 'Description',
+            'users' => 'Users',
+        ],
+        'create' => [
+            'label' => 'Create role',
+        ],
+        'edit' => [
+            'label' => 'Edit',
+        ],
+        'delete' => [
+            'label' => 'Delete',
+            'confirm' => [
+                'title' => 'Delete this role?',
+                'description' => 'The role is removed from every user that holds it. Tokens already issued keep it until they expire.',
+            ],
+        ],
+        'fields' => [
+            'name' => [
+                'label' => 'Name',
+                'help-text' => 'The value relying parties receive in the roles claim, for example admin or member.',
+            ],
+            'description' => [
+                'label' => 'Description',
+            ],
+        ],
+        'validation' => [
+            'name-format' => 'The name may only contain letters, digits, and the characters _ . : - and has to start with a letter or digit.',
         ],
     ],
 ];

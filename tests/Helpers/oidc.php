@@ -10,6 +10,7 @@ use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
+use PHPUnit\Framework\Assert;
 use Tests\TestCase;
 
 /**
@@ -71,4 +72,22 @@ function loginAccessToken(TestCase $test): string
         'code' => $params['code'],
         'code_verifier' => $verifier,
     ])->json('access_token');
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function jwtClaims(?string $jwt): array
+{
+    Assert::assertIsString($jwt, 'Expected a JWT string.');
+
+    $segments = explode('.', $jwt);
+
+    Assert::assertCount(3, $segments, 'Expected a compact JWS.');
+
+    $payload = json_decode((string) base64_decode(strtr($segments[1], '-_', '+/'), true), true, flags: JSON_THROW_ON_ERROR);
+
+    Assert::assertIsArray($payload, 'Expected a JWT payload object.');
+
+    return $payload;
 }

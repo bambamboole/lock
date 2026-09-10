@@ -9,6 +9,7 @@ return [
     'account' => 'Account',
     'all-realms' => 'All realms',
     'realms' => 'Realms',
+    'roles' => 'Roles',
     'select-realm' => 'Select realm',
     'settings' => 'Settings',
     'toggle-sidebar' => 'Toggle sidebar',

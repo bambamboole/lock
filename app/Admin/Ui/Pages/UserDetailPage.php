@@ -13,6 +13,7 @@ use App\Admin\Ui\Actions\ResetUserMfaAction;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
+use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Admin\Ui\Forms\UpdateUserForm;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
@@ -35,6 +36,7 @@ use Lattice\Ui\Components\Entries\ComponentEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
 use Lattice\Ui\Components\Icon as IconComponent;
+use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Align;
@@ -94,6 +96,7 @@ final class UserDetailPage extends AdminPage
                     $this->summaryCard($user),
                     $this->profileCard($context),
                     $this->adminRolesCard($user, $currentUser),
+                    $this->realmRolesCard($user, $context),
                     $this->accountActionsCard($user, $context),
                     $this->sessionsCard($context),
                     $this->dangerCard($context),
@@ -142,6 +145,29 @@ final class UserDetailPage extends AdminPage
             ->schema([
                 Action::use(UpdateUserGlobalRoles::class, ['user' => $user->id]),
             ]);
+    }
+
+    /**
+     * @param  array<string, string>  $context
+     */
+    private function realmRolesCard(User $user, array $context): Card
+    {
+        $realm = $user->realm;
+        $names = $user->realmRoleNames();
+
+        return Card::make(__('admin.users.detail.realm-roles.heading'), __('admin.users.detail.realm-roles.subtitle'))->schema([
+            Stack::make()->gap(Gap::Medium)->schema([
+                Stack::make('user-realm-roles')
+                    ->direction(Orientation::Horizontal)
+                    ->gap(Gap::Small)
+                    ->schema($names === []
+                        ? [Text::make(__('admin.users.detail.realm-roles.none'))->color(ColorName::Muted)]
+                        : array_map(fn (string $name): Badge => Badge::make($name), $names)),
+                $realm->realmRoles()->exists()
+                    ? Action::use(UpdateUserRealmRoles::class, $context)
+                    : Link::make(__('admin.users.detail.realm-roles.define'))->href(route('admin.realms.roles', ['realm' => $realm->slug], false)),
+            ]),
+        ]);
     }
 
     /**
