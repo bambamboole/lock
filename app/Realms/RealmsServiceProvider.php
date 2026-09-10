@@ -4,11 +4,21 @@ declare(strict_types=1);
 
 namespace App\Realms;
 
+use App\Realms\Actions\CreateClient;
 use App\Realms\Actions\CreateRealm;
+use App\Realms\Actions\DeleteClient;
 use App\Realms\Actions\DeleteRealm;
+use App\Realms\Actions\RotateClientSecret;
+use App\Realms\Actions\SetClientRevocation;
+use App\Realms\Actions\UpdateClient;
 use App\Realms\Actions\UpdateRealmConfiguration;
+use App\Shared\Realms\Contracts\CreatesClient;
 use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Contracts\DeletesClient;
 use App\Shared\Realms\Contracts\DeletesRealm;
+use App\Shared\Realms\Contracts\RotatesClientSecret;
+use App\Shared\Realms\Contracts\SetsClientRevocation;
+use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Settings\SettingsRegistry;
@@ -21,6 +31,11 @@ final class RealmsServiceProvider extends ServiceProvider
         $this->app->bind(CreatesRealm::class, CreateRealm::class);
         $this->app->bind(UpdatesRealmConfiguration::class, UpdateRealmConfiguration::class);
         $this->app->bind(DeletesRealm::class, DeleteRealm::class);
+        $this->app->bind(CreatesClient::class, CreateClient::class);
+        $this->app->bind(UpdatesClient::class, UpdateClient::class);
+        $this->app->bind(RotatesClientSecret::class, RotateClientSecret::class);
+        $this->app->bind(SetsClientRevocation::class, SetClientRevocation::class);
+        $this->app->bind(DeletesClient::class, DeleteClient::class);
     }
 
     public function boot(): void

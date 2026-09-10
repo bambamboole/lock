@@ -13,4 +13,10 @@ enum RealmAuditEvent: string implements AuditEvent
     case RealmCreated = 'realm.created';
     case RealmUpdated = 'realm.updated';
     case RealmDeleted = 'realm.deleted';
+    case ClientCreated = 'realm.client.created';
+    case ClientUpdated = 'realm.client.updated';
+    case ClientSecretRotated = 'realm.client.secret-rotated';
+    case ClientRevoked = 'realm.client.revoked';
+    case ClientRestored = 'realm.client.restored';
+    case ClientDeleted = 'realm.client.deleted';
 }

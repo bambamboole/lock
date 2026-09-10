@@ -4,6 +4,7 @@ declare(strict_types=1);
 return [
     'activity' => 'Activity',
     'admin' => 'Admin',
+    'clients' => 'Clients',
     'back-to-app' => 'Back to app',
     'profile' => 'Profile',
     'all-realms' => 'All realms',

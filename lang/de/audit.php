@@ -12,6 +12,14 @@ return [
             'created' => 'Realm angelegt',
             'updated' => 'Realm aktualisiert',
             'deleted' => 'Realm gelöscht',
+            'client' => [
+                'created' => 'Client angelegt',
+                'updated' => 'Client aktualisiert',
+                'secret-rotated' => 'Client-Secret rotiert',
+                'revoked' => 'Client gesperrt',
+                'restored' => 'Client entsperrt',
+                'deleted' => 'Client gelöscht',
+            ],
         ],
         'admin' => [
             'roles' => [
