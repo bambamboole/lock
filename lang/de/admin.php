@@ -356,14 +356,12 @@ return [
             'generated' => 'Pro Realm generiert',
         ],
         'summary' => [
-            'heading' => 'Übersicht',
-            'slug' => 'Slug',
             'users' => 'Benutzer',
             'created-at' => 'Erstellt',
         ],
         'general' => [
             'heading' => 'Realm-Details',
-            'subtitle' => 'Benennen Sie den Realm um. Die Kennung bleibt dauerhaft fest.',
+            'subtitle' => 'Öffnen Sie eine Zeile, um sie zu ändern. Die Kennung bleibt dauerhaft fest.',
             'submit' => 'Realm speichern',
         ],
         'danger' => [

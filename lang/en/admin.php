@@ -356,14 +356,12 @@ return [
             'generated' => 'Generated per realm',
         ],
         'summary' => [
-            'heading' => 'Summary',
-            'slug' => 'Slug',
             'users' => 'Users',
             'created-at' => 'Created',
         ],
         'general' => [
             'heading' => 'Realm details',
-            'subtitle' => 'Rename the realm. Its identifier is fixed for life.',
+            'subtitle' => 'Open a row to change it. The identifier is fixed for life.',
             'submit' => 'Save realm',
         ],
         'danger' => [

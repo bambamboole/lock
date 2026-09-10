@@ -73,10 +73,7 @@ final class RealmSettingsPage extends AdminPage
                         ->defaultValue('general')
                         ->schema([
                             Tab::make('general', __('admin.realms.tabs.general'))->schema([
-                                $this->summaryCard($realm),
-                                Card::make(__('admin.realms.general.heading'), __('admin.realms.general.subtitle'))
-                                    ->visible($manages)
-                                    ->schema([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])]),
+                                $this->generalCard($realm, $manages),
                             ]),
                             ...array_map(
                                 fn (RealmSettingSection $section): Tab => $this->sectionTab($realm, $section, $manages),
@@ -104,14 +101,21 @@ final class RealmSettingsPage extends AdminPage
             ]);
     }
 
-    private function summaryCard(Realm $realm): Card
+    private function generalCard(Realm $realm, bool $manages): Card
     {
-        return Card::make(__('admin.realms.summary.heading'))->schema([
-            DescriptionList::make('realm-summary')->bleed()->schema([
-                TextEntry::make('name', __('common.field.name'))->value($realm->name),
-                TextEntry::make('slug', __('admin.realms.summary.slug'))->value($realm->slug),
-                TextEntry::make('users', __('admin.realms.summary.users'))->value((string) $realm->users()->count()),
-                DateEntry::make('created_at', __('admin.realms.summary.created-at'))
+        $name = TextEntry::make('name', __('admin.realms.fields.name.label'), 'realm-name')->value($realm->name);
+
+        return Card::make(__('admin.realms.general.heading'), __('admin.realms.general.subtitle'))->schema([
+            DescriptionList::make('realm-general')->bleed()->schema([
+                $manages
+                    ? $name->disclosure([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])])
+                    : $name,
+                TextEntry::make('slug', __('admin.realms.fields.slug.label'), 'realm-slug')
+                    ->value($realm->slug)
+                    ->description(__('admin.realms.fields.slug.help-text')),
+                TextEntry::make('users', __('admin.realms.summary.users'), 'realm-users')
+                    ->value((string) $realm->users()->count()),
+                DateEntry::make('created_at', __('admin.realms.summary.created-at'), 'realm-created-at')
                     ->value($realm->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),
             ]),
