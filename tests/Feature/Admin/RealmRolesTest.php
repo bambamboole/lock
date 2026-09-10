@@ -11,11 +11,11 @@ use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Admin\Ui\Forms\DeleteRealmForm;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Auth\Models\User;
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Illuminate\Support\Facades\DB;
 
 use function Tests\Helpers\globalAdmin;

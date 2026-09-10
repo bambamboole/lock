@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
-use App\Realms\Enums\RealmAuditEvent;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\DeletesClient;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Consents\Models\Consent;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;

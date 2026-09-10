@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use App\Shared\Realms\Contracts\ProvisionsConsoleClient;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Bambamboole\LaravelOidc\Server\Clients\Actions\ProvisionFirstPartyClient;
 use Bambamboole\LaravelOidc\Server\Clients\Exceptions\FirstPartyClientProvisioningException;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;

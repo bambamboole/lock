@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Realms\Actions;
 
 use App\Auth\Models\User;
-use App\Realms\Enums\RealmAuditEvent;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
