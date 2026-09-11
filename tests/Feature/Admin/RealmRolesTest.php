@@ -6,10 +6,8 @@ use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateRealmRoleAction;
 use App\Admin\Ui\Actions\DeleteRealmRoleAction;
-use App\Admin\Ui\Actions\DeleteUserAction;
 use App\Admin\Ui\Actions\UpdateRealmRoleAction;
 use App\Admin\Ui\Actions\UpdateUserRealmRoles;
-use App\Admin\Ui\Forms\DeleteRealmForm;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -17,7 +15,6 @@ use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
 use App\Shared\Realms\Enums\RealmAuditEvent;
-use Illuminate\Support\Facades\DB;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -185,31 +182,4 @@ test('the role sync action itself refuses a role outside the user\'s realm', fun
     expect(fn () => app(SyncsUserRealmRoles::class)->handle($user, [$foreign->id]))
         ->toThrow(InvalidArgumentException::class)
         ->and($user->realmRoles()->exists())->toBeFalse();
-});
-
-test('deleting a user releases their realm role assignments', function () {
-    $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
-    $user = User::factory()->for($this->realm)->create();
-    $user->realmRoles()->attach($role);
-
-    $this->actingAs(globalAdmin())
-        ->callAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $user->id])
-        ->assertOk();
-
-    expect(DB::table('realm_role_user')->where('user_id', $user->id)->exists())->toBeFalse()
-        ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeTrue();
-});
-
-test('deleting a realm takes its roles and their assignments with it', function () {
-    $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
-    $kept = RealmRole::factory()->for($this->other)->create(['name' => 'elsewhere']);
-    User::factory()->for($this->realm)->create()->realmRoles()->attach($role);
-
-    $this->actingAs(globalAdmin())
-        ->submitForm(DeleteRealmForm::class, ['name' => 'Acme'], ['realm' => 'acme'])
-        ->assertRedirect(route('admin.realms'));
-
-    expect(RealmRole::query()->whereKey($role->id)->exists())->toBeFalse()
-        ->and(DB::table('realm_role_user')->where('realm_role_id', $role->id)->exists())->toBeFalse()
-        ->and(RealmRole::query()->whereKey($kept->id)->exists())->toBeTrue();
 });

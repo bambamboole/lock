@@ -11,7 +11,7 @@ use function Tests\Helpers\realmRoute;
  * Enrolling a factor is covered by TwoFactorSetupTest and the list by
  * TwoFactorMethodsTest.
  */
-test('security settings stay hidden until the password is confirmed', function () {
+test('the two-factor section stays hidden until the password is confirmed', function () {
     $user = User::factory()->withTwoFactor()->create();
 
     $this->actingAs($user, 'identity')
@@ -19,13 +19,8 @@ test('security settings stay hidden until the password is confirmed', function (
         ->assertOk()
         ->assertSee(__('user.security.confirm.action'))
         ->assertDontSee(__('user.security.two-factor.add-method'));
-});
 
-test('confirming the password reveals the two-factor section', function () {
-    $user = User::factory()->withTwoFactor()->create();
-
-    $this->actingAs($user, 'identity')
-        ->withSession(['auth.password_confirmed_at' => time()])
+    $this->withSession(['auth.password_confirmed_at' => time()])
         ->get(realmRoute($user->realm, 'account'))
         ->assertOk()
         ->assertSee(__('user.security.two-factor.add-method'))

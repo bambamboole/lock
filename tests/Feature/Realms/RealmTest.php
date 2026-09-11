@@ -28,24 +28,12 @@ test('a realm identifier cannot change once created', function () {
     expect(fn () => $realm->update(['slug' => 'renamed']))->toThrow(LogicException::class);
 });
 
-test('an address identifies a different person in each realm', function () {
-    $one = Realm::factory()->create();
-    $two = Realm::factory()->create();
-
-    $here = User::factory()->for($one)->create(['email' => 'ada@example.com']);
-    $there = User::factory()->for($two)->create(['email' => 'ada@example.com']);
-
-    expect($here->is($there))->toBeFalse()
-        ->and($here->realm_id)->not->toEqual($there->realm_id);
-});
-
-test('an address cannot repeat inside one realm', function () {
+test('an address is unique inside a realm and free in every other', function () {
     $realm = Realm::factory()->create();
-
     User::factory()->for($realm)->create(['email' => 'ada@example.com']);
 
-    expect(fn () => User::factory()->for($realm)->create(['email' => 'ada@example.com']))
-        ->toThrow(QueryException::class);
+    expect(fn () => User::factory()->for($realm)->create(['email' => 'ada@example.com']))->toThrow(QueryException::class)
+        ->and(User::factory()->for(Realm::factory()->create())->create(['email' => 'ada@example.com'])->exists)->toBeTrue();
 });
 
 test('the admin realm cannot be deleted', function () {

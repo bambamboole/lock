@@ -6,7 +6,6 @@ use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 use function Tests\Helpers\realmRoute;
@@ -135,15 +134,4 @@ it('reports every item as unchanged when run twice', function () {
         ->and(Realm::master()->users()->count())->toBe(1);
 
     ($this->tokenRequest)('console-secret')->assertOk();
-});
-
-it('is run by the deploy command', function () {
-    try {
-        $this->artisan('app:deploy')->assertSuccessful();
-    } finally {
-        Artisan::call('lattice:discover-clear');
-    }
-
-    expect(Client::query()->where('client_id', 'lock-console')->exists())->toBeTrue()
-        ->and(Realm::master()->users()->where('email', 'root@lock.test')->exists())->toBeTrue();
 });

@@ -77,13 +77,3 @@ test('changing and dropping a scope is recorded against its resource', function 
 
     expect($this->realm->refresh()->resources()->resources)->toBe(['api' => []]);
 });
-
-test('deleting a realm takes its resources and their scopes with it', function () {
-    $resource = app(CreatesResource::class)->handle($this->realm, 'api', 'Orders API');
-    app(CreatesResourceScope::class)->handle($resource, 'orders.read', null);
-
-    $this->realm->delete();
-
-    expect(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
-        ->and(ResourceScope::query()->where('resource_id', $resource->id)->exists())->toBeFalse();
-});

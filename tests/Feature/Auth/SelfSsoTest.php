@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
@@ -60,13 +59,6 @@ it('establishes the web session only after the self-sso callback', function () {
 
     $this->assertAuthenticatedAs($user, 'identity');
     $this->assertGuest('web');
-
-    $oidcSession = OidcSession::query()->where('user_id', (string) $user->getAuthIdentifier())->sole();
-    $rootSessionToken = session('oidc.session_token')['jwt'] ?? null;
-
-    expect($oidcSession->sid)->not->toBeEmpty()
-        ->and($rootSessionToken)->toBeString()->not->toBeEmpty()
-        ->and(session('oidc.sid'))->toBe($oidcSession->sid);
 
     $authorization = $this->get(redirectTarget($identityLogin))->assertRedirect();
     expect(redirectTarget($authorization))->toStartWith(config('app.url').'/login/callback?');

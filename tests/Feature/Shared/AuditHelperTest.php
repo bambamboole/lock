@@ -35,3 +35,14 @@ it('resolves the stored description key in the viewer locale at read time', func
     app()->setLocale('de');
     expect($activity->description)->toBe('Realm aktualisiert');
 });
+
+it('names the causing user as the actor, and nobody when nothing caused the row', function () {
+    $realm = Realm::factory()->create();
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
+
+    $admin = User::factory()->create();
+    $this->actingAs($admin);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
+
+    expect(Activity::query()->with('causer')->oldest('id')->get()->map(fn (Activity $activity): string => $activity->causer_name)->all())->toBe(['—', $admin->name]);
+});

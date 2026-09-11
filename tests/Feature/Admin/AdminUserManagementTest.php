@@ -19,6 +19,7 @@ use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
+use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
@@ -268,6 +269,8 @@ test('resetting MFA is forbidden without users-manage', function () {
 test('deleting a user removes their tokens, sessions, consents and factors', function () {
     Bus::fake([SendBackChannelLogout::class]);
     $target = User::factory()->for($this->realm)->withTwoFactor()->create();
+    $role = RealmRole::factory()->for($this->realm)->create();
+    $target->realmRoles()->attach($role);
     createPasskey($target);
     $client = backChannelClientFor($this->realm);
     $session = activeSessionFor($target, $client);
@@ -286,6 +289,8 @@ test('deleting a user removes their tokens, sessions, consents and factors', fun
         ->and(DB::table('oidc_totp_factors')->where('authenticatable_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('oidc_recovery_codes')->where('authenticatable_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('passkeys')->where('user_id', $target->id)->exists())->toBeFalse()
+        ->and(DB::table('realm_role_user')->where('user_id', $target->id)->exists())->toBeFalse()
+        ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeTrue()
         ->and(Activity::global()->where('event', AdminAuditEvent::UserDeleted->eventName())->sole()->getProperty('email'))->toBe($target->email);
     Bus::assertDispatched(SendBackChannelLogout::class);
 });

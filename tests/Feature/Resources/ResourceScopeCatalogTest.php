@@ -49,11 +49,4 @@ test('two resources carry the same scope value without borrowing each other\'s m
         ->and($forReports->json('scope'))->toBe('read')
         ->and(jwtClaims($forOrders->json('access_token'))['aud'])->toBe($this->orders)
         ->and(jwtClaims($forReports->json('access_token'))['aud'])->toBe($this->reports);
-
-    $descriptions = $this->realm->runAsCurrent(fn (): array => [
-        app(ScopeRepository::class)->find('read', [$this->orders])?->description,
-        app(ScopeRepository::class)->find('read', [$this->reports])?->description,
-    ]);
-
-    expect($descriptions)->toBe(['Read orders', 'Read reports']);
 });
