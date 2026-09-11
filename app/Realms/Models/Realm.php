@@ -81,12 +81,12 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public static function master(): self
     {
-        return self::where('slug', config('realm.master_slug'))->firstOrFail();
+        return self::where('slug', config('lock.master_realm'))->firstOrFail();
     }
 
     public function isMaster(): bool
     {
-        return $this->slug === config('realm.master_slug');
+        return $this->slug === config('lock.master_realm');
     }
 
     public static function fromContext(): ?self
@@ -122,7 +122,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         $query = self::query()->with('storedSettings');
 
         return $host === self::masterHost()
-            ? $query->where('slug', config('realm.master_slug'))->first()
+            ? $query->where('slug', config('lock.master_realm'))->first()
             : $query->where('domain', $host)->first();
     }
 

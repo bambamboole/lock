@@ -20,6 +20,22 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SettingsRegistry::class);
+
+        $this->configureOidc();
+    }
+
+    /**
+     * The console is its own relying party against the master realm, so the
+     * package reads both from Lock's configuration unless OIDC_RP_* points the
+     * console at another provider.
+     */
+    private function configureOidc(): void
+    {
+        config([
+            'oidc.realm' => config('lock.master_realm'),
+            'oidc-client.client_id' => config('oidc-client.client_id') ?: config('lock.console_client.id'),
+            'oidc-client.client_secret' => config('oidc-client.client_secret') ?: config('lock.console_client.secret'),
+        ]);
     }
 
     public function boot(): void

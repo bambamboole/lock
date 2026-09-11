@@ -56,8 +56,8 @@ final class BootstrapCommand extends Command
 
     private function provisionClient(ProvisionsConsoleClient $clients, Realm $realm): ?BootstrapOutcome
     {
-        $clientId = $this->configured('oidc.clients.first_party.client_id');
-        $clientSecret = $this->configured('oidc.first_party_secret');
+        $clientId = $this->configured('lock.console_client.id');
+        $clientSecret = $this->configured('lock.console_client.secret');
         $appUrl = rtrim($this->configured('app.url'), '/');
 
         if ($clientId === '' || $clientSecret === '') {
@@ -73,9 +73,9 @@ final class BootstrapCommand extends Command
             name: $this->configured('app.name') ?: 'Lock',
             clientId: $clientId,
             clientSecret: $clientSecret,
-            trusted: (bool) config('oidc.clients.first_party.trusted', false),
-            redirectUris: [$appUrl.'/login/callback', ...$this->provisionList('redirect_uris')],
-            postLogoutRedirectUris: [$appUrl, ...$this->provisionList('post_logout_redirect_uris')],
+            trusted: true,
+            redirectUris: [$appUrl.'/login/callback'],
+            postLogoutRedirectUris: [$appUrl],
         );
     }
 
@@ -105,22 +105,5 @@ final class BootstrapCommand extends Command
         $value = config($key);
 
         return is_string($value) ? trim($value) : '';
-    }
-
-    /**
-     * The extra URIs `oidc:install-self` layers on top of the APP_URL-derived
-     * defaults, so both paths provision the same client.
-     *
-     * @return list<string>
-     */
-    private function provisionList(string $key): array
-    {
-        return array_values(array_filter(
-            array_map(
-                fn (mixed $value): string => is_string($value) ? trim($value) : '',
-                (array) config("oidc.clients.first_party.provision.{$key}", []),
-            ),
-            fn (string $value): bool => $value !== '',
-        ));
     }
 }

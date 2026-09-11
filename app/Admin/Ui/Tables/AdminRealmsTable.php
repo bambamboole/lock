@@ -39,7 +39,7 @@ final class AdminRealmsTable extends EloquentTableDefinition
             ->withCount('users')
             ->select('realms.*')
             ->selectRaw('COALESCE(domain, ?) AS host', [Realm::masterHost()])
-            ->selectRaw('CASE WHEN slug = ? THEN ? ELSE domain_status END AS domain_state', [config('realm.master_slug'), RealmDomainStatus::Verified->value]);
+            ->selectRaw('CASE WHEN slug = ? THEN ? ELSE domain_status END AS domain_state', [config('lock.master_realm'), RealmDomainStatus::Verified->value]);
 
         if ($query->sorts === []) {
             $builder->orderBy('name');

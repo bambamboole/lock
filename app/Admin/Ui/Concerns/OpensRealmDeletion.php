@@ -21,7 +21,7 @@ trait OpensRealmDeletion
         return Link::make(__('admin.realms.danger.submit'), 'delete-realm-'.$slug)
             ->unstyled()
             ->can(AdminPermission::ManageRealms)
-            ->visible($slug !== config('realm.master_slug'))
+            ->visible($slug !== config('lock.master_realm'))
             ->modal(
                 Modal::make('admin.realms.delete.'.$slug)
                     ->title(__('admin.realms.danger.heading'))

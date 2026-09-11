@@ -9,7 +9,6 @@ use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
 use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
 
 return [
-    'realm' => env('REALM_MASTER_SLUG', 'admin'),
     // Null, so the origin comes from `app.url`: every realm host shares its
     // scheme and port.
     'issuer' => null,
@@ -49,12 +48,6 @@ return [
             WebAuthnFactorProvider::class,
         ],
     ],
-
-    // The package's whole `clients` block would be replaced, not merged, by a
-    // `clients` key here — mergeConfigFrom only merges the top level — so the
-    // secret `app:bootstrap` reconciles the console client to gets its own key
-    // next to the package's OIDC_FIRST_PARTY_CLIENT and OIDC_FIRST_PARTY_TRUSTED.
-    'first_party_secret' => env('OIDC_FIRST_PARTY_SECRET'),
 
     // mergeConfigFrom only merges the top level, so naming a sink here drops
     // the package's other audit keys unless they are repeated.

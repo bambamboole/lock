@@ -8,6 +8,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Realm::create(['slug' => config('realm.master_slug'), 'name' => 'Admin']);
+        Realm::create(['slug' => config('lock.master_realm'), 'name' => 'Admin']);
     }
 };

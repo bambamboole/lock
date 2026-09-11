@@ -15,9 +15,8 @@ beforeEach(function () {
     new GlobalRoleSeeder()->run();
 
     config()->set([
-        'oidc.clients.first_party.client_id' => 'lock-console',
-        'oidc.clients.first_party.trusted' => true,
-        'oidc.first_party_secret' => 'console-secret',
+        'lock.console_client.id' => 'lock-console',
+        'lock.console_client.secret' => 'console-secret',
         'lock.admin.email' => 'root@lock.test',
         'lock.admin.name' => 'Root',
         'lock.admin.password' => 'CorrectHorse42',
@@ -48,7 +47,7 @@ it('provisions the console client with the configured id and secret', function (
 it('applies a client secret changed in the environment on the next run', function () {
     $this->artisan('app:bootstrap')->assertSuccessful();
 
-    config()->set(['oidc.first_party_secret' => 'rotated-secret']);
+    config()->set(['lock.console_client.secret' => 'rotated-secret']);
 
     $this->artisan('app:bootstrap')->assertSuccessful();
 
@@ -61,7 +60,7 @@ it('applies a client secret changed in the environment on the next run', functio
 it('leaves the console client untouched when no secret is configured', function () {
     $this->artisan('app:bootstrap')->assertSuccessful();
 
-    config()->set(['oidc.first_party_secret' => null]);
+    config()->set(['lock.console_client.secret' => null]);
     Realm::master()->settings->set('realm.first_party_trusted', false);
 
     $this->artisan('app:bootstrap')->expectsOutputToContain('skipped')->assertSuccessful();

@@ -90,8 +90,9 @@ provision clients — including the first-party client — with that realm curre
 (`Realm::master()->runAsCurrent(...)`, as `DatabaseSeeder` does), or the package will not find them at login.
 
 The package names a realm's host through `Realm::host()` and builds the issuer from it with the scheme and port of
-`oidc.issuer`. The master realm is `admin` by default (`REALM_MASTER_SLUG`), and `config('oidc.realm')` follows the
-same value: the app authenticates against `APP_URL` itself, and `OIDC_RP_ISSUER` is `APP_URL`.
+`oidc.issuer`. Lock's own settings live in `config/lock.php`; `AppServiceProvider::configureOidc()` derives the
+package values that follow from them — `oidc.realm` from `lock.master_realm` (`admin` by default, `LOCK_MASTER_REALM`),
+and the relying party's client from `lock.console_client` — so the app authenticates against `APP_URL` itself.
 
 ## Global roles only count inside the master realm
 

@@ -46,8 +46,7 @@ ENV AUTORUN_ENABLED=true \
     APP_NAME=Lock \
     LOG_CHANNEL=stderr \
     LOG_LEVEL=info \
-    SESSION_SECURE_COOKIE=true \
-    OIDC_FIRST_PARTY_TRUSTED=true
+    SESSION_SECURE_COOKIE=true
 
 COPY --chmod=755 <<'EOF' /etc/entrypoint.d/60-app-deploy.sh
 #!/bin/sh
