@@ -11,7 +11,6 @@ use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -72,12 +71,6 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->map(fn (AuthenticationException $exception): AuthenticationException => new AuthenticationException(
-            $exception->getMessage(),
-            array_map(fn (?string $guard): string => $guard ?? auth()->getDefaultDriver(), $exception->guards()),
-            $exception->redirectTo(request()),
-        ));
-
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
