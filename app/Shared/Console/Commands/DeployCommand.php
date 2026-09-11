@@ -8,6 +8,7 @@ use App\Realms\Models\Realm;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * The one command a release pipeline runs after the new code is live. Every
@@ -22,7 +23,7 @@ final class DeployCommand extends Command
     public function handle(): int
     {
         $steps = [
-            ['migrate', fn (): int => $this->call('migrate', ['--force' => true, '--isolated' => true])],
+            ['migrate', fn (): int => $this->call('migrate', ['--force' => true, '--isolated' => $this->canIsolateMigrations()])],
             ['migrate --path=database/data-migrations', fn (): int => $this->call('migrate', ['--force' => true, '--isolated' => true, '--path' => 'database/data-migrations'])],
             ['oidc:rotate-keys --if-missing', $this->generateMissingSigningKeys(...)],
             ['permission:sync', fn (): int => $this->call('permission:sync')],
@@ -39,6 +40,16 @@ final class DeployCommand extends Command
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * `--isolated` takes its lock through the cache store, and the database
+     * store keeps locks in a table the first migration only creates — so the
+     * very first deploy against an empty database migrates without the lock.
+     */
+    private function canIsolateMigrations(): bool
+    {
+        return Schema::hasTable('cache_locks');
     }
 
     /**
