@@ -84,7 +84,9 @@ final readonly class BrowserSession
             return null;
         }
 
-        $data = @unserialize($decoded, ['allowed_classes' => false]);
+        $data = config('session.serialization') === 'json'
+            ? json_decode($decoded, true)
+            : @unserialize($decoded, ['allowed_classes' => false]);
         $sid = is_array($data) ? ($data['oidc']['sid'] ?? null) : null;
 
         return is_string($sid) && $sid !== '' ? $sid : null;

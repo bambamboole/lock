@@ -7,6 +7,8 @@ use App\Auth\Ui\Actions\SignOutBrowserSession;
 use App\Auth\Ui\Tables\BrowserSessionsTable;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
+use Illuminate\Session\ArraySessionHandler;
+use Illuminate\Session\Store;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -20,9 +22,28 @@ function browserSessionRow(User $user, string $id, array $session = [], string $
         'user_id' => $user->getKey(),
         'ip_address' => '203.0.113.7',
         'user_agent' => $userAgent,
-        'payload' => base64_encode(serialize($session)),
+        'payload' => sessionPayload($session),
         'last_activity' => now()->subMinutes(5)->getTimestamp(),
     ]);
+}
+
+/**
+ * @param  array<string, mixed>  $session
+ */
+function sessionPayload(array $session): string
+{
+    $handler = new ArraySessionHandler(1);
+    $store = new Store('payload', $handler, Str::random(40), config('session.serialization'));
+    $store->put($session);
+    $store->save();
+
+    $payload = $handler->read($store->getId());
+
+    if ($payload === false) {
+        throw new RuntimeException('The session store wrote no payload.');
+    }
+
+    return base64_encode($payload);
 }
 
 function currentSessionId(): string
