@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
@@ -16,7 +17,7 @@ test('the root path sends a master realm user to their account and an admin to t
 
     $this->get('/')->assertRedirect(route('login'));
     $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(realmRoute(Realm::master(), 'account'));
-    $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
+    $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
 test('users can logout', function () {

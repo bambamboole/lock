@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Models;
 
+use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
-use App\Shared\Auth\Contracts\PermissionCatalog;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -47,28 +47,19 @@ final class Role extends Model
     }
 
     /**
-     * The catalog lives in the enums, so the table only holds the keys a role
+     * The catalog lives in the enum, so the table only holds the keys a role
      * references.
      *
-     * @param  array<int, string>  $values
+     * @param  list<AdminPermission>  $permissions
      */
-    public function syncPermissions(array $values): void
+    public function syncPermissions(array $permissions): void
     {
-        $repository = app(PermissionCatalog::class);
-
-        foreach ($values as $value) {
-            $repository->get($value);
-        }
-
-        $permissionIds = [];
-
-        foreach (array_values(array_unique($values)) as $value) {
-            $permissionIds[] = Permission::firstOrCreate(['key' => $value])->id;
-        }
-
-        $this->permissions()->sync($permissionIds);
+        $this->permissions()->sync(array_map(
+            fn (AdminPermission $permission): string => Permission::firstOrCreate(['key' => $permission->value])->id,
+            $permissions,
+        ));
         $this->unsetRelation('permissions');
 
-        Permission::query()->whereNotIn('key', $repository->values())->delete();
+        Permission::query()->whereNotIn('key', array_column(AdminPermission::cases(), 'value'))->delete();
     }
 }

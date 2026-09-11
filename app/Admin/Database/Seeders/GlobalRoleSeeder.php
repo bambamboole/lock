@@ -11,10 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 final class GlobalRoleSeeder extends Seeder
 {
-    public const string SUPER_ADMIN = GlobalRoles::SUPER_ADMIN;
-
-    public const string SUPPORT = GlobalRoles::SUPPORT;
-
     public function run(): void
     {
         DB::transaction(function (): void {

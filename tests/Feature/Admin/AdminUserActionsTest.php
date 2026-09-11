@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
@@ -22,7 +23,7 @@ beforeEach(function () {
 test('a roles-manage admin can grant a global role to a user', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoles::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
@@ -34,7 +35,7 @@ test('a roles-manage admin can grant a global role to a user', function () {
 test('global roles cannot be granted to a user outside the master realm', function () {
     $admin = globalAdmin();
     $target = User::factory()->create();
-    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoles::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callDeniedAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
@@ -63,7 +64,7 @@ test('an admin cannot change their own global roles', function () {
 });
 
 test('a support admin cannot manage global roles', function () {
-    $support = globalAdmin(GlobalRoleSeeder::SUPPORT);
+    $support = globalAdmin(GlobalRoles::SUPPORT);
     $target = User::factory()->create();
 
     $this->actingAs($support)->callDeniedAction(UpdateUserGlobalRoles::class, [

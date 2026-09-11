@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
-use App\Auth\Support\PermissionRepository;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Support\Facades\Artisan;
@@ -19,8 +18,7 @@ it('runs every deploy step and leaves the app state primed', function () {
     try {
         $this->artisan('app:deploy')->assertSuccessful();
 
-        expect(Cache::has(PermissionRepository::CACHE_KEY))->toBeTrue()
-            ->and(SigningKey::query()->whereNull('retired_at')->pluck('realm_id')->all())
+        expect(SigningKey::query()->whereNull('retired_at')->pluck('realm_id')->all())
             ->toEqualCanonicalizing(['admin', 'partners'])
             ->and(Role::query()->pluck('name')->all())
             ->toEqualCanonicalizing([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT])

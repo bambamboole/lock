@@ -2,25 +2,6 @@
 declare(strict_types=1);
 
 return [
-    'permissions' => [
-        'admin' => [
-            'access' => 'Access the admin area',
-            'users' => [
-                'manage' => 'View and manage users',
-            ],
-            'realms' => [
-                'view' => 'View realms',
-                'manage' => 'View and manage realms',
-            ],
-            'resources' => [
-                'view' => 'View resources',
-                'manage' => 'View and manage resources and their scopes',
-            ],
-            'roles' => [
-                'manage' => 'Manage which users are admins',
-            ],
-        ],
-    ],
     'events' => [
         'heading' => 'Security events',
         'description' => 'Sign-ins, multi-factor challenges and token activity in :realm.',

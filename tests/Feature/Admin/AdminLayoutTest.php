@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Realms\Models\Realm;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
@@ -31,7 +32,7 @@ it('shows the instance areas while no realm is selected', function (string $role
 
     expect(menuItemHrefs(adminLayout($response)->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
         ->toBe(['/admin/realms', '/admin/activity']);
-})->with(['support admin' => GlobalRoleSeeder::SUPPORT, 'super admin' => GlobalRoleSeeder::SUPER_ADMIN]);
+})->with(['support admin' => GlobalRoles::SUPPORT, 'super admin' => GlobalRoles::SUPER_ADMIN]);
 
 it('turns the sidebar into the selected realm console', function () {
     $realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);

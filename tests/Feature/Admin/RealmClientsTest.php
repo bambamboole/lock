@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\DeleteClient;
 use App\Admin\Ui\Actions\RestoreClient;
 use App\Admin\Ui\Actions\RevokeClient;
@@ -113,7 +114,7 @@ test('the clients console is forbidden without realms-manage', function (Closure
 
     expect(Client::query()->count())->toBe(1);
 })->with([
-    'support admin' => fn () => globalAdmin(GlobalRoleSeeder::SUPPORT),
+    'support admin' => fn () => globalAdmin(GlobalRoles::SUPPORT),
     'realm user' => fn () => User::factory()->create(),
 ]);
 

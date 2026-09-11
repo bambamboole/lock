@@ -13,7 +13,6 @@ use App\Auth\Console\Commands\InstallSelfCommand;
 use App\Auth\Models\User;
 use App\Auth\Support\DatabaseRealmRepository;
 use App\Auth\Support\DatabaseRealmResolver;
-use App\Auth\Support\PermissionRepository;
 use App\Auth\Support\RealmPasswordBrokerManager;
 use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
@@ -21,7 +20,6 @@ use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use App\Shared\Auth\Contracts\PermissionCatalog;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginApi;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
@@ -35,7 +33,6 @@ use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
 use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 
@@ -47,8 +44,6 @@ final class AuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(PermissionRepository::class);
-        $this->app->alias(PermissionRepository::class, PermissionCatalog::class);
         $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
         $this->app->singleton(RealmResolver::class, DatabaseRealmResolver::class);
         $this->app->bind(PackageInstallSelfCommand::class, InstallSelfCommand::class);
@@ -81,14 +76,6 @@ final class AuthServiceProvider extends ServiceProvider
         ));
 
         Lattice::context('user', User::class);
-
-        Gate::before(function (User $user, string $ability): ?bool {
-            $permission = $this->app->make(PermissionRepository::class)->find($ability);
-
-            return $permission !== null && $permission->global
-                ? $user->hasGlobalPermission($permission->case)
-                : null;
-        });
 
         /*
          * The user provider already hides blocked users; this catches the

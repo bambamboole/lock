@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Auth\Ui\Layouts\AccountLayout;
 use App\Realms\Models\Realm;
@@ -39,7 +40,7 @@ it('offers the realm end-session as logout and the console only to admins', func
     $user = User::factory()->for(Realm::master())->create();
     $hrefsBefore = accountUserMenuHrefs($user);
 
-    grantGlobalRole($user, GlobalRoleSeeder::SUPPORT);
+    grantGlobalRole($user, GlobalRoles::SUPPORT);
     $hrefsAfter = accountUserMenuHrefs($user->refresh());
 
     expect($hrefsBefore)->toBe(['/oauth/logout'])

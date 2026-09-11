@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Illuminate\Support\Facades\Gate;
@@ -16,7 +17,7 @@ beforeEach(function () {
 
 test('super admin passes every admin gate', function () {
     $user = User::factory()->for(Realm::master())->create();
-    grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
+    grantGlobalRole($user, GlobalRoles::SUPER_ADMIN);
 
     foreach (AdminPermission::cases() as $permission) {
         expect(Gate::forUser($user)->allows($permission))->toBeTrue();
@@ -25,7 +26,7 @@ test('super admin passes every admin gate', function () {
 
 test('support admin can access and manage users but not realms or roles', function () {
     $user = User::factory()->for(Realm::master())->create();
-    grantGlobalRole($user, GlobalRoleSeeder::SUPPORT);
+    grantGlobalRole($user, GlobalRoles::SUPPORT);
 
     expect(Gate::forUser($user)->allows(AdminPermission::Access))->toBeTrue()
         ->and(Gate::forUser($user)->allows(AdminPermission::ManageUsers))->toBeTrue()
@@ -45,14 +46,14 @@ test('an admin permission check reflects a role attached after an earlier check,
     $user = User::factory()->for(Realm::master())->create();
     expect($user->can(AdminPermission::Access))->toBeFalse();
 
-    grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
+    grantGlobalRole($user, GlobalRoles::SUPER_ADMIN);
 
     expect($user->refresh()->can(AdminPermission::Access))->toBeTrue();
 });
 
 test('a global role held outside the master realm grants nothing', function () {
     $user = User::factory()->create();
-    grantGlobalRole($user, GlobalRoleSeeder::SUPER_ADMIN);
+    grantGlobalRole($user, GlobalRoles::SUPER_ADMIN);
 
     foreach (AdminPermission::cases() as $permission) {
         expect(Gate::forUser($user)->allows($permission))->toBeFalse();

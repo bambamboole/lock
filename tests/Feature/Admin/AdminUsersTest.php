@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
@@ -27,7 +28,7 @@ test('a users-manage admin can open the realm users page and load its table', fu
     $this->actingAs(globalAdmin($roleName));
     $this->get('/admin/realms/acme/users')->assertOk();
     $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
-})->with([GlobalRoleSeeder::SUPER_ADMIN, GlobalRoleSeeder::SUPPORT]);
+})->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
     $this->actingAs(User::factory()->create());
@@ -58,8 +59,8 @@ test('a user detail page opens under its own realm only', function () {
 });
 
 test('a user holding a global role is flagged as admin in the table', function () {
-    $admin = globalAdmin(GlobalRoleSeeder::SUPER_ADMIN);
-    grantGlobalRole($admin, GlobalRoleSeeder::SUPPORT);
+    $admin = globalAdmin(GlobalRoles::SUPER_ADMIN);
+    grantGlobalRole($admin, GlobalRoles::SUPPORT);
 
     $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
 

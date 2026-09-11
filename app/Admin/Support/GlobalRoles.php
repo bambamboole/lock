@@ -12,17 +12,13 @@ final class GlobalRoles
     public const string SUPPORT = 'Support';
 
     /**
-     * @return array<string, list<string>>
+     * @return array<string, list<AdminPermission>>
      */
     public static function grants(): array
     {
         return [
-            self::SUPER_ADMIN => array_map(fn (AdminPermission $permission) => $permission->value, AdminPermission::cases()),
-            self::SUPPORT => [
-                AdminPermission::Access->value,
-                AdminPermission::ManageUsers->value,
-                AdminPermission::ViewRealms->value,
-            ],
+            self::SUPER_ADMIN => AdminPermission::cases(),
+            self::SUPPORT => [AdminPermission::Access, AdminPermission::ManageUsers, AdminPermission::ViewRealms],
         ];
     }
 }

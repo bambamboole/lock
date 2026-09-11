@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Models\Role;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
@@ -84,7 +85,7 @@ test('the actor name is the causing user when one is authenticated', function ()
 test('granting a global role is logged with the role diff', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdminRole = Role::query()->where('name', GlobalRoleSeeder::SUPER_ADMIN)->sole();
+    $superAdminRole = Role::query()->where('name', GlobalRoles::SUPER_ADMIN)->sole();
 
     $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
         'role_ids' => [$superAdminRole->id],
@@ -95,7 +96,7 @@ test('granting a global role is logged with the role diff', function () {
     expect($activity->event)->toBe('admin.roles.updated')
         ->and($activity->subject_id)->toBe($target->id)
         ->and($activity->causer_id)->toBe($admin->id)
-        ->and($activity->properties?->get('added'))->toBe([GlobalRoleSeeder::SUPER_ADMIN])
+        ->and($activity->properties?->get('added'))->toBe([GlobalRoles::SUPER_ADMIN])
         ->and($activity->properties?->get('removed'))->toBe([]);
 });
 
@@ -170,7 +171,7 @@ test('any admin can read the activity trail', function (string $roleName) {
 
     $this->actingAs($admin)->get('/admin/activity')->assertOk();
     $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk();
-})->with([GlobalRoleSeeder::SUPER_ADMIN, GlobalRoleSeeder::SUPPORT]);
+})->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
 
 test('a non-admin cannot read the activity trail', function () {
     $this->actingAs(User::factory()->create())->get('/admin/activity')->assertForbidden();

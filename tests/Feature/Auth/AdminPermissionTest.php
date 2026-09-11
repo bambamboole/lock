@@ -11,8 +11,8 @@ test('a user with a global role granting admin:access is an admin', function () 
     $user = User::factory()->for(Realm::master())->create();
     $role = Role::factory()->create(['name' => 'Super Admin']);
     $role->syncPermissions([
-        AdminPermission::Access->value,
-        AdminPermission::ManageUsers->value,
+        AdminPermission::Access,
+        AdminPermission::ManageUsers,
     ]);
     $user->roles()->attach($role);
 
@@ -24,7 +24,7 @@ test('a user with a global role granting admin:access is an admin', function () 
 test('a granted :manage permission satisfies its :view counterpart', function () {
     $user = User::factory()->for(Realm::master())->create();
     $role = Role::factory()->create(['name' => 'Realm admin']);
-    $role->syncPermissions([AdminPermission::ManageRealms->value]);
+    $role->syncPermissions([AdminPermission::ManageRealms]);
     $user->roles()->attach($role);
 
     expect($user->can(AdminPermission::ManageRealms))->toBeTrue()

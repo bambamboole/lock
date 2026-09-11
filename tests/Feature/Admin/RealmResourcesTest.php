@@ -31,7 +31,7 @@ beforeEach(function () {
 $resourceViewer = function (): User {
     $viewer = User::factory()->for(Realm::master())->create();
     $role = Role::factory()->create(['name' => 'Resource viewer']);
-    $role->syncPermissions([AdminPermission::Access->value, AdminPermission::ViewResources->value]);
+    $role->syncPermissions([AdminPermission::Access, AdminPermission::ViewResources]);
     $viewer->roles()->attach($role);
 
     return $viewer;

@@ -2,25 +2,6 @@
 declare(strict_types=1);
 
 return [
-    'permissions' => [
-        'admin' => [
-            'access' => 'Auf den Admin-Bereich zugreifen',
-            'users' => [
-                'manage' => 'Benutzer einsehen und verwalten',
-            ],
-            'realms' => [
-                'view' => 'Realms ansehen',
-                'manage' => 'Realms einsehen und verwalten',
-            ],
-            'resources' => [
-                'view' => 'Resources ansehen',
-                'manage' => 'Resources und ihre Scopes ansehen und verwalten',
-            ],
-            'roles' => [
-                'manage' => 'Festlegen, welche Benutzer Admins sind',
-            ],
-        ],
-    ],
     'events' => [
         'heading' => 'Sicherheitsereignisse',
         'description' => 'Anmeldungen, Zwei-Faktor-Prüfungen und Token-Aktivität in :realm.',
