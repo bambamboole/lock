@@ -7,6 +7,7 @@ use App\Realms\Actions\DeleteRealm;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Context;
 
 use function Tests\Helpers\realmRoute;
 
@@ -67,4 +68,22 @@ test('the admin realm cannot be deleted', function () {
     expect(fn () => app(DeleteRealm::class)->handle(Realm::master()))->toThrow(LogicException::class);
 
     $this->assertDatabaseHas('realms', ['slug' => Realm::master()->slug]);
+});
+
+it('restores the previous realm context after a nested run', function () {
+    $realmA = Realm::factory()->create();
+    $realmB = Realm::factory()->create();
+
+    Context::forget('realm_id');
+
+    $inner = $realmA->runAsCurrent(function () use ($realmA, $realmB): array {
+        $nested = $realmB->runAsCurrent(fn () => Context::get('realm_id'));
+
+        expect(Context::get('realm_id'))->toBe($realmA->id);
+
+        return [$nested];
+    });
+
+    expect($inner)->toBe([$realmB->id])
+        ->and(Context::get('realm_id'))->toBeNull();
 });

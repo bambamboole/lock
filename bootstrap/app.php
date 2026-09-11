@@ -7,7 +7,6 @@ use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
-use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
@@ -74,13 +73,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
-
-        // A BusinessModel query without a current realm throws with a
-        // developer-facing message — on token-facing paths that is an
-        // authorization problem, not a server error.
-        $exceptions->render(fn (MissingRealmContext $exception, Request $request) => $request->is('api/*')
-            ? response()->json(['message' => __('common.api.no-realm-context')], 403)
-            : null);
     })
     ->withCommands([
         BootstrapCommand::class,

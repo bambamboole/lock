@@ -46,11 +46,6 @@ return [
         ],
     ],
     'events' => [
-        'model' => [
-            'created' => 'Created',
-            'updated' => 'Updated',
-            'deleted' => 'Deleted',
-        ],
         'realm' => [
             'created' => 'Realm created',
             'updated' => 'Realm updated',

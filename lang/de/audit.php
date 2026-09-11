@@ -46,11 +46,6 @@ return [
         ],
     ],
     'events' => [
-        'model' => [
-            'created' => 'Erstellt',
-            'updated' => 'Aktualisiert',
-            'deleted' => 'Gelöscht',
-        ],
         'realm' => [
             'created' => 'Realm angelegt',
             'updated' => 'Realm aktualisiert',
