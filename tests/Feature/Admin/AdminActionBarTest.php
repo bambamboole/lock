@@ -6,12 +6,11 @@ use App\Admin\Ui\Tables\AdminClientsTable;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerSlot;
+use function Tests\Helpers\realmClient;
 use function Tests\Helpers\rowMenus;
 
 /**
@@ -26,8 +25,7 @@ const HARMLESS_ACTIONS = [
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['slug' => 'acme']);
     $this->target = User::factory()->for($this->realm)->create();
-    $this->client = $this->realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
-        ->createAuthorizationCodeGrantClient('Portal', ['https://rp.test/callback'], true));
+    $this->client = realmClient($this->realm, 'Portal');
     $this->actingAs(globalAdmin());
 });
 

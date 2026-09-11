@@ -15,7 +15,6 @@ use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
@@ -26,6 +25,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\realmClient;
 use function Tests\Helpers\realmSetting;
 
 beforeEach(function () {
@@ -191,8 +191,7 @@ it('reports invalid list entries on the matching configuration field', function 
 it('only trusts active clients belonging to the configured realm', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
     $master = Realm::master();
-    $client = $master->runAsCurrent(fn () => app(ClientRepository::class)
-        ->createAuthorizationCodeGrantClient('Master client', ['https://rp.test/callback']));
+    $client = realmClient($master, 'Master client');
 
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'trusted_clients', $client->client_id))->assertInvalid(['trusted_clients']);
     $this->submitForm(RealmSettingForm::class, ...realmSetting($master, 'trusted_clients', $client->client_id))->assertRedirect()->assertValid();
@@ -208,9 +207,9 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
     $keptRole = RealmRole::factory()->for(Realm::master())->create(['name' => 'elsewhere']);
     $resource = Resource::factory()->for($realm)->create();
     $scope = ResourceScope::factory()->for($resource)->create();
-    $client = $realm->runAsCurrent(fn () => app(ClientRepository::class)->createAuthorizationCodeGrantClient('Partner app', ['https://rp.test/callback']));
+    $client = realmClient($realm, 'Partner app');
     OidcSession::query()->forceCreate(['sid' => fake()->uuid(), 'realm_id' => 'partners', 'user_id' => $user->id, 'expires_at' => now()->addHour()]);
-    $masterClient = Realm::master()->runAsCurrent(fn () => app(ClientRepository::class)->createAuthorizationCodeGrantClient('Admin app', ['https://rp.test/callback']));
+    $masterClient = realmClient(Realm::master(), 'Admin app');
 
     $this->submitForm(DeleteRealmForm::class, ['name' => 'Partners'], ['realm' => $realm->slug])
         ->assertRedirect(route('admin.realms'));

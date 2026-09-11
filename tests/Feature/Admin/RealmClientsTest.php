@@ -29,6 +29,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\latticeSchema;
+use function Tests\Helpers\realmClient;
 use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
@@ -60,12 +61,6 @@ function clientFormData(array $overrides = []): array
 function clientSetting(Client $client, string $field, mixed $value): array
 {
     return [[$field => $value], ['realm' => $client->realm_id, 'client' => $client->id, 'field' => $field]];
-}
-
-function realmClient(Realm $realm, string $name = 'Existing app', bool $confidential = true): Client
-{
-    return $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
-        ->createAuthorizationCodeGrantClient($name, ['https://rp.test/callback'], $confidential));
 }
 
 /**

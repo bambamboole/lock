@@ -20,7 +20,6 @@ use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Consents\Models\Consent;
 use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;
@@ -36,6 +35,7 @@ use Illuminate\Support\Facades\Notification;
 use function Tests\Helpers\createPasskey;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
+use function Tests\Helpers\realmClient;
 
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['slug' => 'acme']);
@@ -61,7 +61,7 @@ function activeSessionFor(User $user, ?Client $client = null): OidcSession
 
 function backChannelClientFor(Realm $realm): Client
 {
-    $client = $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)->createAuthorizationCodeGrantClient('RP', ['https://rp.test/callback']));
+    $client = realmClient($realm, 'RP');
     $client->forceFill(['backchannel_logout_uri' => 'https://rp.test/logout'])->save();
 
     return $client;

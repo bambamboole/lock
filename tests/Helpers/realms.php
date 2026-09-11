@@ -6,6 +6,8 @@ namespace Tests\Helpers;
 
 use App\Realms\Models\Realm;
 use App\Realms\Support\DomainCheckToken;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -39,4 +41,10 @@ function realmRoute(Realm|string $realm, string $name, array $parameters = []): 
 function domainReachesThisInstance(): void
 {
     Http::fake(fn (Request $request) => Http::response(DomainCheckToken::for((string) parse_url($request->url(), PHP_URL_HOST))));
+}
+
+function realmClient(Realm $realm, string $name = 'Existing app', bool $confidential = true): Client
+{
+    return $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
+        ->createAuthorizationCodeGrantClient($name, ['https://rp.test/callback'], $confidential));
 }
