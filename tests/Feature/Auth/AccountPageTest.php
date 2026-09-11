@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Illuminate\Auth\SessionGuard;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\assumeNotNull;
+use function Tests\Helpers\identitySessionFor;
 use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\realmRoute;
 use function Tests\Helpers\realmUrl;
-
-/**
- * @return array<string, string>
- */
-function identitySessionFor(User $user): array
-{
-    return ['login_identity_'.sha1(SessionGuard::class) => $user->getKey()];
-}
 
 it('does not let a session from one realm open another realm account', function () {
     $acme = Realm::factory()->create(['slug' => 'acme']);

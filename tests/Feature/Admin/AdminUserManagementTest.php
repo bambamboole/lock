@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
+use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Actions\DeleteUserAction;
 use App\Admin\Ui\Actions\EndAllUserSessionsAction;
@@ -34,6 +35,7 @@ use Illuminate\Support\Facades\Notification;
 
 use function Tests\Helpers\createPasskey;
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -148,7 +150,7 @@ test('an address is unique within the realm but free in another realm', function
 });
 
 test('creating a user is forbidden without users-manage', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
 
     $this->get('/admin/realms/acme/users/create')->assertForbidden();
     $this->submitDeniedForm(CreateUserForm::class, ['name' => 'X', 'email' => 'x@example.com', 'credentials' => 'invite'], ['realm' => 'acme'])
@@ -196,7 +198,7 @@ test('a row rejects an address already used inside the realm', function () {
 test('editing a user is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->create();
 
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(globalAdminWith(AdminPermission::Access))
         ->submitDeniedForm(UpdateUserNameForm::class, ['name' => 'X'], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 });
@@ -223,12 +225,12 @@ test('blocking ends the sessions, notifies the relying parties and unblocking li
         ->and(Activity::global()->where('event', AdminAuditEvent::UserUnblocked->eventName())->exists())->toBeTrue();
 });
 
-test('an admin cannot block themselves and a non-admin cannot block anyone', function () {
+test('an admin cannot block themselves and one without users-manage cannot block anyone', function () {
     $admin = globalAdmin();
     $target = User::factory()->for($this->realm)->create();
 
     $this->actingAs($admin)->callDeniedAction(BlockUserAction::class, [], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
-    $this->actingAs(User::factory()->create())->callDeniedAction(BlockUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
+    $this->actingAs(globalAdminWith(AdminPermission::Access))->callDeniedAction(BlockUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
 
     expect($admin->refresh()->isBlocked())->toBeFalse()
         ->and($target->refresh()->isBlocked())->toBeFalse();
@@ -256,7 +258,7 @@ test('resetting MFA removes authenticator apps, recovery codes and passkeys', fu
 test('resetting MFA is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->withTwoFactor()->create();
 
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(globalAdminWith(AdminPermission::Access))
         ->callDeniedAction(ResetUserMfaAction::class, [], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 
@@ -288,12 +290,12 @@ test('deleting a user removes their tokens, sessions, consents and factors', fun
     Bus::assertDispatched(SendBackChannelLogout::class);
 });
 
-test('an admin cannot delete themselves and a non-admin cannot delete anyone', function () {
+test('an admin cannot delete themselves and one without users-manage cannot delete anyone', function () {
     $admin = globalAdmin();
     $target = User::factory()->for($this->realm)->create();
 
     $this->actingAs($admin)->callDeniedAction(DeleteUserAction::class, [], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
-    $this->actingAs(User::factory()->create())->callDeniedAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
+    $this->actingAs(globalAdminWith(AdminPermission::Access))->callDeniedAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
 
     expect(User::query()->whereKey($admin->id)->exists())->toBeTrue()
         ->and(User::query()->whereKey($target->id)->exists())->toBeTrue();
@@ -352,7 +354,7 @@ test('ending sessions is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->create();
     $session = activeSessionFor($target);
 
-    $this->actingAs(User::factory()->create())
+    $this->actingAs(globalAdminWith(AdminPermission::Access))
         ->callDeniedAction(EndAllUserSessionsAction::class, [], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 

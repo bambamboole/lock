@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
+use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Tables\RealmActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -12,6 +13,7 @@ use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -34,7 +36,7 @@ test('the realm activity table lists only that realm and leaves the instance tra
 });
 
 test('the realm activity console is forbidden without realms-view', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
 
     $this->get('/admin/realms/acme/activity')->assertForbidden();
     $this->loadDeniedTable(RealmActivityTable::class, context: ['realm' => 'acme'])->assertForbidden();

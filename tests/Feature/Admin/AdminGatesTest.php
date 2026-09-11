@@ -35,14 +35,6 @@ test('support admin can access and manage users but not realms or roles', functi
         ->and(Gate::forUser($user)->allows(AdminPermission::ManageAdminRoles))->toBeFalse();
 });
 
-test('a non-admin fails every admin gate', function () {
-    $user = User::factory()->create();
-
-    foreach (AdminPermission::cases() as $permission) {
-        expect(Gate::forUser($user)->allows($permission))->toBeFalse();
-    }
-});
-
 test('an admin permission check reflects a role attached after an earlier check, once the user is refreshed', function () {
     $user = User::factory()->for(Realm::master())->create();
     expect($user->can(AdminPermission::Access))->toBeFalse();

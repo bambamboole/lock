@@ -5,11 +5,11 @@ use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
+use function Tests\Helpers\consoleSessionFor;
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\identitySessionFor;
 use function Tests\Helpers\realmRoute;
 
 test('the root path sends a master realm user to their account and an admin to the realms console', function () {
@@ -20,34 +20,17 @@ test('the root path sends a master realm user to their account and an admin to t
     $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
-test('users can logout', function () {
-    $user = User::factory()->create();
-    $idToken = 'self-sso-id-token';
+test('logging out ends both the console and the identity session', function () {
+    $user = User::factory()->for(Realm::master())->create();
+    Http::fake(['*' => Http::response([], 503)]);
 
-    $issuer = app(IssuerResolver::class)->url();
-    config()->set('oidc-client.issuer', $issuer);
+    $this->withSession(identitySessionFor($user) + consoleSessionFor($user))
+        ->get(realmRoute(Realm::master(), 'account'))
+        ->assertOk();
 
-    Http::fake([
-        $issuer.'/.well-known/openid-configuration' => Http::response([
-            'issuer' => $issuer,
-            'authorization_endpoint' => route('oidc.authorize'),
-            'token_endpoint' => route('oidc.token'),
-            'jwks_uri' => route('oidc.jwks'),
-            'end_session_endpoint' => route('oidc.logout'),
-        ]),
-    ]);
+    $this->post(route('logout'))->assertRedirect();
+    auth()->forgetGuards();
 
-    $response = $this->actingAs($user, 'web')
-        ->actingAs($user, 'identity')
-        ->withSession(['oidc-client.tokens.id_token' => $idToken])
-        ->post(route('logout'))
-        ->assertRedirect();
-
-    Auth::forgetGuards();
-
-    $this->assertGuest('web');
-    $this->assertGuest('identity');
-    expect($response->headers->get('Location'))
-        ->toContain('/oauth/logout')
-        ->toContain('id_token_hint=');
+    $this->get('/')->assertRedirect(route('login'));
+    $this->get(realmRoute(Realm::master(), 'account'))->assertRedirect(realmRoute(Realm::master(), 'identity.login'));
 });

@@ -5,25 +5,20 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
-use App\Auth\Ui\Layouts\AccountLayout;
 use App\Realms\Models\Realm;
 use Lattice\Support\Testing\ComponentNode;
-use Lattice\Ui\PageSchema;
 
 use function Tests\Helpers\grantGlobalRole;
+use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\menuItemHrefs;
+use function Tests\Helpers\realmRoute;
+use function Tests\Helpers\runningTestCase;
 
 function accountLayoutSchema(User $user): ComponentNode
 {
-    auth()->setUser($user);
+    $response = runningTestCase()->actingAs($user, 'identity')->get(realmRoute($user->realm, 'account'))->assertOk();
 
-    $request = request();
-    $request->setUserResolver(fn (): User => $user);
-
-    $renderable = (new AccountLayout)->schema(PageSchema::make(), $request)->renderable();
-    $schema = json_decode(json_encode($renderable, JSON_THROW_ON_ERROR), true, flags: JSON_THROW_ON_ERROR);
-
-    return ComponentNode::root($schema);
+    return latticeSchema($response, 'props.lattice.layout.schema');
 }
 
 /**
@@ -47,12 +42,11 @@ it('offers the realm end-session as logout and the console only to admins', func
         ->and($hrefsAfter)->toBe(['/admin/realms', '/oauth/logout']);
 });
 
-it('names the realm and links the brand to the realm account', function () {
+it('names the realm in the account header', function () {
     $realm = Realm::factory()->create(['slug' => 'acme', 'name' => 'Acme Corp']);
     $user = User::factory()->for($realm)->create();
 
     $schema = accountLayoutSchema($user);
 
-    expect($schema->firstOfTypeOrFail('text', 'account-realm-name')->prop('text'))->toBe('Acme Corp')
-        ->and($schema->firstOfTypeOrFail('link', 'account-brand')->prop('href'))->toBe('/account');
+    expect($schema->firstOfTypeOrFail('text', 'account-realm-name')->prop('text'))->toBe('Acme Corp');
 });

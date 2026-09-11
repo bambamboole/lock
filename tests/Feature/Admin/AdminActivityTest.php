@@ -184,13 +184,13 @@ test('a realm-scoped activity row is not readable through the admin fragment', f
     $admin = globalAdmin();
     $realm = Realm::factory()->create();
 
-    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['secret' => 'value']);
+    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['secret' => 'realm-only-sentinel']);
 
     $activity = Activity::query()->sole();
 
     $this->actingAs($admin)
         ->loadFragment(AdminActivityChangesFragment::class, ['activity' => $activity->id])
         ->assertOk()
-        ->assertDontSee('value')
+        ->assertDontSee('realm-only-sentinel')
         ->assertSee(__('admin.activity.detail.empty'));
 });

@@ -15,6 +15,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -103,9 +104,9 @@ test('a users-manage admin can send a password reset', function () {
     Notification::assertSentTo($target, ResetPassword::class);
 });
 
-test('a non-admin cannot resend verification', function () {
+test('an admin without users-manage cannot resend verification', function () {
     Notification::fake();
-    $outsider = User::factory()->create();
+    $outsider = globalAdminWith(AdminPermission::Access);
     $target = User::factory()->unverified()->create();
 
     $this->actingAs($outsider)
@@ -115,9 +116,9 @@ test('a non-admin cannot resend verification', function () {
     Notification::assertNothingSent();
 });
 
-test('a non-admin cannot send a password reset', function () {
+test('an admin without users-manage cannot send a password reset', function () {
     Notification::fake();
-    $outsider = User::factory()->create();
+    $outsider = globalAdminWith(AdminPermission::Access);
     $target = User::factory()->create();
 
     $this->actingAs($outsider)

@@ -3,14 +3,15 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Fragments\AuditEventContextFragment;
 use App\Admin\Ui\Tables\RealmAuditEventsTable;
-use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -71,11 +72,12 @@ test('a detail from another realm is not readable through the fragment', functio
         ->assertOk()
         ->json();
 
-    expect(json_encode($rendered))->not->toContain('198.51.100.9');
+    expect(json_encode($rendered))->not->toContain('198.51.100.9')
+        ->toContain(__('admin.events.detail.empty'));
 });
 
 test('the events console is forbidden without realms-view', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
 
     $this->get('/admin/realms/acme/events')->assertForbidden();
     $this->loadDeniedTable(RealmAuditEventsTable::class, context: ['realm' => 'acme'])->assertForbidden();

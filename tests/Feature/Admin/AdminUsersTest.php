@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Enums\AdminPermission;
 use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 use function Tests\Helpers\grantGlobalRole;
 use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\rowClickHref;
@@ -27,7 +29,7 @@ test('a users-manage admin can open the realm users page and load its table', fu
 })->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
     $this->get('/admin/realms/acme/users')->assertForbidden();
     $this->loadDeniedTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
 });

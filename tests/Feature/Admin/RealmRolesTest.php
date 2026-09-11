@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateRealmRoleAction;
 use App\Admin\Ui\Actions\DeleteRealmRoleAction;
 use App\Admin\Ui\Actions\DeleteUserAction;
@@ -19,6 +20,7 @@ use App\Shared\Realms\Enums\RealmAuditEvent;
 use Illuminate\Support\Facades\DB;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -67,7 +69,7 @@ test('a realm role name is rejected when it is not token safe', function (string
     'quotes' => 'ad"min',
 ]);
 
-test('renaming a realm role records the change and follows through to the claim', function () {
+test('renaming a realm role records the change and renames it on its users', function () {
     $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member', 'description' => null]);
     $user = User::factory()->for($this->realm)->create();
     $user->realmRoles()->attach($role);
@@ -136,7 +138,7 @@ test('the roles console is forbidden without users-manage', function () {
     $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
     $context = ['realm' => 'acme', 'realmRole' => $role->id];
 
-    $this->actingAs(User::factory()->for($this->realm)->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
     $this->get('/admin/realms/acme/roles')->assertForbidden();
     $this->loadDeniedTable(AdminRealmRolesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateRealmRoleAction::class, ['name' => 'other'], ['realm' => 'acme'])->assertForbidden();

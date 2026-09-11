@@ -21,6 +21,7 @@ use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
     (new GlobalRoleSeeder)->run();
@@ -213,7 +214,7 @@ test('a view-only admin reads the console but cannot change anything', function 
 test('the resources console is closed without a resources permission', function () {
     $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api']);
 
-    $this->actingAs(User::factory()->for($this->realm)->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
     $this->loadDeniedTable(AdminResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();

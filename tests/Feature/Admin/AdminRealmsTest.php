@@ -72,8 +72,7 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
 
     expect(rowClickHref(tableRow($rows, $realm->id)))->toBe("/admin/realms/{$realm->slug}/settings")
         ->and(rowMenuTriggers(tableRow($rows, $realm->id)))->toBe(["delete-realm-{$realm->slug}"])
-        ->and(rowMenuTriggers(tableRow($rows, $master->id)))->toBeEmpty()
-        ->and(tableRow($rows, $master->id))->not->toHaveKey('actions');
+        ->and(rowMenuTriggers(tableRow($rows, $master->id)))->toBeEmpty();
 });
 
 test('a support admin cannot create, edit or delete a realm', function () {

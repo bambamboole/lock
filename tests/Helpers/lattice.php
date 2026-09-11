@@ -17,7 +17,11 @@ function latticeSchema(TestResponse $response, string $path = 'props.lattice.sch
 {
     $schema = data_get(AssertableInertia::fromTestResponse($response)->toArray(), $path);
 
-    return ComponentNode::root(is_array($schema) ? $schema : []);
+    if (! is_array($schema)) {
+        throw new RuntimeException("The response renders no Lattice schema at [{$path}].");
+    }
+
+    return ComponentNode::root($schema);
 }
 
 /**
