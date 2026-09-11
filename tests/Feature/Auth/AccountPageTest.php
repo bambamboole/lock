@@ -15,11 +15,6 @@ use function Tests\Helpers\realmRoute;
 use function Tests\Helpers\realmUrl;
 
 /**
- * The account page is the one place a realm user lands. It lives below the
- * realm because that is where the realm's session cookie is sent, so these
- * tests cover the composition that makes that work: the identity guard, the
- * realm-scoped Lattice endpoints, and the isolation between realms.
- *
  * @return array<string, string>
  */
 function identitySessionFor(User $user): array

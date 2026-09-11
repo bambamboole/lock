@@ -12,10 +12,8 @@ use function Tests\Helpers\createPasskey;
 use function Tests\Helpers\realmRoute;
 
 /**
- * How this app composes the security card. Enrolling a factor is covered by
- * TwoFactorSetupTest and the list itself by TwoFactorMethodsTest; what is left
- * here is the page's own gate, the promise that codes never appear on it, and
- * the "remove the last method" contract the card relies on instead of a switch.
+ * Enrolling a factor is covered by TwoFactorSetupTest and the list by
+ * TwoFactorMethodsTest.
  */
 test('security settings stay hidden until the password is confirmed', function () {
     $user = User::factory()->withTwoFactor()->create();

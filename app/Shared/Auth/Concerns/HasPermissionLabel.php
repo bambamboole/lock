@@ -8,10 +8,9 @@ use Illuminate\Support\Str;
 trait HasPermissionLabel
 {
     /**
-     * Translation key for this permission case's description: the enum's domain
-     * (class basename minus the `Permission` suffix, kebab-cased) followed by
-     * the value with `:` turned into `.` — e.g. `RealmPermission::ViewAudit`
-     * => `realm.permissions.audit.view`.
+     * The enum's domain (class basename minus `Permission`, kebab-cased)
+     * followed by the value with `:` turned into `.`, e.g.
+     * `AdminPermission::ManageUsers` => `admin.permissions.users.manage`.
      */
     public function getTranslationKey(): string
     {
@@ -25,10 +24,6 @@ trait HasPermissionLabel
         return __($this->getTranslationKey());
     }
 
-    /**
-     * A permission's label is already the sentence that describes it — the
-     * roles UI and the OAuth consent screen show the same string.
-     */
     public function getDescription(): string
     {
         return $this->getLabel();

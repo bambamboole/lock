@@ -11,10 +11,8 @@ use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\PersonalAccessTokenEvent;
 use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\TokenExchangeEvent;
 
 /**
- * Stamps the `roles` claim on every user-bound access token. The id_token
- * gets it from UserClaimsResolver; access tokens have no claims resolver,
- * only the issuance pipeline, which runs again on every refresh so the claim
- * follows the user's current roles.
+ * Access tokens have no claims resolver, only the issuance pipeline, which runs
+ * again on every refresh so the claim follows the user's current roles.
  */
 final class RealmRolesTokenClaim
 {

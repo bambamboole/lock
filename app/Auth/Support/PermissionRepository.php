@@ -125,9 +125,8 @@ final class PermissionRepository implements PermissionCatalog
     }
 
     /**
-     * Sorted by file name because the discoverer otherwise yields the filesystem's own
-     * readdir order, which differs per machine — the catalog order reaches the roles UI
-     * and must not drift.
+     * Sorted by name: the discoverer otherwise yields the filesystem's readdir
+     * order, which differs per machine, and the order reaches the roles UI.
      *
      * @return list<array{enum: class-string<BackedEnum>, case: string, value: string, group: string, global: bool, description: string}>
      */
@@ -173,8 +172,8 @@ final class PermissionRepository implements PermissionCatalog
     }
 
     /**
-     * Returns null when a cached row no longer matches a live enum case (stale cache
-     * after a rename or deletion), so the caller falls back to fresh discovery.
+     * Null when a cached row no longer matches a live enum case, so the caller
+     * rediscovers.
      *
      * @param  array<int|string, mixed>  $rows
      * @return list<PermissionDefinition>|null

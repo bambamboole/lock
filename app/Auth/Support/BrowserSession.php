@@ -8,10 +8,8 @@ use Carbon\CarbonImmutable;
 use stdClass;
 
 /**
- * One row of the `sessions` table as the account page shows it. The payload
- * is the serialized session store; the only thing read out of it is the OIDC
- * session id the package recorded at login, so ending the browser session can
- * also revoke the provider session behind it.
+ * The OIDC session id is read out of the payload so ending a browser session
+ * also revokes the provider session behind it.
  */
 final readonly class BrowserSession
 {

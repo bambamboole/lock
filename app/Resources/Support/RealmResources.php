@@ -11,13 +11,9 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ResourceSettings;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Registered as a scoped binding: laravel-oidc builds a fresh realm model on
- * every `RealmResolver::current()` call, so without a memo one token request
- * would re-read the resource tables for each of them. Scoped bindings are
- * dropped between requests, so an edit in the console takes effect on the next
- * one — unlike the permission catalog, which is code-derived and can only
- * change on a deploy, these rows change at runtime and are not worth a cache
- * that has to be invalidated.
+ * Scoped rather than cached: laravel-oidc builds a fresh realm model on every
+ * RealmResolver::current() call, so one token request would re-read the
+ * resource tables for each, while the rows themselves change at runtime.
  */
 final class RealmResources implements ProvidesRealmResources
 {

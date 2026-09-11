@@ -20,8 +20,8 @@ final class GrantAdminCommand extends Command
         $emailArgument = $this->argument('email');
         $email = is_string($emailArgument) ? $emailArgument : '';
 
-        // An address is only unique within a realm, and instance admins live
-        // in the master realm — so that is the only place worth looking.
+        // Instance admins live in the master realm, and an address is only
+        // unique within a realm.
         $user = Realm::master()->users()->where('email', $email)->first();
 
         if ($user === null) {

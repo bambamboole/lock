@@ -40,11 +40,7 @@ final class DeleteRealm implements DeletesRealm
         SigningKey::class,
     ];
 
-    /**
-     * A realm's users have no identity outside it, so deleting the realm
-     * deletes them, their sessions, tokens and clients with it. The row goes
-     * for good: a deleted realm's slug is free to be used again.
-     */
+    /** The row goes for good, so a deleted realm's slug is free again. */
     public function handle(Realm $realm): void
     {
         if ($realm->isMaster()) {

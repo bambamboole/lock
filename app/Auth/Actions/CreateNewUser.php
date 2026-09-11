@@ -21,8 +21,8 @@ final class CreateNewUser implements CreateUser
      */
     public function __invoke(array $input): User
     {
-        // Registration lands in the realm named by the request path. Uniqueness
-        // follows the realm: the same address may already exist in a different one.
+        // Uniqueness follows the realm: the same address may exist in another
+        // one.
         $realm = Realm::fromContext() ?? throw new MissingRealmContext;
 
         Validator::make($input, [

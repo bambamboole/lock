@@ -15,8 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * A role of a realm's end users, emitted as the `roles` claim of every token
- * issued to them. It carries no permissions and is unrelated to the
+ * Emitted as the `roles` claim of its users' tokens; unrelated to the
  * instance-wide App\Admin\Models\Role.
  *
  * @property string $id

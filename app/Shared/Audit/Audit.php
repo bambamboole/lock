@@ -11,9 +11,8 @@ use Illuminate\Database\Eloquent\Model;
 final class Audit
 {
     /**
-     * The description column stores the event's translation key, not resolved
-     * text — a row written by a German admin must still render in the
-     * viewer's locale. Activity::description() resolves it at read time.
+     * The description stores the event's translation key, so a row renders in
+     * the viewer's locale rather than the writer's.
      *
      * @param  array<string, mixed>  $properties
      */

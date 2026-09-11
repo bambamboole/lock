@@ -27,9 +27,8 @@ final class AdminServiceProvider extends ServiceProvider
     public function boot(): void
     {
         /*
-         * Lattice round-trips the realm by slug on lazy table and form
-         * requests. Every realm definition gates itself on an admin
-         * permission, so resolving is a plain lookup.
+         * Every realm definition gates itself on an admin permission, so the
+         * resolver is a plain lookup.
          */
         Lattice::context(
             'realm',

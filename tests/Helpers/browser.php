@@ -11,10 +11,8 @@ use Pest\Browser\Playwright\Playwright;
 use function visit;
 
 /**
- * Opens the account page the way a realm user reaches it: signed in on the
- * identity guard, on their own realm's host. The browser server rewrites every
- * visit to its own address, so the realm host travels as the Host header of
- * every request the page makes; BrowserTestCase resets it after the test.
+ * The browser server rewrites every visit to its own address, so the realm host
+ * travels as the Host header; BrowserTestCase resets it after the test.
  */
 function visitAccountAs(User $user): PendingAwaitablePage
 {

@@ -12,10 +12,6 @@ final class GlobalRoles
     public const string SUPPORT = 'Support';
 
     /**
-     * Role name => permission values. GlobalRoleSeeder creates the roles from
-     * this map; `permission:sync` re-syncs the grants on every deploy so new
-     * AdminPermission cases reach the Super Admin role automatically.
-     *
      * @return array<string, list<string>>
      */
     public static function grants(): array

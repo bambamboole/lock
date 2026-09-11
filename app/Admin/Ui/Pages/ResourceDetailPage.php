@@ -81,8 +81,8 @@ final class ResourceDetailPage extends AdminPage
     }
 
     /**
-     * The audience column is what a client sends as the RFC 8707 `resource`, so
-     * it is shown resolved rather than as the stored path.
+     * The audience is shown resolved, since that is what a client sends as the
+     * RFC 8707 `resource`.
      */
     private function settingsCard(Realm $realm, Resource $resource, RealmAudiences $audiences): Card
     {

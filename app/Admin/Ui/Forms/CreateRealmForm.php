@@ -43,9 +43,9 @@ final class CreateRealmForm extends FormDefinition
     }
 
     /**
-     * A domain that does not reach this instance yet is expected — DNS and the
-     * proxy usually follow the realm — so the realm is kept and the outcome
-     * reported, and the settings open on the tab that shows it.
+     * A domain that does not reach this instance yet is expected, since DNS and
+     * the proxy usually follow the realm, so the realm is kept and the outcome
+     * reported.
      */
     public function handle(FormData $data): LatticeResponse
     {

@@ -42,8 +42,8 @@ use Lattice\Core\Facades\Lattice;
 final class AuthServiceProvider extends ServiceProvider
 {
     /**
-     * laravel-oidc-ui binds LoginView in its own register(), and app providers
-     * register after package providers, so rebinding here wins.
+     * Package providers register first, so rebinding laravel-oidc-ui's
+     * LoginView here wins.
      */
     public function register(): void
     {
@@ -64,14 +64,6 @@ final class AuthServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Registers against the OIDC singletons directly instead of the Oidc facade:
-     * resolving the facade root pulls the encrypter into provider boot, which
-     * breaks keyless artisan runs like package:discover on a fresh checkout.
-     *
-     * The auth views themselves come from laravel-oidc-ui, which binds every
-     * view contract in its register() phase.
-     */
     public function boot(): void
     {
         /*
@@ -99,10 +91,9 @@ final class AuthServiceProvider extends ServiceProvider
         });
 
         /*
-         * The user provider already hides blocked users from credential and
-         * session lookups; this covers the interactive logins that resolve the
-         * user another way (a passkey ceremony, a social account, a fresh
-         * registration) so they fail before a session is ever established.
+         * The user provider already hides blocked users; this catches the
+         * logins that resolve the user another way (a passkey, a social
+         * account, a registration).
          */
         $this->app->make(PostLoginPipeline::class)->register(function (LoginEvent $event, LoginApi $api): void {
             if ($event->user instanceof User && $event->user->isBlocked()) {

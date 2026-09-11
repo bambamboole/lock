@@ -12,11 +12,8 @@ use Illuminate\Routing\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Decides, once the route is known, whether the host may serve it. A host no
- * realm is served from gets nothing, which also keeps a forged Host header out
- * of every URL the app would otherwise mint from it (password reset links).
- * The master realm's host serves everything; any other realm's host serves
- * only what that realm offers its users, and its root is the account page.
+ * A host no realm is served from gets nothing, which also keeps a forged Host
+ * header out of every URL the app mints from it.
  */
 final class RealmHostGate
 {

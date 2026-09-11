@@ -6,11 +6,9 @@ use App\Auth\Models\User;
 use function Tests\Helpers\visitAccountAs;
 
 /**
- * A package ships its translations under its own i18next namespace, and i18next
- * only fetches the namespaces named at boot. Miss one and every string that
- * package's React components render falls back to the English default baked into
- * the component — on a page whose server-rendered half is translated, so nothing
- * looks broken enough to notice.
+ * i18next only fetches the namespaces named at boot, and a missed package
+ * namespace falls back to English on an otherwise translated page, where
+ * nothing looks broken enough to notice.
  */
 it('renders package strings in the user locale', function () {
     session(['auth.password_confirmed_at' => time()]);

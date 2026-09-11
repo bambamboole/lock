@@ -9,21 +9,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Constrains every user lookup to the realm the request belongs to, and
- * excludes blocked users from all of them.
- *
- * Identity is realm-local — `users` is unique on (realm_id, email), so the same
- * address can be two unrelated people. Without this constraint a password valid
- * in one realm authenticates in every realm, and a session cookie minted in one
- * resolves a user in another.
- *
- * The realm constraint only applies once a realm is current. Guests carry no
- * realm yet, so today it binds nothing; it starts protecting the login the
- * moment `SetCurrentRealm` derives a realm from the request instead of the user.
- *
- * The block constraint is unconditional: a blocked user fails the password
- * check, is no longer resolved from an existing session or remember cookie,
- * and no longer resolves from a bearer token — one seam, every entry point.
+ * Identity is realm-local: without the realm constraint a password valid in one
+ * realm authenticates in all of them, and a session minted in one resolves a
+ * user in another. The block constraint is unconditional, so a blocked user
+ * fails every lookup: password, session, remember cookie and bearer token.
  */
 final class RealmUserProvider extends EloquentUserProvider
 {

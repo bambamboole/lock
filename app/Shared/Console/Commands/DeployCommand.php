@@ -11,10 +11,8 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * The one command a release pipeline runs after the new code is live. Every
- * step is idempotent, and the migrations run isolated so concurrently booting
- * instances do not race each other. Bytecode caches (config, routes, views)
- * stay with the deploy platform — this command owns application state.
+ * Every step is idempotent and the migrations run isolated, so concurrently
+ * booting instances do not race. Bytecode caches stay with the deploy platform.
  */
 #[Description('Run the deploy steps every release needs: migrations, data migrations, signing keys, permission sync, environment bootstrap, lattice discovery cache.')]
 #[Signature('app:deploy')]
@@ -53,10 +51,8 @@ final class DeployCommand extends Command
     }
 
     /**
-     * Signing keys live in `oidc_signing_keys`, one active key per realm, and
-     * the command only ever sees the current realm — hence the loop. It runs
-     * after the data migrations, which is where the administration realm the
-     * first deploy needs a key for is created.
+     * The command only sees the current realm, hence the loop. It runs after
+     * the data migrations, which create the master realm.
      */
     private function generateMissingSigningKeys(): int
     {

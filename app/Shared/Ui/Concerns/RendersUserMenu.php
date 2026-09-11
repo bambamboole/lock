@@ -65,8 +65,8 @@ trait RendersUserMenu
     }
 
     /**
-     * The app's own logout ends the root session through the relying-party
-     * flow; a realm page passes the realm's end-session endpoint instead.
+     * A realm page passes its realm's end-session endpoint; the default ends
+     * the console session through the relying-party flow.
      */
     private function logoutMenuItem(?string $href = null): MenuItem
     {

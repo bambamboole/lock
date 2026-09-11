@@ -15,13 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * A resource server of a realm, identified by an RFC 8707 `resource` value and
- * owning the scopes that may be issued for it. Two resources of the same realm
- * may carry the same scope value; the requested resource disambiguates them.
- *
- * Like the realm's roles this model stays unscoped: the console reads a realm's
- * resources while the administrator's own realm is the current one, so the rows
- * are reached through `$realm->realmResources()` and never a realm scope.
+ * Unscoped like RealmRole: the console reads a realm's resources while the
+ * administrator's own realm is current.
  *
  * `resource` is a PHP type keyword, so Pint's phpdoc_types fixer lowercases a
  * bare `Resource` in any docblock and PHPStan then rejects the case. Write the
@@ -71,11 +66,6 @@ final class Resource extends Model
         return $this->realm_id === $realm->id;
     }
 
-    /**
-     * An absolute URI names a foreign resource server verbatim; a path-relative
-     * identifier is resolved against the realm's issuer and published through
-     * RFC 9728 metadata.
-     */
     public function isAbsolute(): bool
     {
         return parse_url($this->identifier, PHP_URL_SCHEME) !== null;

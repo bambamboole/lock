@@ -10,17 +10,14 @@ use Bambamboole\LaravelOidc\Server\Shared\Audit\AuditRecord;
 use Bambamboole\LaravelOidc\Server\Shared\Audit\AuditSink;
 
 /**
- * Persists the OIDC server's security events so the admin console can read
- * them. Named by `oidc.audit.sink`; the package's listener resolves it per
- * event and swallows whatever this throws, so the auth flow never fails on a
- * write here.
+ * The package's listener swallows whatever this throws, so a failure here shows
+ * up as missing rows, never as a failed login.
  */
 final class DatabaseAuditSink implements AuditSink
 {
     /**
-     * The record carries no realm — it is written from inside a realm request,
-     * so the current realm is the one it belongs to. A record raised outside
-     * any realm (console provisioning, key rotation) stays instance-wide.
+     * The record carries no realm: it is written while its realm is current,
+     * and one raised outside any realm stays instance-wide.
      */
     public function record(AuditRecord $record): void
     {

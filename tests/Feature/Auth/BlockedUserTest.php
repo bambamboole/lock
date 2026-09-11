@@ -1,12 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/**
- * Blocking is enforced in one seam — RealmUserProvider hides blocked users from
- * every lookup — plus a postLogin denial for the interactive logins that reach
- * the user another way. These tests hit each entry point from the outside.
- */
-
 use App\Admin\Actions\BlockUser;
 use App\Admin\Actions\UnblockUser;
 use App\Auth\Models\User;

@@ -33,8 +33,8 @@ final class AdminRealmsTable extends EloquentTableDefinition
      */
     public function builder(TableQuery $query): Builder
     {
-        // The master realm's host lives in APP_URL, not on its row, and being
-        // the host the console is reached on, it needs no check.
+        // The master realm's host lives in APP_URL, not on its row, and it is
+        // the host the console is reached on.
         $builder = Realm::query()
             ->withCount('users')
             ->select('realms.*')
@@ -75,11 +75,6 @@ final class AdminRealmsTable extends EloquentTableDefinition
         return RowClick::make()->href(route('admin.realms.settings', ['realm' => $row['slug']], false));
     }
 
-    /**
-     * The realm's settings page offers deletion and nothing else, so that is
-     * what the row carries — the master realm cannot be deleted and gets no
-     * menu at all.
-     */
     public function actions(array $row): array
     {
         return array_filter([ActionBar::menu('admin.realms.row-actions', [$this->deleteRealmTrigger((string) $row['slug'])])]);

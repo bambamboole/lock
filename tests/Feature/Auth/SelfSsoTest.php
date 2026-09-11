@@ -12,14 +12,11 @@ use Illuminate\Testing\TestResponse;
 use function Tests\Helpers\selfSsoProviderFake;
 
 /*
- * The claim-by-claim validation matrix lives in the package's own
- * IdTokenValidator tests; these tests cover this app's integration:
- * the same app acting as provider and relying party.
+ * The claim-by-claim validation matrix lives in the package's IdTokenValidator
+ * tests; these cover the app acting as provider and relying party at once.
  */
 
 /**
- * The Location of a response the test already asserted redirects.
- *
  * @param  TestResponse<Response>  $response
  */
 function redirectTarget(TestResponse $response): string

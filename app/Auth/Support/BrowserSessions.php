@@ -10,10 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use stdClass;
 
-/**
- * Reads the database session store for a user. Only that driver records who a
- * session belongs to, so the account page shows browser sessions for it alone.
- */
+/** Only the database session driver records who a session belongs to. */
 final class BrowserSessions
 {
     public static function available(): bool

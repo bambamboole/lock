@@ -104,10 +104,6 @@ final class AdminLayout extends LayoutDefinition
         ]);
     }
 
-    /**
-     * The realm a page is scoped to: `/admin/realms/{realm}/…` binds it by slug,
-     * every other admin page is instance-wide.
-     */
     private function currentRealm(Request $request): ?Realm
     {
         $realm = $request->route('realm');
@@ -119,10 +115,6 @@ final class AdminLayout extends LayoutDefinition
         return is_string($realm) ? Realm::query()->where('slug', $realm)->first() : null;
     }
 
-    /**
-     * Keycloak-style: pick a realm here and the sidebar turns into that realm's
-     * console; "all realms" returns to the instance view.
-     */
     private function realmSwitcher(?Realm $realm): Dropdown
     {
         $realms = Realm::query()->orderBy('name')->get();

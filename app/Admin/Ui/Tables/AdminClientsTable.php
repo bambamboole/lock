@@ -111,10 +111,6 @@ final class AdminClientsTable extends EloquentTableDefinition
         return RowClick::make()->href(route('admin.realms.clients.show', ['realm' => $this->contextString('realm'), 'client' => $row['id']], false));
     }
 
-    /**
-     * The same actions the client's detail page offers; whether a client is
-     * blocked or holds a secret is read off the row, not re-queried.
-     */
     public function actions(array $row): array
     {
         $context = ['realm' => $this->contextString('realm'), 'client' => $row['id']];

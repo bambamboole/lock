@@ -85,10 +85,9 @@ trait BuildsRealmSettingRows
     }
 
     /**
-     * Carbon cascades a month of seconds into "1 month 2 days" and skipping
-     * only the month leaves "4 weeks 2 days", both of which read as a rounding
-     * error rather than a lifetime. Split the seconds into days by hand and
-     * let Carbon phrase the parts.
+     * Carbon cascades a month of seconds into "1 month 2 days", which reads as
+     * a rounding error rather than a lifetime, so the days are split out by
+     * hand.
      */
     private function duration(int $seconds): string
     {

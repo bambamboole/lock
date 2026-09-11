@@ -13,9 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * An instance-wide role held by users of the master realm. Realm users carry
- * no roles: they are identities the admin console manages, not administrators.
- *
  * @property string $id
  * @property string $name
  */
@@ -50,8 +47,8 @@ final class Role extends Model
     }
 
     /**
-     * Permission rows are created lazily on first grant — the catalog itself lives in
-     * the enums, so the table only ever holds the keys a role actually references.
+     * The catalog lives in the enums, so the table only holds the keys a role
+     * references.
      *
      * @param  array<int, string>  $values
      */

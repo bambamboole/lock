@@ -11,10 +11,9 @@ use function Tests\Helpers\assumeNotNull;
 use function Tests\Helpers\createPasskey;
 
 /**
- * The methods list is the whole two-factor state: every confirmed factor plus the
- * recovery codes backing them. There is no separate on/off switch, so what the
- * list shows has to be complete. Assertions stay on the projected payload — the
- * row keys a column actually binds — because that is all the client receives.
+ * There is no separate two-factor switch, so the list has to be complete.
+ * Assertions stay on the projected payload because that is all the client
+ * receives.
  *
  * @return array<int, array<string, mixed>>
  */

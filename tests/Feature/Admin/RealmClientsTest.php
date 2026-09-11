@@ -56,9 +56,6 @@ function clientFormData(array $overrides = []): array
 }
 
 /**
- * One client setting as `UpdateClientForm` receives it: the payload and the
- * context naming the field, ready to spread into `submitForm()`.
- *
  * @return array{0: array<string, mixed>, 1: array<string, string>}
  */
 function clientSetting(Client $client, string $field, mixed $value): array

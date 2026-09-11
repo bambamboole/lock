@@ -15,7 +15,6 @@ beforeEach(function () {
     $this->acme = Realm::factory()->create(['slug' => 'acme']);
     $this->globex = Realm::factory()->create(['slug' => 'globex']);
 
-    // One address, two unrelated people — what unique(realm_id, email) allows.
     $this->inAcme = User::factory()->for($this->acme)->create(['email' => 'chris@example.com']);
     $this->inGlobex = User::factory()->for($this->globex)->create(['email' => 'chris@example.com']);
 });

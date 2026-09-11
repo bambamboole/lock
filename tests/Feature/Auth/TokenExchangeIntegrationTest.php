@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * OAuth 2.1 §4.1 + RFC 7636 (PKCE) + RFC 8693 (exchange) + RFC 9068 §4 (RS validation) + RFC 6750 §3.1
- */
-
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
@@ -72,9 +68,8 @@ it('exchanges a starter-kit login token and enforces the audience on a CheckAudi
 
     expect($rejected->headers->get('WWW-Authenticate'))->toContain('error="invalid_token"');
 
-    // The oidc guard caches its resolved user and only gets a refreshed request,
-    // never a reset. Real requests each build a fresh container; a test reuses
-    // one across calls, so the previous bearer token would still authenticate here.
+    // The oidc guard caches its resolved user across the calls of one test, so
+    // the previous bearer token would still authenticate.
     auth()->forgetGuards();
 
     $this->getJson('/api/test/orders')->assertUnauthorized();

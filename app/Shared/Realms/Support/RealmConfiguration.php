@@ -66,10 +66,6 @@ final class RealmConfiguration
     }
 
     /**
-     * Every configurable setting with the section it belongs to and the kind
-     * of value it holds — the one place the admin console reads to build both
-     * a section's rows and the input that edits a single one of them.
-     *
      * @return array<string, RealmSetting>
      */
     public static function settings(): array
@@ -105,8 +101,8 @@ final class RealmConfiguration
     }
 
     /**
-     * Field labels for the validator, so a rule that fails on a setting the
-     * user is not looking at still names it the way the console does.
+     * So a rule failing on a setting the user is not looking at still names it
+     * the way the console does.
      *
      * @return array<string, string>
      */

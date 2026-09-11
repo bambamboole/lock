@@ -11,11 +11,6 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use function Tests\Helpers\clientCredentialsToken;
 use function Tests\Helpers\jwtClaims;
 
-/**
- * A scope belongs to exactly one resource: the same value under two of them is
- * two different scopes, told apart by the RFC 8707 `resource` the token is
- * requested for.
- */
 beforeEach(function () {
     $this->realm = Realm::master();
     $this->issuer = app(IssuerResolver::class)->url();

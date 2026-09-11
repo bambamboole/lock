@@ -10,9 +10,8 @@ use PragmaRX\Google2FA\Google2FA;
 use function Tests\Helpers\assumeNotNull;
 
 /**
- * The setup wizard is one form: step one picks an enrollment option, step two is
- * prepared by Lattice's resolve sub-request, and Finish confirms. These tests
- * drive both halves through the form endpoint the browser uses.
+ * Step two of the wizard is prepared by Lattice's resolve sub-request, so these
+ * tests drive it through the form endpoint the browser uses.
  *
  * @return array<string, mixed>
  */

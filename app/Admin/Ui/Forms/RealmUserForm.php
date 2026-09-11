@@ -13,9 +13,8 @@ use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
 /**
- * One field of a realm user. The action writes name, address and verification
- * state together, so an untouched field is passed back as it stands rather
- * than left out.
+ * UpdateRealmUser writes name, address and verification state together, so an
+ * untouched field is passed back as it stands.
  */
 abstract class RealmUserForm extends FormDefinition
 {

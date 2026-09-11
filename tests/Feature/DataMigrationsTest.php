@@ -5,11 +5,8 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\DB;
 
 /*
- * Pins the wiring, not any single migration's contents: Tests\TestCase applies
- * database/data-migrations once per process before the per-test transaction, so
- * by the time a test body runs every file in the folder is already recorded and
- * a re-run has nothing left to do. A broken file, a renamed folder, or a lost
- * TestCase::migrateDatabases() override all fail here.
+ * Pins the wiring, not any migration's contents: a broken file, a renamed
+ * folder or a lost TestCase::migrateDatabases() override all fail here.
  */
 it('applies every data migration before a test body runs', function (): void {
     $files = glob(database_path('data-migrations/*_*.php'));

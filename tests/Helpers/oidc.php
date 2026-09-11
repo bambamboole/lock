@@ -15,10 +15,7 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
-/**
- * Points the relying-party configuration at a client served by this same app,
- * so a login round-trip stays entirely in-process.
- */
+/** Keeps a login round-trip entirely in-process. */
 function selfSsoProviderFake(?Client $client = null): OidcClientFake
 {
     $client ??= app(ClientRepository::class)->createAuthorizationCodeGrantClient(
@@ -39,10 +36,6 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
     return OidcClient::fake();
 }
 
-/**
- * Walks the full authorization-code + PKCE flow against $test->client and
- * returns the issued access token.
- */
 function loginAccessToken(TestCase $test): string
 {
     $verifier = str_repeat('v', 64);
@@ -77,9 +70,6 @@ function loginAccessToken(TestCase $test): string
 }
 
 /**
- * A `client_credentials` token request from $test->client, with the RFC 8707
- * `resource` and the `scope` the caller wants to try.
- *
  * @param  array<string, string>  $payload
  * @return TestResponse<Response>
  */

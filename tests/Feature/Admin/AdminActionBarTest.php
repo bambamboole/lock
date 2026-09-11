@@ -19,10 +19,8 @@ use function Tests\Helpers\rowMenus;
 use function Tests\Helpers\triggerIds;
 
 /**
- * The two console actions that run without a confirmation dialog: both send a
- * mail the recipient can ignore. Everything else changes or removes state, and
- * with destructive actions styled like every other one the dialog is all that
- * stands in front of them.
+ * Both only send a mail the recipient can ignore; everything else changes state
+ * and needs the confirmation dialog in front of it.
  */
 const HARMLESS_ACTIONS = [
     'admin.users.resend-verification',
@@ -39,8 +37,8 @@ beforeEach(function () {
 });
 
 /**
- * A header's own buttons. Actions inside the overflow menu are styled by the
- * menu and carry no emphasis of their own.
+ * Actions inside the overflow menu are styled by the menu and carry no emphasis
+ * of their own.
  *
  * @param  TestResponse<Response>  $response
  * @return array<int, ComponentNode>

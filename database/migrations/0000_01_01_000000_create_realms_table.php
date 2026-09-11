@@ -8,9 +8,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Realms are the identity boundary: a user belongs to exactly one, and
-     * every other identity record hangs off it. This runs before the users
-     * table so `users.realm_id` can be a plain foreign key.
+     * Runs before the users table so `users.realm_id` can be a plain foreign
+     * key.
      */
     public function up(): void
     {

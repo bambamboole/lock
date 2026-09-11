@@ -13,9 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Non-Ui domain slice namespaces derived from the directories that actually
- * exist, so a new domain or slice is covered without editing this file.
- * Ui slices (app/{Domain}/Ui/**) are the Lattice adapter layer and are excluded.
+ * Derived from the directories that exist, so a new domain or slice is covered
+ * without editing this file. Ui slices are the Lattice adapter layer and are
+ * excluded.
  *
  * @return array<int, string>
  */
@@ -90,9 +90,8 @@ function architectureLatticeNamespaces(): array
 }
 
 /**
- * Concrete Eloquent models whose primary-key strategy this app owns. A model
- * extending a vendor model (activitylog activities) inherits
- * the vendor's key strategy and is skipped.
+ * A model extending a vendor model inherits the vendor's key strategy and is
+ * skipped.
  *
  * @return list<class-string<Model>>
  */
@@ -126,9 +125,8 @@ function architectureDomainModels(): array
 }
 
 /**
- * Lattice-as-framework, not UI building: a domain write that sends an in-app
- * notification may use Lattice's notification API. Additions here need a
- * reason of the same kind.
+ * A domain write that sends an in-app notification may use Lattice's
+ * notification API. Additions here need a reason of the same kind.
  *
  * @return array<int, class-string>
  */
@@ -138,8 +136,6 @@ function architectureSanctionedLatticeConsumers(): array
 }
 
 /**
- * Domain modules under app/, i.e. everything except the Shared layer.
- *
  * @return array<int, string>
  */
 function architectureDomains(): array
@@ -155,11 +151,9 @@ function architectureDomains(): array
 }
 
 /**
- * The models every domain speaks in. Relations, route bindings and policies
- * need the concrete Eloquent class, so these may be imported across domain
- * lines; every other cross-domain dependency goes through a contract or DTO in
- * App\Shared\{Domain}. pest-arch's ignoring() drops a class on both sides, so
- * the kernel models are also exempt as sources.
+ * Relations, route bindings and policies need the concrete Eloquent class, so
+ * these may cross domain lines. pest-arch's ignoring() drops a class on both
+ * sides, so the kernel models are also exempt as sources.
  *
  * @return array<int, class-string>
  */
@@ -176,8 +170,8 @@ function architectureSharedKernel(): array
 }
 
 /**
- * Classes still reaching into a neighbouring domain directly. This list only
- * shrinks: route the dependency through App\Shared and delete the entry.
+ * This list only shrinks: route the dependency through App\Shared and delete
+ * the entry.
  *
  * @return array<int, class-string>
  */

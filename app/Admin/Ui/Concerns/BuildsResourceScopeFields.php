@@ -11,9 +11,8 @@ use Lattice\Form\Components\TextInput;
 trait BuildsResourceScopeFields
 {
     /**
-     * The value travels in the space-separated `scope` parameter and, when a
-     * client assignment names its resource, as `<identifier> <value>` — so it
-     * is kept to an alphabet without whitespace.
+     * The value travels in the space-separated `scope` parameter, so it is kept
+     * to an alphabet without whitespace.
      *
      * @return array<int, TextInput>
      */

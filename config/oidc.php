@@ -10,8 +10,7 @@ use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
 
 return [
     'realm' => env('REALM_MASTER_SLUG', 'admin'),
-    // Empty, so the package takes the origin from `app.url` at runtime: the
-    // master realm is served from APP_URL, and every realm host shares its
+    // Null, so the origin comes from `app.url`: every realm host shares its
     // scheme and port.
     'issuer' => null,
 
@@ -19,7 +18,6 @@ return [
         // The protocol endpoints outside the web group mint URLs too (the
         // discovery document), and those have to name the realm's own host.
         'middleware' => [SetCurrentRealm::class],
-        // Every realm is served from its own host; the master realm from APP_URL's.
         'realms' => 'domain',
     ],
 
@@ -66,8 +64,8 @@ return [
         'log_channel' => env('OIDC_AUDIT_LOG_CHANNEL'),
     ],
 
-    // A scope belongs to exactly one resource of the realm, so the catalog is
-    // read per requested RFC 8707 `resource` rather than configured statically.
+    // A scope belongs to exactly one resource, so the catalog is read per
+    // requested RFC 8707 `resource`.
     'scopes' => [
         'catalog' => ResourceScopeCatalog::class,
     ],

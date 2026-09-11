@@ -1,10 +1,6 @@
 <?php
 declare(strict_types=1);
 
-/**
- * OAuth 2.1 §4.1.1–4.1.2 (authorization request/response); OpenID Connect Core 1.0 §3.1.2 (authorization endpoint / consent)
- */
-
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 
 it('redirects guests to login', function () {

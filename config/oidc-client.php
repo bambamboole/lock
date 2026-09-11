@@ -2,19 +2,13 @@
 
 declare(strict_types=1);
 
-/*
- * Only the keys this app changes from the laravel-oidc-client package defaults
- * live here; the rest (client id/secret, scopes, guard, back-channel logout,
- * and the route table) is inherited from the package config via mergeConfigFrom.
- */
 return [
     'enabled' => (bool) env('OIDC_RP_ENABLED', true),
 
     'issuer' => env('OIDC_RP_ISSUER', rtrim((string) env('APP_URL'), '/')),
 
-    // The console is its own relying party against its own first-party client,
-    // so one pair of credentials configures both sides. Set the OIDC_RP_*
-    // variables only to point the console at a different provider.
+    // The console is its own relying party, so the first-party credentials
+    // configure both sides.
     'client_id' => env('OIDC_RP_CLIENT_ID') ?: env('OIDC_FIRST_PARTY_CLIENT'),
 
     'client_secret' => env('OIDC_RP_CLIENT_SECRET') ?: env('OIDC_FIRST_PARTY_SECRET'),

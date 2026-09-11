@@ -97,8 +97,8 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * The current realm's key without loading it — for callers that only need
-     * to scope a query and would otherwise pay a lookup per call.
+     * For callers that only scope a query and would otherwise pay a lookup per
+     * call.
      */
     public static function currentId(): ?string
     {
@@ -108,8 +108,8 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * The host the master realm is served from: the one in APP_URL, which is
-     * why it is never stored on the row.
+     * The master realm is served from APP_URL's host, which is why its row
+     * stores no domain.
      */
     public static function masterHost(): string
     {
@@ -132,9 +132,8 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * Where the realm is reachable, and so its issuer. Every realm host shares
-     * the scheme and port of APP_URL — a port only ever appears locally, where
-     * `acme.localhost:8000` sits next to `localhost:8000`.
+     * Every realm host shares APP_URL's scheme and port; a port only appears
+     * locally, where `acme.localhost:8000` sits next to `localhost:8000`.
      */
     public function origin(): string
     {
@@ -145,19 +144,15 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * Context is dehydrated into queued jobs, so anything dispatched while this
-     * realm is current can resolve it later via Realm::fromContext().
+     * Context travels into queued jobs, so work dispatched while this realm is
+     * current runs in it too.
      */
     public function makeCurrent(): void
     {
         Context::add('realm_id', $this->id);
     }
 
-    /**
-     * Escape hatch for schedulers, queue workers and maintenance scripts that
-     * start without a request-bound realm. Restores the previous context, so
-     * nesting a run inside another realm's is safe.
-     */
+    /** Restores the previous realm afterwards, so runs nest. */
     public function runAsCurrent(callable $callback): mixed
     {
         $previousRealmId = Context::get('realm_id');

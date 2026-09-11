@@ -16,11 +16,8 @@ use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
- * Brings the console client and the first administrator in line with the
- * environment, so a container comes up fully configured without anything
- * being written to a `.env` it does not have. The environment is the source
- * of truth on every run; a variable left unset means unmanaged, which is what
- * keeps this safe to repeat on every deploy.
+ * The environment is the source of truth on every run and an unset variable
+ * means unmanaged, which keeps this safe to repeat on every deploy.
  */
 #[Description('Reconcile the console client and the first administrator with the environment.')]
 #[Signature('app:bootstrap')]
@@ -31,9 +28,9 @@ final class BootstrapCommand extends Command
         $realm = Realm::master();
 
         try {
-            // One transaction across both items, and the report only after it
-            // commits: a deploy step that fails leaves nothing behind and says
-            // nothing it did not do.
+            // One transaction, and the report only after it commits: a failed
+            // deploy step leaves nothing behind and reports nothing it did not
+            // do.
             $outcomes = DB::transaction(fn (): array => [
                 'console client' => $this->provisionClient($clients, $realm),
                 'administrator' => $this->ensureAdministrator($administrators),

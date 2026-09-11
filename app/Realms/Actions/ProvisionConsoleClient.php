@@ -21,8 +21,8 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
     private const string ProvisioningKey = 'first-party';
 
     /**
-     * The interactive console login plus the machine grant the infrastructure
-     * code authenticates with once the same credentials are provisioned.
+     * The console login plus the machine grant infrastructure code
+     * authenticates with, using the same credentials.
      */
     private const array GrantTypes = ['authorization_code', 'refresh_token', 'client_credentials'];
 
@@ -97,9 +97,8 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
     }
 
     /**
-     * Everything the environment owns, in a form two runs can be compared by —
-     * the secret through its stored hash, which only changes when the plain
-     * secret no longer verifies against it.
+     * The secret is compared through its stored hash, which only changes when
+     * the plain secret no longer verifies against it.
      *
      * @return array<string, mixed>
      */

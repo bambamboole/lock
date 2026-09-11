@@ -13,8 +13,8 @@ trait BuildsResourceFields
 {
     /**
      * The identifier is the RFC 8707 `resource` a client asks for: a path
-     * relative to the realm issuer, which the realm then publishes through RFC
-     * 9728, or an absolute URI naming a resource server it does not host.
+     * relative to the realm issuer, or an absolute URI naming a resource server
+     * the realm does not host.
      *
      * @return array<int, TextInput>
      */

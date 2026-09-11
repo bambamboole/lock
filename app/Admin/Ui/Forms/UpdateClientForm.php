@@ -20,11 +20,6 @@ use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-/**
- * Edits one setting of a client, named by the `field` context. What the
- * payload does not carry is taken from the stored client, so the rules that
- * span type, grant types and redirect URIs still see a whole client.
- */
 #[AsForm('admin.clients.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class UpdateClientForm extends FormDefinition
 {

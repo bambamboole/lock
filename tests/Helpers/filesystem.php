@@ -7,8 +7,8 @@ namespace Tests\Helpers;
 use RuntimeException;
 
 /**
- * Reads an environment file a test just wrote, failing loudly when it cannot be
- * parsed instead of letting the assertions run against a `false`.
+ * Fails loudly when the file cannot be parsed instead of letting the assertions
+ * run against `false`.
  *
  * @return array<string, mixed>
  */

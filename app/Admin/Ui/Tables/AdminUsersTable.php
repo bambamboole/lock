@@ -95,10 +95,6 @@ final class AdminUsersTable extends EloquentTableDefinition
         ];
     }
 
-    /**
-     * Four yes/no columns in one row: narrow enough that the row stays
-     * scannable, wide enough that the label above them is not cut in half.
-     */
     private function flag(string $key, string $label): BooleanColumn
     {
         return BooleanColumn::make($key)->label($label)->width(ColumnWidth::Sm);
@@ -139,9 +135,8 @@ final class AdminUsersTable extends EloquentTableDefinition
     }
 
     /**
-     * The same actions the user's detail page offers, gated on the same row
-     * state — the flags they read are selected by {@see self::builder()}, so a
-     * row costs no extra query.
+     * The flags come from {@see self::builder()}, so a row costs no extra
+     * query.
      */
     public function actions(array $row): array
     {

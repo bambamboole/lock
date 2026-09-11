@@ -2,10 +2,6 @@
 
 declare(strict_types=1);
 
-/**
- * OpenID Connect Discovery 1.0 §3; OpenID Connect Core 1.0 §5.3 (userinfo), §5.1 (standard claims)
- */
-
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 

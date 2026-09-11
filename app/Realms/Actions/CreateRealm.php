@@ -19,12 +19,8 @@ final readonly class CreateRealm implements CreatesRealm
     ) {}
 
     /**
-     * Creates the realm with the default configuration. The realm starts
-     * empty: its users register or are created inside it afterwards.
-     *
-     * Signing keys are per realm and live in `oidc_signing_keys`, so a realm
-     * without one can neither mint a token nor serve a JWKS. It gets its own
-     * keypair here rather than sharing the instance's.
+     * A realm without a signing key can neither mint a token nor serve a JWKS,
+     * so it gets its own keypair here.
      */
     public function handle(string $name, string $domain, ?string $slug = null): Realm
     {

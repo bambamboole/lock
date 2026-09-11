@@ -18,10 +18,9 @@ use Bambamboole\LaravelOidc\Server\Tokens\Models\RefreshToken;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The package rows that name a user carry no foreign key to `users`, so they
- * are removed here explicitly — the same way DeleteRealm removes the rows
- * keyed by a realm. Relying parties are told first, while the sessions still
- * exist to build a logout token from.
+ * The package rows naming a user carry no foreign key to `users`, so they go
+ * explicitly. Relying parties are told first, while the sessions still exist to
+ * build a logout token from.
  */
 final readonly class DeleteUser implements DeletesUser
 {

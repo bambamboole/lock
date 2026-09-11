@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /**
- * laravel-oidc 0.27 lets a `client_credentials` token through the `auth:oidc`
- * guard, where it resolves to a ClientPrincipal instead of a user. The
- * principal carries no realm, no roles and no `can()`, so reaching for either
- * on it is a fatal error rather than a denial.
+ * A `client_credentials` token passes the `auth:oidc` guard as a
+ * ClientPrincipal with no realm, roles or `can()`, so reaching for either is a
+ * fatal error rather than a denial.
  */
 
 use App\Auth\Models\User;

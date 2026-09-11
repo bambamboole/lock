@@ -10,9 +10,8 @@ use App\Shared\Auth\Contracts\EndsUserSessions;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Setting `blocked_at` is what refuses the user everywhere (see
- * RealmUserProvider); ending the sessions on top tells the relying parties
- * instead of leaving them to find out at the next token refresh.
+ * Ending the sessions on top of the block tells the relying parties now rather
+ * than at their next token refresh.
  */
 final readonly class BlockUser
 {

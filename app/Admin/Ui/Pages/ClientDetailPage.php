@@ -49,8 +49,8 @@ final class ClientDetailPage extends AdminPage
     private ?Client $client = null;
 
     /**
-     * A client secret is readable exactly once: on the page that follows the
-     * request that minted it. The column only ever holds the hash.
+     * A client secret is readable exactly once, on the page after the request
+     * that minted it; the column only holds the hash.
      */
     public static function revealSecret(?string $secret): void
     {
@@ -106,8 +106,8 @@ final class ClientDetailPage extends AdminPage
     }
 
     /**
-     * Rotating the secret is the one thing an operator comes here to do; a
-     * client is blocked or deleted rarely enough to sit behind the menu.
+     * Rotating the secret is what an operator comes here for; the rest sits
+     * behind the menu.
      *
      * @param  array<string, string>  $context
      * @return array<int, Component>

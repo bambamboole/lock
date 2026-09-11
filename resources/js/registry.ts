@@ -9,11 +9,8 @@ export const registry = extendRegistry(packageRegistry, ...plugins, {
 });
 
 /**
- * Every namespace i18next has to fetch. A package that ships translations names
- * its namespace on its plugin, so deriving them from the discovered plugins is
- * what stops a newly installed package's strings from silently rendering in
- * English while the rest of the page is translated. Only this app's own
- * namespaces are listed by hand.
+ * Derived from the discovered plugins, so a newly installed package's strings do
+ * not silently render in English while the rest of the page is translated.
  */
 export const i18nNamespaces = [
     DEFAULT_NAMESPACE,

@@ -28,7 +28,6 @@ beforeEach(function () {
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });
 
-/** An administrator who may look at resources but not change them. */
 $resourceViewer = function (): User {
     $viewer = User::factory()->for(Realm::master())->create();
     $role = Role::factory()->create(['name' => 'Resource viewer']);

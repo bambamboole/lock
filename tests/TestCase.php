@@ -18,11 +18,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Rendering a real route resolves @vite, which throws without
-     * public/build/manifest.json. Feature tests assert Inertia props and the
-     * Lattice component tree, never the Blade shell's asset tags, so they run
-     * against a stub and need no build — that is what keeps them out of the
-     * node toolchain in CI. Only BrowserTestCase turns this off.
+     * Feature tests assert Inertia props and the Lattice tree, never the Blade
+     * shell's asset tags, so they run against a stub and need no frontend
+     * build.
      */
     protected bool $stubsVite = true;
 
@@ -48,10 +46,9 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Runs the data migrations once per process, inside RefreshDatabase's
-     * migrated-guard and before the per-test transaction opens — so their rows
-     * live in the migrated template database instead of being replayed and
-     * rolled back around every single test.
+     * Once per process, before the per-test transaction opens, so the rows live
+     * in the migrated template database instead of being replayed around every
+     * test.
      */
     protected function migrateDatabases(): void
     {

@@ -50,10 +50,8 @@ use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 /**
- * Served from the realm's own host like the package's sign-in pages. The
- * middleware order mirrors the package routes: the realm is resolved before
- * the session starts, and the identity guard, not the app's web guard, decides
- * who is signed in.
+ * The realm has to resolve before the session starts, and the identity guard,
+ * not the web guard, decides who is signed in.
  */
 #[AsPage(
     route: 'account',
@@ -74,10 +72,9 @@ final class AccountPage extends Page
     {
         $user = $this->currentUser();
 
-        // The filtered list is what the login pipeline actually challenges on, so
-        // it is also what may claim the account is protected. The unfiltered
-        // check would call a passkey-only account protected while
-        // `challenge_providers` still excluded webauthn.
+        // Only the factors the login actually challenges may call the account
+        // protected: a passkey does not count while `challenge_providers`
+        // excludes webauthn.
         $twoFactorEnabled = $factors->configuredChallengeableEnrollments($user) !== [];
         $securityUnlocked = PasswordConfirmation::confirmedRecently($request->session());
 
@@ -193,9 +190,6 @@ final class AccountPage extends Page
                 Text::make($twoFactorEnabled
                     ? __('user.security.two-factor.description.enabled')
                     : __('user.security.two-factor.description.disabled')),
-                // Every method, plus the recovery codes backing them. Removing
-                // the last one is how two-factor gets turned off; there is no
-                // separate switch to disagree with this list.
                 Table::lazy(TwoFactorMethodsTable::class),
                 Button::make(__('user.security.two-factor.add-method'))
                     ->modal(

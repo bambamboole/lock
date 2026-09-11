@@ -17,11 +17,9 @@ use Lattice\Form\Components\Toggle;
 use Lattice\Form\FormData;
 
 /**
- * The client fields, keyed so a form can render all of them or exactly one.
- *
- * Type, grant types and redirect URIs constrain each other, so every one of
- * them carries the same whole-client rule: editing one alone is still checked
- * against what the client already stores, not against an empty payload.
+ * Type, grant types and redirect URIs constrain each other, so each carries the
+ * whole-client rule and a single-field edit is checked against the stored
+ * client.
  */
 trait BuildsClientFields
 {
@@ -112,9 +110,8 @@ trait BuildsClientFields
     }
 
     /**
-     * The client as it would stand after the submitted fields are applied:
-     * a key the payload does not carry keeps the stored value, and a key it
-     * carries as null (a cleared input) clears it.
+     * A key the payload omits keeps the stored value; a key it carries as null
+     * clears it.
      *
      * @return array{name: string, token_endpoint_auth_method: string, grant_types: list<string>, redirect_uris: string, post_logout_redirect_uris: string, consent_required: bool, backchannel_logout_uri: string}
      */
@@ -144,9 +141,8 @@ trait BuildsClientFields
     }
 
     /**
-     * The whole-client check, attached to every field that can break it. Each
-     * problem is reported on the field that owns it, and on the field being
-     * edited when the owning one is not part of this submission.
+     * A problem is reported on the field that owns it, or on the edited field
+     * when the owner is not part of the submission.
      */
     private function clientConsistencyRule(FormData $data, ?Client $client): Closure
     {

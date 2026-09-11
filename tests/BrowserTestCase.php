@@ -36,20 +36,13 @@ abstract class BrowserTestCase extends TestCase
     }
 
     /**
-     * Starts the Pest browser HTTP server with an hour-long keep-alive timeout
-     * before the plugin can start it with amphp's 15-second default.
-     *
      * Chrome pools connections for minutes and ignores the server's
-     * `Keep-Alive: timeout` hint, so with the default it regularly sends a
-     * request on a connection the server is concurrently closing. The request
-     * then dies at the network level: dynamic imports fail with "Failed to
-     * fetch dynamically imported module" and Inertia POST submits vanish
-     * without any error — the recurring flaky browser failures in CI, where
-     * DOM-polling assertions routinely leave connections idle past 15 seconds.
-     * The plugin exposes no server configuration, so this pre-starts the
-     * identical server with a longer timeout; LaravelHttpServer::start() then
-     * finds the socket already present and leaves it in place. Ported from
-     * lattice-php/lattice#493.
+     * `Keep-Alive: timeout`, so with amphp's 15-second default it sends
+     * requests on connections the server is closing: dynamic imports fail and
+     * Inertia submits vanish without an error. The plugin exposes no server
+     * configuration, so this pre-starts the identical server with an hour-long
+     * timeout, and LaravelHttpServer::start() then leaves the socket in place.
+     * Ported from lattice-php/lattice#493.
      */
     private function startBrowserHttpServerWithLongKeepAlive(): void
     {

@@ -13,10 +13,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
 /**
- * A DNS lookup would only say where the name points; asking the domain for
- * this instance's token proves that DNS, the platform proxy and TLS all lead
- * here. Redirects are not followed, so a domain parked behind a redirect to
- * this instance does not pass for one that serves it.
+ * Asking the domain for this instance's token proves that DNS, the proxy and
+ * TLS all lead here, which a DNS lookup cannot. Redirects are not followed, so
+ * a domain that merely redirects here does not pass.
  */
 final class CheckRealmDomain implements ChecksRealmDomain
 {

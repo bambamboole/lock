@@ -27,8 +27,8 @@ final class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            // Every user needs a realm; unless the caller names one, the user
-            // gets a fresh realm of their own so tests stay isolated.
+            // A fresh realm per user unless the caller names one, so tests stay
+            // isolated.
             'realm_id' => Realm::factory(),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),

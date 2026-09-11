@@ -7,11 +7,6 @@ namespace App\Shared\Auth\Contracts;
 use App\Shared\Auth\Data\PermissionDefinition;
 use InvalidArgumentException;
 
-/**
- * The application's permission catalog, discovered from every `#[AsPermission]`
- * enum. Auth owns the discovery and caching; every other domain reads through
- * this contract.
- */
 interface PermissionCatalog
 {
     /** @return list<PermissionDefinition> */

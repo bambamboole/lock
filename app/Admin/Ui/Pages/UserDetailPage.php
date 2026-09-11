@@ -168,8 +168,8 @@ final class UserDetailPage extends AdminPage
     }
 
     /**
-     * A support call is about a password or about locking someone out; every
-     * other action is rarer than the noise it would add to the header.
+     * A support call is about a password or a lockout; everything else sits
+     * behind the menu.
      *
      * @param  array<string, string>  $context
      * @return array<int, Component>

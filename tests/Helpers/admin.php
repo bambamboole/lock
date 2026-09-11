@@ -9,10 +9,6 @@ use App\Admin\Models\Role;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
-/**
- * Instance administrators live in the master realm — that is what makes them
- * administrators of the others rather than members of their own.
- */
 function globalAdmin(string $roleName = GlobalRoleSeeder::SUPER_ADMIN): User
 {
     $admin = User::factory()->for(Realm::master())->create();

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 
-// Only the keys this app changes from the framework defaults live here.
 return [
 
     'guards' => [
@@ -15,8 +14,8 @@ return [
 
     'providers' => [
         /*
-         * Not the stock `eloquent` driver: identity is realm-local, so every
-         * user lookup carries a realm constraint. See RealmUserProvider.
+         * Identity is realm-local, so every user lookup carries a realm
+         * constraint.
          */
         'users' => [
             'driver' => 'realm-eloquent',
