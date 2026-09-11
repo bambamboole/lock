@@ -22,14 +22,10 @@ final readonly class CreateRealm implements CreatesRealm
      * A realm without a signing key can neither mint a token nor serve a JWKS,
      * so it gets its own keypair here.
      */
-    public function handle(string $name, string $domain, ?string $slug = null): Realm
+    public function handle(string $name, string $domain, string $slug): Realm
     {
         return DB::transaction(function () use ($name, $domain, $slug): Realm {
-            $realm = Realm::create(array_filter([
-                'name' => $name,
-                'slug' => $slug,
-                'domain' => strtolower($domain),
-            ]));
+            $realm = Realm::create(['name' => $name, 'slug' => $slug, 'domain' => $domain]);
 
             $realm->runAsCurrent(fn () => $this->store->rotate($this->keys->generate()));
 

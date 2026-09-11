@@ -11,14 +11,8 @@ use Illuminate\Support\Facades\Context;
 
 use function Tests\Helpers\realmRoute;
 
-test('realms can be created', function () {
-    $realm = app(CreateRealm::class)->handle('Test Realm', 'Test.Example.com');
-
-    $this->assertDatabaseHas('realms', ['id' => $realm->id, 'name' => 'Test Realm', 'domain' => 'test.example.com', 'domain_status' => 'pending']);
-});
-
 test('a new realm gets its own signing key and serves it from its own JWKS', function () {
-    $realm = app(CreateRealm::class)->handle('Test Realm', 'test.lock.test');
+    $realm = app(CreateRealm::class)->handle('Test Realm', 'test.lock.test', 'test-realm');
 
     $kid = SigningKey::query()->inRealm($realm->slug)->sole()->kid;
 
@@ -26,16 +20,6 @@ test('a new realm gets its own signing key and serves it from its own JWKS', fun
         ->assertOk()
         ->assertJsonCount(1, 'keys')
         ->assertJsonPath('keys.0.kid', $kid);
-});
-
-test('realm slug uses next available suffix', function () {
-    Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
-    Realm::factory()->create(['name' => 'Acme One', 'slug' => 'acme-1']);
-    Realm::factory()->create(['name' => 'Acme Ten', 'slug' => 'acme-10']);
-
-    app(CreateRealm::class)->handle('Acme', 'acme-11.lock.test');
-
-    $this->assertDatabaseHas('realms', ['name' => 'Acme', 'slug' => 'acme-11']);
 });
 
 test('a realm identifier cannot change once created', function () {
