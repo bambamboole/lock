@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminPermission;
-use App\Auth\Models\User;
+use App\Shared\Auth\Support\RequestUser;
 use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Http\Request;
@@ -18,9 +18,9 @@ use Lattice\Table\Http\Controllers\TableController;
 // Lattice pages self-register their routes via #[AsPage]; only non-page routes live here.
 
 Route::get('/', function (Request $request) {
-    $user = $request->user();
+    $user = RequestUser::of($request);
 
-    abort_unless($user instanceof User, 401);
+    abort_if($user === null, 401);
 
     return $user->can(AdminPermission::Access)
         ? to_route('admin.realms')

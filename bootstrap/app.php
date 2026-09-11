@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Admin\Console\Commands\SyncPermissionsCommand;
-use App\Auth\Models\User;
 use App\Realms\Http\Middleware\SetCurrentRealm;
+use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Exceptions\MissingRealmContext;
@@ -40,11 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // A signed-in identity lands on its realm's account page; the home
         // route sorts everyone else between the console and their account.
         $middleware->redirectUsersTo(function (Request $request): string {
-            $identity = $request->user('identity');
+            $identity = RequestUser::of($request, 'identity');
 
-            return $identity instanceof User
-                ? route('account', ['realm' => $identity->realm->slug])
-                : '/';
+            return $identity === null ? '/' : route('account', ['realm' => $identity->realm->slug]);
         });
 
         $middleware->web(append: [
