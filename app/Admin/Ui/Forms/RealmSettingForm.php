@@ -151,10 +151,6 @@ final class RealmSettingForm extends FormDefinition
 
     private function realm(): Realm
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
-
-        return $realm;
+        return $this->contextModel('realm', Realm::class);
     }
 }

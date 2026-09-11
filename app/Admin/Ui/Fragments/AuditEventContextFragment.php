@@ -60,7 +60,7 @@ final class AuditEventContextFragment extends FragmentDefinition
 
     private function auditEvent(): ?AuditEvent
     {
-        $realm = $this->contextModelOrNull('realm');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
 
         if (! $realm instanceof Realm) {
             return null;

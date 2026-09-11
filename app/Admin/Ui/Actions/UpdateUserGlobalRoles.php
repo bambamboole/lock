@@ -27,8 +27,7 @@ final class UpdateUserGlobalRoles extends ActionDefinition
 
     public function definition(Action $action): Action
     {
-        /** @var User $target */
-        $target = $this->contextModel('user');
+        $target = $this->contextModel('user', User::class);
 
         return $action
             ->label(__('admin.users.detail.update-roles'))
@@ -48,15 +47,14 @@ final class UpdateUserGlobalRoles extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $target = $this->contextModelOrNull('user');
+        $target = $this->contextModelOrNull('user', User::class);
 
         return $target instanceof User && $target->realm->isMaster() && $target->isNot($this->currentUser());
     }
 
     public function handle(FormData $data): ActionResult
     {
-        /** @var User $target */
-        $target = $this->contextModel('user');
+        $target = $this->contextModel('user', User::class);
 
         $globalRoleIds = Role::query()
             ->whereIn('id', array_map(strval(...), (array) ($data['role_ids'] ?? [])))

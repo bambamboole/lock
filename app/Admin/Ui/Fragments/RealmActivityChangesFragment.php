@@ -15,7 +15,7 @@ final class RealmActivityChangesFragment extends ActivityChangesFragment
 {
     protected function activity(): ?Activity
     {
-        $realm = $this->contextModelOrNull('realm');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
 
         return $realm instanceof Realm ? Activity::forRealm($realm)->find($this->contextInt('activity')) : null;
     }

@@ -42,8 +42,7 @@ final class DeleteUserAction extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
         $realm = $user->realm;
 
         Audit::record(AdminAuditEvent::UserDeleted, $user, properties: [

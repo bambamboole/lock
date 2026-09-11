@@ -16,11 +16,7 @@ trait ResolvesRealmResource
 {
     private function realm(): Realm
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
-
-        return $realm;
+        return $this->contextModel('realm', Realm::class);
     }
 
     private function resource(): Resource
@@ -34,8 +30,8 @@ trait ResolvesRealmResource
 
     private function resourceOrNull(): ?Resource
     {
-        $realm = $this->contextModelOrNull('realm');
-        $resource = $this->contextModelOrNull('resource');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
+        $resource = $this->contextModelOrNull('resource', Resource::class);
 
         return $realm instanceof Realm && $resource instanceof Resource && $resource->belongsToRealm($realm) ? $resource : null;
     }
@@ -52,7 +48,7 @@ trait ResolvesRealmResource
     private function resourceScopeOrNull(): ?ResourceScope
     {
         $resource = $this->resourceOrNull();
-        $scope = $this->contextModelOrNull('resourceScope');
+        $scope = $this->contextModelOrNull('resourceScope', ResourceScope::class);
 
         return $resource instanceof Resource && $scope instanceof ResourceScope && $scope->belongsToResource($resource) ? $scope : null;
     }

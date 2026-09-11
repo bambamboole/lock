@@ -15,11 +15,7 @@ trait ResolvesRealmClient
 {
     private function realm(): Realm
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
-
-        return $realm;
+        return $this->contextModel('realm', Realm::class);
     }
 
     private function realmClient(): Client
@@ -33,8 +29,8 @@ trait ResolvesRealmClient
 
     private function realmClientOrNull(): ?Client
     {
-        $realm = $this->contextModelOrNull('realm');
-        $client = $this->contextModelOrNull('client');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
+        $client = $this->contextModelOrNull('client', Client::class);
 
         return $realm instanceof Realm && $client instanceof Client && $client->realm_id === $realm->slug ? $client : null;
     }

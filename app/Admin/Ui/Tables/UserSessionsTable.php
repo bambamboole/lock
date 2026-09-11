@@ -37,8 +37,8 @@ final class UserSessionsTable extends EloquentTableDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $realm = $this->contextModelOrNull('realm');
-        $user = $this->contextModelOrNull('user');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
+        $user = $this->contextModelOrNull('user', User::class);
 
         return $realm instanceof Realm && $user instanceof User && $user->belongsToRealm($realm);
     }
@@ -108,10 +108,10 @@ final class UserSessionsTable extends EloquentTableDefinition
 
     private function user(): User
     {
-        $realm = $this->contextModel('realm');
-        $user = $this->contextModel('user');
+        $realm = $this->contextModel('realm', Realm::class);
+        $user = $this->contextModel('user', User::class);
 
-        abort_unless($realm instanceof Realm && $user instanceof User && $user->belongsToRealm($realm), 404);
+        abort_unless($user->belongsToRealm($realm), 404);
 
         return $user;
     }

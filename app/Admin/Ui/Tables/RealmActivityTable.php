@@ -23,9 +23,7 @@ final class RealmActivityTable extends ActivityTable
      */
     protected function scopedActivity(): Builder
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
+        $realm = $this->contextModel('realm', Realm::class);
 
         return Activity::forRealm($realm);
     }

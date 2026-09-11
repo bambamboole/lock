@@ -33,9 +33,7 @@ final class AdminClientsTable extends EloquentTableDefinition
      */
     public function builder(TableQuery $query): Builder
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
+        $realm = $this->contextModel('realm', Realm::class);
 
         $builder = Client::query()
             ->inRealm($realm->slug)

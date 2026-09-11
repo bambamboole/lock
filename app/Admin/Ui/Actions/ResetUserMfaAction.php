@@ -29,8 +29,7 @@ final class ResetUserMfaAction extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
 
         $this->resetMfa->handle($user);
 

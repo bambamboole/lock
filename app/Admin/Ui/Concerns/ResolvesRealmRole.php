@@ -15,11 +15,7 @@ trait ResolvesRealmRole
 {
     private function realm(): Realm
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
-
-        return $realm;
+        return $this->contextModel('realm', Realm::class);
     }
 
     private function realmRole(): RealmRole
@@ -33,8 +29,8 @@ trait ResolvesRealmRole
 
     private function realmRoleOrNull(): ?RealmRole
     {
-        $realm = $this->contextModelOrNull('realm');
-        $role = $this->contextModelOrNull('realmRole');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
+        $role = $this->contextModelOrNull('realmRole', RealmRole::class);
 
         return $realm instanceof Realm && $role instanceof RealmRole && $role->belongsToRealm($realm) ? $role : null;
     }

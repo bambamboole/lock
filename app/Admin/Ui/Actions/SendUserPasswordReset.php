@@ -29,8 +29,7 @@ final class SendUserPasswordReset extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
 
         $user->realm->runAsCurrent(fn (): string => ($this->sendResetLink)($user->email));
 

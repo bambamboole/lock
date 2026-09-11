@@ -66,8 +66,8 @@ final class UpdateUserRealmRoles extends ActionDefinition
 
     private function realmUserOrNull(): ?User
     {
-        $realm = $this->contextModelOrNull('realm');
-        $user = $this->contextModelOrNull('user');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
+        $user = $this->contextModelOrNull('user', User::class);
 
         return $realm instanceof Realm && $user instanceof User && $user->belongsToRealm($realm) ? $user : null;
     }

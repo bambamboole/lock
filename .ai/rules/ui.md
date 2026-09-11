@@ -25,8 +25,9 @@ Instance-wide pages stay directly under `/admin/…`. There is no cross-realm us
 ## Resolve models through registered context, never route parameters or session state
 
 `RealmsServiceProvider` registers `realm` and its dependent model keys with `Lattice::context()`. Definitions use
-`$this->contextModel('realm')` when the key is required and `$this->contextModelOrNull('realm')` when render-time
-authorization should hide a component with missing context. Use `$this->context('realm')` only when the raw scalar
+`$this->contextModel('realm', Realm::class)` when the key is required and
+`$this->contextModelOrNull('realm', Realm::class)` when render-time authorization should hide a component with missing
+context. The class types the result, so no `@var` or `instanceof` guard follows the call. Use `$this->context('realm')` only when the raw scalar
 is genuinely needed; do not query from `contextString()` or read `$request->route()` inside a definition. Signed
 definition endpoints may run after the page request, so the registered context remains the source of truth.
 
