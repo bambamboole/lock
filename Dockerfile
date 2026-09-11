@@ -40,6 +40,7 @@ ENV AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=false \
     AUTORUN_APP_DEPLOY=false \
     HEALTHCHECK_PATH=/up \
+    DB_CONNECTION=pgsql \
     OCTANE_SERVER=frankenphp \
     PHP_OPCACHE_ENABLE=1 \
     APP_NAME=Lock \

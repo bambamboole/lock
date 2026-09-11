@@ -5,13 +5,11 @@ x-environment: &environment
   APP_KEY: ${APP_KEY:?APP_KEY is required}
   APP_URL: ${APP_URL:?APP_URL is required}
 
-  DB_CONNECTION: pgsql
   DB_HOST: postgres
   DB_DATABASE: lock
   DB_USERNAME: lock
   DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
 
-  MAIL_MAILER: ${MAIL_MAILER:-smtp}
   MAIL_URL: ${MAIL_URL:-}
   MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:?MAIL_FROM_ADDRESS is required}
 
