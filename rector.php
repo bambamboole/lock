@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Pest\Rector\Set\PestSetList;
 use Rector\Config\RectorConfig;
-use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\ValueObject\PhpVersion;
 use RectorLaravel\Rector\FuncCall\AppToResolveRector;
@@ -24,6 +23,4 @@ return RectorConfig::configure()
     ])
     ->withSkip([
         AppToResolveRector::class,
-        // False positive: rewrites [$model, 'eventName'] data tuples (not callables) into method calls.
-        ArrayToFirstClassCallableRector::class,
     ]);

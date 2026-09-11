@@ -14,16 +14,9 @@ name it for what it does.
 `Support/` stays for the smaller helpers that are not services and not data: pure functions over their arguments,
 static registries, string manglers, and thin adapters a config entry names by class-string rather than the container
 injecting. `App\Shared\Realms\Support\RealmConfiguration` and `App\Resources\Support\ResourceScopeCatalog`
-(wired through `config('oidc.scopes')`) are the shape that belongs there. `PermissionRepository` also lives under `Support/` — a one-class `Services/` directory next to `Support/` is not worth
-the extra slice. Its `PermissionDefinition` DTO sits in `app/Shared/Auth/Data/` because other domains consume it.
+(wired through `config('oidc.scopes')`) are the shape that belongs there.
 
 ## Value objects that carry data between layers live in Data/
 
 `app/{Domain}/Data/` holds the immutable value objects a service returns and the UI consumes — `readonly` classes
 with typed, promoted properties, no Eloquent, no container.
-
-## Both slices are checked by the architecture test
-
-`tests/Feature/ArchitectureTest.php` derives its namespace list from the directories that exist, but only for the
-slice names in its `$slices` brace list. Adding a new technical slice under `app/{Domain}/` means adding it there
-too, or it silently escapes the "must not import Lattice" rules.

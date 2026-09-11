@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
+use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\RotatesClientSecret;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -24,7 +25,7 @@ final readonly class RotateClientSecret implements RotatesClientSecret
         return DB::transaction(function () use ($client): string {
             $this->clients->regenerateSecret($client);
 
-            Audit::record(RealmAuditEvent::ClientSecretRotated, $client, properties: [
+            Audit::record(RealmAuditEvent::ClientSecretRotated, $client, Realm::ofClient($client), [
                 'realm' => $client->realm_id,
                 'client_id' => $client->client_id,
             ]);

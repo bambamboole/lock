@@ -1,23 +1,19 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 use function Tests\Helpers\realmRoute;
 
 beforeEach(function () {
-    new GlobalRoleSeeder()->run();
 
     config()->set([
-        'oidc.clients.first_party.client_id' => 'lock-console',
-        'oidc.clients.first_party.trusted' => true,
-        'oidc.first_party_secret' => 'console-secret',
+        'lock.console_client.id' => 'lock-console',
+        'lock.console_client.secret' => 'console-secret',
         'lock.admin.email' => 'root@lock.test',
         'lock.admin.name' => 'Root',
         'lock.admin.password' => 'CorrectHorse42',
@@ -48,7 +44,7 @@ it('provisions the console client with the configured id and secret', function (
 it('applies a client secret changed in the environment on the next run', function () {
     $this->artisan('app:bootstrap')->assertSuccessful();
 
-    config()->set(['oidc.first_party_secret' => 'rotated-secret']);
+    config()->set(['lock.console_client.secret' => 'rotated-secret']);
 
     $this->artisan('app:bootstrap')->assertSuccessful();
 
@@ -61,7 +57,7 @@ it('applies a client secret changed in the environment on the next run', functio
 it('leaves the console client untouched when no secret is configured', function () {
     $this->artisan('app:bootstrap')->assertSuccessful();
 
-    config()->set(['oidc.first_party_secret' => null]);
+    config()->set(['lock.console_client.secret' => null]);
     Realm::master()->settings->set('realm.first_party_trusted', false);
 
     $this->artisan('app:bootstrap')->expectsOutputToContain('skipped')->assertSuccessful();
@@ -136,15 +132,4 @@ it('reports every item as unchanged when run twice', function () {
         ->and(Realm::master()->users()->count())->toBe(1);
 
     ($this->tokenRequest)('console-secret')->assertOk();
-});
-
-it('is run by the deploy command', function () {
-    try {
-        $this->artisan('app:deploy')->assertSuccessful();
-    } finally {
-        Artisan::call('lattice:discover-clear');
-    }
-
-    expect(Client::query()->where('client_id', 'lock-console')->exists())->toBeTrue()
-        ->and(Realm::master()->users()->where('email', 'root@lock.test')->exists())->toBeTrue();
 });

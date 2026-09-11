@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 /**
- * laravel-oidc 0.27 lets a `client_credentials` token through the `auth:oidc`
- * guard, where it resolves to a ClientPrincipal instead of a user. The
- * principal carries no realm, no roles and no `can()`, so reaching for either
- * on it is a fatal error rather than a denial.
+ * A `client_credentials` token passes the `auth:oidc` guard as a
+ * ClientPrincipal with no realm, roles or `can()`, so reaching for either is a
+ * fatal error rather than a denial.
  */
 
 use App\Auth\Models\User;
@@ -35,18 +34,14 @@ test('a machine caller passes the token guard but is not mistaken for a person',
         ->assertJson(['principal' => $user->id, 'person' => $user->id]);
 });
 
-test('the realm middleware leaves the context empty for a client principal instead of failing', function () {
+test('the realm middleware derives the realm from a person and leaves it empty for a client principal', function () {
     Route::middleware('web')->get('/test/realm-context', fn () => response()->json(['realm' => Realm::currentId()]));
-
-    $this->actingAsOidcClient($this->createOidcMachineClient());
-
-    $this->getJson('/test/realm-context')->assertOk()->assertJson(['realm' => null]);
-});
-
-test('the realm middleware still derives the realm from a signed-in person', function () {
-    Route::middleware('web')->get('/test/realm-context', fn () => response()->json(['realm' => Realm::currentId()]));
-
     $user = User::factory()->for(Realm::master())->create();
 
     $this->actingAs($user)->getJson('/test/realm-context')->assertOk()->assertJson(['realm' => $user->realm_id]);
+
+    auth()->forgetGuards();
+    $this->actingAsOidcClient($this->createOidcMachineClient());
+
+    $this->getJson('/test/realm-context')->assertOk()->assertJson(['realm' => null]);
 });

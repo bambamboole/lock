@@ -20,31 +20,17 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/clients', name: 'admin.realms.clients', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class RealmClientsPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
     public function title(): string
     {
         return __('admin.clients.heading');
     }
 
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
-        $this->realm = $realm;
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-realm-clients-page')
@@ -54,7 +40,7 @@ final class RealmClientsPage extends AdminPage
                         Button::make(__('admin.clients.create.submit'))
                             ->effects(Effects::redirect(route('admin.realms.clients.create', ['realm' => $realm->slug], false))),
                     ])),
-                    Table::use(AdminClientsTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminClientsTable::class),
                 ]),
         ]);
     }

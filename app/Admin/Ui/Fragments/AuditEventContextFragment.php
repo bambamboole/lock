@@ -36,9 +36,6 @@ final class AuditEventContextFragment extends FragmentDefinition
     }
 
     /**
-     * Request provenance carries translated labels; the payload the event
-     * itself brought keeps its own keys, humanized.
-     *
      * @return array<int, Text>
      */
     private function detailLines(AuditEvent $event): array

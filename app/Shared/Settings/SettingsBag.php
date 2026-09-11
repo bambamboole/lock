@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Shared\Settings;
 
 use App\Shared\Settings\Contracts\ProvidesSettings;
-use Illuminate\Support\Facades\Crypt;
 
 final class SettingsBag
 {
@@ -29,13 +28,7 @@ final class SettingsBag
             return $definition?->cast($definition->defaultValue());
         }
 
-        $raw = $rows[$key];
-
-        if ($definition !== null && $definition->isEncrypted()) {
-            $raw = json_decode(Crypt::decryptString($raw), true);
-        }
-
-        return $definition !== null ? $definition->cast($raw) : $raw;
+        return $definition !== null ? $definition->cast($rows[$key]) : $rows[$key];
     }
 
     public function string(string $key, string $default = ''): string
@@ -59,13 +52,6 @@ final class SettingsBag
         return $value === null ? $default : (int) $value;
     }
 
-    public function float(string $key, float $default = 0.0): float
-    {
-        $value = $this->get($key);
-
-        return $value === null ? $default : (float) $value;
-    }
-
     /**
      * @param  array<mixed>  $default
      * @return array<mixed>
@@ -80,36 +66,10 @@ final class SettingsBag
     public function set(string $key, mixed $value): void
     {
         $definition = app(SettingsRegistry::class)->find($key);
-        $stored = $definition !== null ? $definition->prepare($value) : $value;
 
-        if ($definition !== null && $definition->isEncrypted()) {
-            $stored = Crypt::encryptString((string) json_encode($stored));
-        }
-
-        $this->owner->storedSettings()->updateOrCreate(['key' => $key], ['value' => $stored]);
+        $this->owner->storedSettings()->updateOrCreate(['key' => $key], ['value' => $definition !== null ? $definition->cast($value) : $value]);
         $this->owner->forgetSettingsCache();
         $this->loaded = null;
-    }
-
-    public function forget(string $key): void
-    {
-        $this->owner->storedSettings()->where('key', $key)->delete();
-        $this->owner->forgetSettingsCache();
-        $this->loaded = null;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function all(): array
-    {
-        $out = [];
-
-        foreach (array_keys($this->rows()) as $key) {
-            $out[$key] = $this->get($key);
-        }
-
-        return $out;
     }
 
     /**

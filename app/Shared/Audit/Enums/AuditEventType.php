@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Shared\Audit\Enums;
 
 /**
- * The security events the OIDC server raises, mirrored here so the console can
- * filter and translate them. A row's `type` stays a plain string: a package
- * update may add a case this enum does not know yet, and such a row still has
- * to list.
+ * A row's `type` stays a plain string: a package update may add a type this
+ * enum does not know yet.
  */
 enum AuditEventType: string
 {
@@ -16,6 +14,7 @@ enum AuditEventType: string
     case LoginFailed = 'auth.login.failed';
     case LoggedOut = 'auth.logout';
     case PasswordReset = 'auth.password.reset';
+    case PasswordChanged = 'auth.password.changed';
     case RegistrationSucceeded = 'auth.registration.succeeded';
     case MfaChallengeSucceeded = 'auth.mfa.challenge_succeeded';
     case MfaChallengeFailed = 'auth.mfa.challenge_failed';
@@ -39,8 +38,8 @@ enum AuditEventType: string
     }
 
     /**
-     * Mirrors the `failure` flag the package sets on the record, so the console
-     * can colour a type before a row is in hand.
+     * Mirrors the package's `failure` flag, so a type can be coloured without a
+     * row in hand.
      */
     public function isFailure(): bool
     {

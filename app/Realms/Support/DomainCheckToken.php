@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Realms\Support;
 
 /**
- * What this instance answers on a host's domain check. Keyed with APP_KEY, so
- * only a Lock sharing this instance's key — every replica of it — gives the
- * same answer; another Lock or any other server on the domain does not.
+ * Keyed with APP_KEY, so only this instance and its replicas give the same
+ * answer.
  */
 final class DomainCheckToken
 {

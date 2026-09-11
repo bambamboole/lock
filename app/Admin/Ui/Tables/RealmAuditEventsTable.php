@@ -61,8 +61,8 @@ final class RealmAuditEventsTable extends EloquentTableDefinition
     }
 
     /**
-     * A failed event has to be spottable while scrolling the list; everything
-     * else stays quiet so the red actually means something.
+     * A failure has to stand out while scrolling, so everything else stays
+     * quiet.
      *
      * @return array<string, ColorName>
      */
@@ -91,9 +91,6 @@ final class RealmAuditEventsTable extends EloquentTableDefinition
     }
 
     /**
-     * Every row expands: a security event is read for its provenance — who,
-     * from where, with which client — not for the headline alone.
-     *
      * @param  array<string, mixed>  $row
      */
     #[\Override]

@@ -7,11 +7,9 @@ use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
-use App\Shared\Exceptions\MissingRealmContext;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -42,9 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance']);
 
-        // The framework default probes route('dashboard'), which does not exist.
-        // A signed-in identity lands on its realm's account page; the home
-        // route sorts everyone else between the console and their account.
+        // A signed-in identity goes straight to its realm's account page instead
+        // of through the console's relying-party login behind the home route.
         $middleware->redirectUsersTo(function (Request $request): string {
             $identity = RequestUser::of($request, 'identity');
 
@@ -72,22 +69,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->map(fn (AuthenticationException $exception): AuthenticationException => new AuthenticationException(
-            $exception->getMessage(),
-            array_map(fn (?string $guard): string => $guard ?? auth()->getDefaultDriver(), $exception->guards()),
-            $exception->redirectTo(request()),
-        ));
-
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
-
-        // A BusinessModel query without a current realm throws with a
-        // developer-facing message — on token-facing paths that is an
-        // authorization problem, not a server error.
-        $exceptions->render(fn (MissingRealmContext $exception, Request $request) => $request->is('api/*')
-            ? response()->json(['message' => __('common.api.no-realm-context')], 403)
-            : null);
     })
     ->withCommands([
         BootstrapCommand::class,

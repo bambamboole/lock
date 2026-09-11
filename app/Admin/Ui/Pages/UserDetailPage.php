@@ -49,39 +49,18 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
 final class UserDetailPage extends AdminPage
 {
-    private ?User $user = null;
-
-    public function title(): ?string
-    {
-        return $this->user?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->user instanceof User) {
-            return [];
-        }
-
-        $realm = $this->user->realm;
-
-        return [
-            Breadcrumb::make($realm->name, route('admin.realms.users', ['realm' => $realm->slug], false)),
-            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
-            Breadcrumb::make($this->user->name, route('admin.realms.users.show', ['realm' => $realm->slug, 'user' => $this->user->id], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, User $user, Request $request): PageSchema
     {
         abort_unless($user->belongsToRealm($realm), 404);
 
-        $this->user = $user;
         $user->setRelation('realm', $realm);
         $currentUser = $request->user();
-        $context = ['realm' => $realm->slug, 'user' => $user->id];
+
+        $schema->title($user->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
+            Breadcrumb::make($user->name, route('admin.realms.users.show', ['realm' => $realm->slug, 'user' => $user->id], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-user-detail-page')
@@ -90,33 +69,30 @@ final class UserDetailPage extends AdminPage
                 ->schema([
                     PageHeader::make($user->name, null, [
                         ...($user->isBlocked() ? [Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)] : []),
-                        ...$this->headerActions($user, $context),
+                        ...$this->headerActions($user),
                     ]),
-                    $this->profileCard($user, $context),
+                    $this->profileCard($user),
                     $this->adminRolesCard($user, $currentUser),
-                    $this->realmRolesCard($user, $context),
-                    $this->sessionsCard($context),
+                    $this->realmRolesCard($user),
+                    $this->sessionsCard(),
                 ]),
         ]);
     }
 
-    /**
-     * @param  array<string, string>  $context
-     */
-    private function profileCard(User $user, array $context): Card
+    private function profileCard(User $user): Card
     {
         return Card::make(__('admin.users.detail.profile.heading'), __('admin.users.detail.profile.subtitle'))->schema([
             DescriptionList::make('user-profile')->bleed()->schema([
                 TextEntry::make('name', __('common.field.name'), 'user-name')
                     ->value($user->name)
-                    ->disclosure([Form::use(UpdateUserNameForm::class, $context)]),
+                    ->disclosure([Form::use(UpdateUserNameForm::class)]),
                 TextEntry::make('email', __('common.field.email-address'), 'user-email')
                     ->value($user->email)
-                    ->disclosure([Form::use(UpdateUserEmailForm::class, $context)]),
+                    ->disclosure([Form::use(UpdateUserEmailForm::class)]),
                 BadgeEntry::make('email_verified', __('admin.users.fields.email-verified.label'), 'user-email-verified')
                     ->value($user->hasVerifiedEmail() ? __('common.value.yes') : __('common.value.no'))
                     ->color($user->hasVerifiedEmail() ? ColorName::Success : ColorName::Warning)
-                    ->disclosure([Form::use(UpdateUserVerificationForm::class, $context)]),
+                    ->disclosure([Form::use(UpdateUserVerificationForm::class)]),
                 TextEntry::make('realm', __('admin.users.detail.realm'), 'user-realm')->value($user->realm->name),
                 BadgeEntry::make('status', __('admin.users.detail.status'), 'user-status')
                     ->value($user->isBlocked() ? __('admin.users.status.blocked') : __('admin.users.status.active'))
@@ -140,14 +116,11 @@ final class UserDetailPage extends AdminPage
         return Card::make(__('admin.users.detail.admin-roles.heading'))
             ->visible($currentUser instanceof User && $user->realm->isMaster() && Gate::forUser($currentUser)->allows(AdminPermission::ManageAdminRoles) && $currentUser->isNot($user))
             ->schema([
-                ActionBar::button(Action::use(UpdateUserGlobalRoles::class, ['user' => $user->id])),
+                ActionBar::button(Action::use(UpdateUserGlobalRoles::class)),
             ]);
     }
 
-    /**
-     * @param  array<string, string>  $context
-     */
-    private function realmRolesCard(User $user, array $context): Card
+    private function realmRolesCard(User $user): Card
     {
         $realm = $user->realm;
         $names = $user->realmRoleNames();
@@ -161,45 +134,41 @@ final class UserDetailPage extends AdminPage
                         ? [Text::make(__('admin.users.detail.realm-roles.none'))->color(ColorName::Muted)]
                         : array_map(fn (string $name): Badge => Badge::make($name), $names)),
                 $realm->realmRoles()->exists()
-                    ? ActionBar::button(Action::use(UpdateUserRealmRoles::class, $context))
+                    ? ActionBar::button(Action::use(UpdateUserRealmRoles::class))
                     : Link::make(__('admin.users.detail.realm-roles.define'))->href(route('admin.realms.roles', ['realm' => $realm->slug], false)),
             ]),
         ]);
     }
 
     /**
-     * A support call is about a password or about locking someone out; every
-     * other action is rarer than the noise it would add to the header.
+     * A support call is about a password or a lockout; everything else sits
+     * behind the menu.
      *
-     * @param  array<string, string>  $context
      * @return array<int, Component>
      */
-    private function headerActions(User $user, array $context): array
+    private function headerActions(User $user): array
     {
         return ActionBar::make(
             primary: [
-                ...($user->isBlocked() ? [] : [Action::use(SendUserPasswordReset::class, $context)]),
+                ...($user->isBlocked() ? [] : [Action::use(SendUserPasswordReset::class)]),
                 ...($user->isBlocked()
-                    ? [Action::use(UnblockUserAction::class, $context)]
-                    : [Action::use(BlockUserAction::class, $context)]),
+                    ? [Action::use(UnblockUserAction::class)]
+                    : [Action::use(BlockUserAction::class)]),
             ],
             overflow: [
-                ...($user->hasVerifiedEmail() || $user->isBlocked() ? [] : [Action::use(ResendUserVerification::class, $context)]),
-                ...($user->hasSecondFactor() ? [Action::use(ResetUserMfaAction::class, $context)] : []),
-                Action::use(EndAllUserSessionsAction::class, $context),
-                Action::use(DeleteUserAction::class, $context),
+                ...($user->hasVerifiedEmail() || $user->isBlocked() ? [] : [Action::use(ResendUserVerification::class)]),
+                ...($user->hasSecondFactor() ? [Action::use(ResetUserMfaAction::class)] : []),
+                Action::use(EndAllUserSessionsAction::class),
+                Action::use(DeleteUserAction::class),
             ],
             key: 'admin-user',
         );
     }
 
-    /**
-     * @param  array<string, string>  $context
-     */
-    private function sessionsCard(array $context): Card
+    private function sessionsCard(): Card
     {
         return Card::make(__('admin.users.detail.sessions.heading'), __('admin.users.detail.sessions.subtitle'))->schema([
-            Table::use(UserSessionsTable::class, $context),
+            Table::use(UserSessionsTable::class),
         ]);
     }
 }

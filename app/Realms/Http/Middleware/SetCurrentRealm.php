@@ -10,12 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Puts the request's realm into the context every scoped query reads. On the
- * routes a realm serves it is the realm of the host; everywhere else it is the
- * signed-in user's own, and a request with no person behind it — a guest, or
- * a client acting for itself on the token guard — has none.
- */
 final class SetCurrentRealm
 {
     /** @param Closure(Request): Response $next */

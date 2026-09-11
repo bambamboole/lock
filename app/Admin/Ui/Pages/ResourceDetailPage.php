@@ -29,60 +29,37 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/resources/{resource}', name: 'admin.realms.resources.show', can: [AdminPermission::Access, AdminPermission::ViewResources])]
 final class ResourceDetailPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
-    private ?Resource $resource = null;
-
-    public function title(): ?string
-    {
-        return $this->resource?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm || ! $this->resource instanceof Resource) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.resources'), route('admin.realms.resources', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make($this->resource->name, route('admin.realms.resources.show', ['realm' => $this->realm->slug, 'resource' => $this->resource->id], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, Resource $resource, RealmAudiences $audiences): PageSchema
     {
         abort_unless($resource->belongsToRealm($realm), 404);
 
-        $this->realm = $realm;
-        $this->resource = $resource;
-        $context = ['realm' => $realm->slug, 'resource' => $resource->id];
+        $schema->title($resource->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.resources'), route('admin.realms.resources', ['realm' => $realm->slug], false)),
+            Breadcrumb::make($resource->name, route('admin.realms.resources.show', ['realm' => $realm->slug, 'resource' => $resource->id], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-resource-detail-page')
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make($resource->name, __('admin.resources.detail.description', ['realm' => $realm->name]), ActionBar::make(
-                        primary: [Action::use(CreateResourceScopeAction::class, $context)],
+                        primary: [Action::use(CreateResourceScopeAction::class)],
                         overflow: [
-                            Action::use(UpdateResourceAction::class, $context),
-                            Action::use(DeleteResourceAction::class, $context),
+                            Action::use(UpdateResourceAction::class),
+                            Action::use(DeleteResourceAction::class),
                         ],
                         key: 'admin-resource',
                     )),
                     $this->settingsCard($realm, $resource, $audiences),
-                    Table::use(AdminResourceScopesTable::class, $context),
+                    Table::use(AdminResourceScopesTable::class),
                 ]),
         ]);
     }
 
     /**
-     * The audience column is what a client sends as the RFC 8707 `resource`, so
-     * it is shown resolved rather than as the stored path.
+     * The audience is shown resolved, since that is what a client sends as the
+     * RFC 8707 `resource`.
      */
     private function settingsCard(Realm $realm, Resource $resource, RealmAudiences $audiences): Card
     {

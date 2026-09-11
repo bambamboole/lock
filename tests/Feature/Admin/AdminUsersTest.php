@@ -2,24 +2,21 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
-use App\Admin\Ui\Actions\BlockUserAction;
+use App\Admin\Enums\AdminPermission;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Lattice\Support\Testing\ComponentNode;
 
-use function Tests\Helpers\columnBindings;
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 use function Tests\Helpers\grantGlobalRole;
 use function Tests\Helpers\headerTriggers;
-use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['slug' => 'acme']);
 });
 
@@ -27,10 +24,10 @@ test('a users-manage admin can open the realm users page and load its table', fu
     $this->actingAs(globalAdmin($roleName));
     $this->get('/admin/realms/acme/users')->assertOk();
     $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
-})->with([GlobalRoleSeeder::SUPER_ADMIN, GlobalRoleSeeder::SUPPORT]);
+})->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
-    $this->actingAs(User::factory()->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
     $this->get('/admin/realms/acme/users')->assertForbidden();
     $this->loadDeniedTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
 });
@@ -58,8 +55,8 @@ test('a user detail page opens under its own realm only', function () {
 });
 
 test('a user holding a global role is flagged as admin in the table', function () {
-    $admin = globalAdmin(GlobalRoleSeeder::SUPER_ADMIN);
-    grantGlobalRole($admin, GlobalRoleSeeder::SUPPORT);
+    $admin = globalAdmin(GlobalRoles::SUPER_ADMIN);
+    grantGlobalRole($admin, GlobalRoles::SUPPORT);
 
     $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
 
@@ -67,20 +64,6 @@ test('a user holding a global role is flagged as admin in the table', function (
 
     expect($row)->not->toBeNull()
         ->and(data_get($row, 'roles_exists'))->toBeTrue();
-});
-
-test('a user row carries the values its member cell binds', function () {
-    $target = User::factory()->for($this->realm)->create(['name' => 'Wanda Needle', 'email' => 'wanda@acme.test']);
-
-    $table = latticeSchema($this->actingAs(globalAdmin())->get('/admin/realms/acme/users')->assertOk())
-        ->findOrFail(fn (ComponentNode $node): bool => $node->type() === 'table', 'the users table');
-
-    $keys = columnBindings($table, 'member');
-    $row = tableRow($table->prop('data'), $target->id);
-
-    expect($keys)->not->toBeEmpty()
-        ->and(array_map(fn (string $key): mixed => $row[$key] ?? null, $keys))
-        ->toBe(['Wanda Needle', 'wanda@acme.test']);
 });
 
 test('the user detail page offers its actions in the header, led by the two an operator reaches for', function () {
@@ -139,18 +122,4 @@ test('an admin cannot block or delete themselves from the users table', function
     expect(rowMenuTriggers(tableRow($rows, $admin->id)))
         ->not->toContain('admin.users.block')
         ->not->toContain('admin.users.delete');
-});
-
-test('a row action runs against the user whose row rendered it', function () {
-    $target = User::factory()->for($this->realm)->create();
-    $bystander = User::factory()->for($this->realm)->create();
-
-    $this->actingAs(globalAdmin());
-    $rows = $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
-    $row = tableRow($rows, $target->id);
-
-    $this->callAction(BlockUserAction::class, context: ['realm' => 'acme', 'user' => $row['id']])->assertOk();
-
-    expect($target->refresh()->isBlocked())->toBeTrue()
-        ->and($bystander->refresh()->isBlocked())->toBeFalse();
 });

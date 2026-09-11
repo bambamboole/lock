@@ -27,11 +27,6 @@ use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 use Lattice\Ui\Slot;
 
-/**
- * The shell a realm user sees: a header naming the realm and a centred column
- * for the account cards. There is deliberately no sidebar — a realm user is an
- * identity, not an operator, and gets nothing to navigate.
- */
 #[AsLayout('account')]
 final class AccountLayout extends LayoutDefinition
 {

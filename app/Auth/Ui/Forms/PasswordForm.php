@@ -3,13 +3,12 @@ declare(strict_types=1);
 
 namespace App\Auth\Ui\Forms;
 
+use Bambamboole\LaravelOidc\Server\Authentication\Actions\UpdatePassword;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rules\Password;
 use Lattice\Facades\Effects;
 use Lattice\Form\Attributes\AsForm;
 use Lattice\Form\Components\Form;
 use Lattice\Form\Components\PasswordInput;
-use Lattice\Form\FormData;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Components\Grid;
 use Lattice\Ui\Enums\HttpMethod;
@@ -18,8 +17,12 @@ use Lattice\Ui\Enums\Variant;
 #[AsForm('profile.password')]
 final class PasswordForm extends ProfileForm
 {
+    public function __construct(private readonly UpdatePassword $updatePassword) {}
+
     public function definition(Form $form, Request $request): Form
     {
+        $policy = $this->currentUser()->realm->passwordPolicy()->rule();
+
         return $this->profileForm($form)
             ->method(HttpMethod::Put)
             ->schema([
@@ -34,23 +37,19 @@ final class PasswordForm extends ProfileForm
                         PasswordInput::make('password', __('user.security.password.new'))
                             ->autoComplete('new-password')
                             ->placeholder(__('user.security.password.new'))
-                            ->passwordRules(Password::default()->toPasswordRulesString())
+                            ->passwordRules($policy->toPasswordRulesString())
                             ->needsConfirmation()
                             ->required()
-                            ->rules(['string', 'confirmed', Password::default()]),
+                            ->rules(['string', 'confirmed', $policy]),
                     ]),
             ])
             ->resetOnError(['password', 'password_confirmation', 'current_password'])
             ->resetOnSuccess();
     }
 
-    public function handle(FormData $data): LatticeResponse
+    public function handle(Request $request): LatticeResponse
     {
-        $user = $this->currentUser();
-
-        $user->update([
-            'password' => $data['password'],
-        ]);
+        ($this->updatePassword)($this->currentUser(), $request->only('password', 'password_confirmation'));
 
         return Effects::respond()->toast(__('user.security.password.updated'), Variant::Success)->back();
     }

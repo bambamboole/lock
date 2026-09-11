@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f5d92f1bbe7967a2bdd6415dbcfa8ad6",
+    "content-hash": "28b57ad71f24a5a949bf0da0d363e63c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -2234,16 +2234,16 @@
         },
         {
             "name": "lattice-php/action",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/action.git",
-                "reference": "16e0b0f4784c7e473dfc53d394c3c71545d8cc3a"
+                "reference": "be8a654b4036e26f8d4be6d7973e28cf7670406f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/action/zipball/16e0b0f4784c7e473dfc53d394c3c71545d8cc3a",
-                "reference": "16e0b0f4784c7e473dfc53d394c3c71545d8cc3a",
+                "url": "https://api.github.com/repos/lattice-php/action/zipball/be8a654b4036e26f8d4be6d7973e28cf7670406f",
+                "reference": "be8a654b4036e26f8d4be6d7973e28cf7670406f",
                 "shasum": ""
             },
             "require": {
@@ -2281,22 +2281,22 @@
             "description": "Action and bulk-action definitions, endpoints, and confirmation flows for Lattice.",
             "support": {
                 "issues": "https://github.com/lattice-php/action/issues",
-                "source": "https://github.com/lattice-php/action/tree/0.75.0"
+                "source": "https://github.com/lattice-php/action/tree/0.76.1"
             },
-            "time": "2026-09-05T21:21:17+00:00"
+            "time": "2026-09-11T10:08:12+00:00"
         },
         {
             "name": "lattice-php/core",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/core.git",
-                "reference": "f3e08ecaff1b49d108bc6eb0abc7a6c1aab14a97"
+                "reference": "e3b6f723db2dd2ee3348b6cedfe9c1fb49ac54af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/core/zipball/f3e08ecaff1b49d108bc6eb0abc7a6c1aab14a97",
-                "reference": "f3e08ecaff1b49d108bc6eb0abc7a6c1aab14a97",
+                "url": "https://api.github.com/repos/lattice-php/core/zipball/e3b6f723db2dd2ee3348b6cedfe9c1fb49ac54af",
+                "reference": "e3b6f723db2dd2ee3348b6cedfe9c1fb49ac54af",
                 "shasum": ""
             },
             "require": {
@@ -2334,22 +2334,22 @@
             "description": "Core contracts, discovery, evaluation, and serialization for Lattice.",
             "support": {
                 "issues": "https://github.com/lattice-php/core/issues",
-                "source": "https://github.com/lattice-php/core/tree/0.75.0"
+                "source": "https://github.com/lattice-php/core/tree/0.76.1"
             },
-            "time": "2026-09-05T21:21:06+00:00"
+            "time": "2026-09-11T10:08:18+00:00"
         },
         {
             "name": "lattice-php/form",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/form.git",
-                "reference": "ed884ffbe3e19a762fc9dd3f042ec436c8697f04"
+                "reference": "fecef3d671bc9bf7e3adbc6932aa170da31a3306"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/form/zipball/ed884ffbe3e19a762fc9dd3f042ec436c8697f04",
-                "reference": "ed884ffbe3e19a762fc9dd3f042ec436c8697f04",
+                "url": "https://api.github.com/repos/lattice-php/form/zipball/fecef3d671bc9bf7e3adbc6932aa170da31a3306",
+                "reference": "fecef3d671bc9bf7e3adbc6932aa170da31a3306",
                 "shasum": ""
             },
             "require": {
@@ -2391,22 +2391,22 @@
             "description": "Form definitions, fields, validation, and rich content for Lattice.",
             "support": {
                 "issues": "https://github.com/lattice-php/form/issues",
-                "source": "https://github.com/lattice-php/form/tree/0.75.0"
+                "source": "https://github.com/lattice-php/form/tree/0.76.1"
             },
-            "time": "2026-09-05T21:21:14+00:00"
+            "time": "2026-09-11T10:08:16+00:00"
         },
         {
             "name": "lattice-php/lattice",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/framework.git",
-                "reference": "3052167d7032251cb5915494c39735a8c14edb5f"
+                "reference": "ce3d22fb05c617452131886c529ffc6be7abfb64"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/framework/zipball/3052167d7032251cb5915494c39735a8c14edb5f",
-                "reference": "3052167d7032251cb5915494c39735a8c14edb5f",
+                "url": "https://api.github.com/repos/lattice-php/framework/zipball/ce3d22fb05c617452131886c529ffc6be7abfb64",
+                "reference": "ce3d22fb05c617452131886c529ffc6be7abfb64",
                 "shasum": ""
             },
             "require": {
@@ -2466,20 +2466,20 @@
                 "issues": "https://github.com/lattice-php/lattice/issues",
                 "source": "https://github.com/lattice-php/lattice"
             },
-            "time": "2026-09-05T21:20:53+00:00"
+            "time": "2026-09-11T10:08:11+00:00"
         },
         {
             "name": "lattice-php/table",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/table.git",
-                "reference": "38df3dc95e2357a5eefbfa618b44c38ee6f83695"
+                "reference": "a1f6f9931c49d5c90f5dcb2131224bfa40f63b20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/table/zipball/38df3dc95e2357a5eefbfa618b44c38ee6f83695",
-                "reference": "38df3dc95e2357a5eefbfa618b44c38ee6f83695",
+                "url": "https://api.github.com/repos/lattice-php/table/zipball/a1f6f9931c49d5c90f5dcb2131224bfa40f63b20",
+                "reference": "a1f6f9931c49d5c90f5dcb2131224bfa40f63b20",
                 "shasum": ""
             },
             "require": {
@@ -2519,22 +2519,22 @@
             "description": "Table definitions, columns, filters, and data sources for Lattice.",
             "support": {
                 "issues": "https://github.com/lattice-php/table/issues",
-                "source": "https://github.com/lattice-php/table/tree/0.75.0"
+                "source": "https://github.com/lattice-php/table/tree/0.76.1"
             },
-            "time": "2026-09-05T21:20:48+00:00"
+            "time": "2026-09-11T10:08:12+00:00"
         },
         {
             "name": "lattice-php/ui",
-            "version": "0.75.0",
+            "version": "0.76.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lattice-php/ui.git",
-                "reference": "765f082d488b2b0bea07bc99dbe90e0b09e88b45"
+                "reference": "f0c6f5366667c514fee69265ed5c5a16be42ffa0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lattice-php/ui/zipball/765f082d488b2b0bea07bc99dbe90e0b09e88b45",
-                "reference": "765f082d488b2b0bea07bc99dbe90e0b09e88b45",
+                "url": "https://api.github.com/repos/lattice-php/ui/zipball/f0c6f5366667c514fee69265ed5c5a16be42ffa0",
+                "reference": "f0c6f5366667c514fee69265ed5c5a16be42ffa0",
                 "shasum": ""
             },
             "require": {
@@ -2570,9 +2570,9 @@
             "description": "UI components, effects, and serialization for Lattice.",
             "support": {
                 "issues": "https://github.com/lattice-php/ui/issues",
-                "source": "https://github.com/lattice-php/ui/tree/0.75.0"
+                "source": "https://github.com/lattice-php/ui/tree/0.76.1"
             },
-            "time": "2026-09-05T21:21:13+00:00"
+            "time": "2026-09-11T10:08:17+00:00"
         },
         {
             "name": "lcobucci/clock",

@@ -55,14 +55,6 @@ final class AdminUsersTable extends EloquentTableDefinition
                 [new User()->getMorphClass()],
             )
             ->withExists('roles')
-            /*
-             * The member cell renders the name and the address, but a column
-             * that exists only to make a field searchable has to keep the real
-             * column name as its key — and a hidden column's key is stripped
-             * from every row, taking the cell's binding with it. Aliases give
-             * the cell keys of its own, out of reach of that.
-             */
-            ->addSelect(['users.name as member_name', 'users.email as member_email'])
             ->withCasts(['email_verified' => 'boolean', 'blocked' => 'boolean', 'mfa' => 'boolean']);
 
         if ($query->sorts === []) {
@@ -81,8 +73,8 @@ final class AdminUsersTable extends EloquentTableDefinition
                 ->label(__('admin.users.columns.member'))
                 ->width(ColumnWidth::Lg)
                 ->schema([
-                    Text::bound('member_name'),
-                    Text::bound('member_email')->color(ColorName::Muted)->size(Size::Sm),
+                    Text::bound('name'),
+                    Text::bound('email')->color(ColorName::Muted)->size(Size::Sm),
                 ]),
             $this->flag('email_verified', __('admin.users.columns.verified')),
             $this->flag('mfa', __('admin.users.columns.mfa')),
@@ -95,10 +87,6 @@ final class AdminUsersTable extends EloquentTableDefinition
         ];
     }
 
-    /**
-     * Four yes/no columns in one row: narrow enough that the row stays
-     * scannable, wide enough that the label above them is not cut in half.
-     */
     private function flag(string $key, string $label): BooleanColumn
     {
         return BooleanColumn::make($key)->label($label)->width(ColumnWidth::Sm);
@@ -139,13 +127,12 @@ final class AdminUsersTable extends EloquentTableDefinition
     }
 
     /**
-     * The same actions the user's detail page offers, gated on the same row
-     * state — the flags they read are selected by {@see self::builder()}, so a
-     * row costs no extra query.
+     * The flags come from {@see self::builder()}, so a row costs no extra
+     * query.
      */
     public function actions(array $row): array
     {
-        $context = ['realm' => $this->contextString('realm'), 'user' => $row['id']];
+        $context = ['user' => $row['id']];
         $blocked = (bool) ($row['blocked'] ?? false);
 
         return array_filter([ActionBar::menu('admin.users.row-actions', [

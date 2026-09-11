@@ -14,9 +14,8 @@
   the folder.
 - **Deploys run one command: `php artisan app:deploy`.** It runs `migrate --force --isolated`, the data migrations,
   `oidc:rotate-keys --if-missing` for every realm (signing keys live in `oidc_signing_keys`, one keypair per realm,
-  and the data migrations create the master realm the first deploy needs one for), `permission:sync` (rebuilds the
-  forever-cached permission catalog and creates/re-syncs the protected global `Super Admin`/`Support` roles from
-  `App\Admin\Support\GlobalRoles`), and `lattice:discover-cache`. Every step is
+  and the data migrations create the master realm the first deploy needs one for), `permission:sync` (creates/re-syncs the
+  protected global `Super Admin`/`Support` roles from `App\Admin\Support\GlobalRoles`), and `lattice:discover-cache`. Every step is
   idempotent and the migrations run isolated, so concurrently booting instances are safe. Bytecode caches
   (`config:cache`, routes, views) stay with the deploy platform. Grant the first admin with
   `php artisan admin:grant {email}` (revoke by clearing the user's global roles in the admin UI).

@@ -45,33 +45,15 @@ final class RealmSettingsPage extends AdminPage
     use OpensRealmDeletion;
     use PresentsRealmDomainStatus;
 
-    private ?Realm $realm = null;
-
-    public function title(): ?string
-    {
-        return $this->realm?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.settings'), route('admin.realms.settings', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, Request $request): PageSchema
     {
-        $this->realm = $realm;
         $user = $request->user();
         $manages = $user instanceof User && $user->can(AdminPermission::ManageRealms);
+
+        $schema->title($realm->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.settings'), route('admin.realms.settings', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-realm-detail-page')
@@ -117,7 +99,7 @@ final class RealmSettingsPage extends AdminPage
         return Card::make(__('admin.realms.general.heading'), __('admin.realms.general.subtitle'))->schema([
             DescriptionList::make('realm-general')->bleed()->schema([
                 $manages
-                    ? $name->disclosure([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])])
+                    ? $name->disclosure([Form::use(UpdateRealmForm::class)])
                     : $name,
                 $this->domainEntry($realm, $manages),
                 TextEntry::make('slug', __('admin.realms.fields.slug.label'), 'realm-slug')
@@ -154,11 +136,11 @@ final class RealmSettingsPage extends AdminPage
                     ->schema([
                         Text::make($realm->host()),
                         Badge::make(__('admin.realms.domain.status.'.$status->value))->color($this->domainStatusColor($status)),
-                        ...($manages ? [Action::use(CheckRealmDomainAction::class, ['realm' => $realm->slug])] : []),
+                        ...($manages ? [Action::use(CheckRealmDomainAction::class)] : []),
                     ]),
             )
             ->description(trim($outcome.$checkedAt.($realm->domain_check_error === null ? '' : ' ('.$realm->domain_check_error.')')));
 
-        return $manages ? $entry->disclosure([Form::use(UpdateRealmDomainForm::class, ['realm' => $realm->slug])]) : $entry;
+        return $manages ? $entry->disclosure([Form::use(UpdateRealmDomainForm::class)]) : $entry;
     }
 }

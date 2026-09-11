@@ -10,8 +10,6 @@ final class SettingDefinition
 
     private mixed $default = null;
 
-    private bool $encrypted = false;
-
     public function __construct(private readonly string $key) {}
 
     public function string(): self
@@ -35,13 +33,6 @@ final class SettingDefinition
         return $this;
     }
 
-    public function float(): self
-    {
-        $this->cast = 'float';
-
-        return $this;
-    }
-
     public function array(): self
     {
         $this->cast = 'array';
@@ -56,21 +47,9 @@ final class SettingDefinition
         return $this;
     }
 
-    public function encrypted(bool $encrypted = true): self
-    {
-        $this->encrypted = $encrypted;
-
-        return $this;
-    }
-
     public function key(): string
     {
         return $this->key;
-    }
-
-    public function isEncrypted(): bool
-    {
-        return $this->encrypted;
     }
 
     public function defaultValue(): mixed
@@ -80,16 +59,6 @@ final class SettingDefinition
 
     public function cast(mixed $value): mixed
     {
-        return $this->applyCast($value);
-    }
-
-    public function prepare(mixed $value): mixed
-    {
-        return $this->applyCast($value);
-    }
-
-    private function applyCast(mixed $value): mixed
-    {
         if ($value === null) {
             return null;
         }
@@ -97,7 +66,6 @@ final class SettingDefinition
         return match ($this->cast) {
             'boolean' => (bool) $value,
             'integer' => (int) $value,
-            'float' => (float) $value,
             'array' => (array) $value,
             default => (string) $value,
         };

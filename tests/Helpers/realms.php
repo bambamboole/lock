@@ -6,14 +6,12 @@ namespace Tests\Helpers;
 
 use App\Realms\Models\Realm;
 use App\Realms\Support\DomainCheckToken;
+use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
+use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
 /**
- * The submission of one realm setting as `RealmSettingForm` receives it:
- * the payload and the context that names the field, ready to spread into
- * `submitForm()`.
- *
  * @return array{0: array<string, mixed>, 1: array<string, string>}
  */
 function realmSetting(Realm $realm, string $field, mixed $value): array
@@ -21,9 +19,6 @@ function realmSetting(Realm $realm, string $field, mixed $value): array
     return [[$field => $value], ['realm' => $realm->slug, 'field' => $field]];
 }
 
-/**
- * A URL on the realm's own host, the way a browser addresses the realm.
- */
 function realmUrl(Realm|string $realm, string $path = ''): string
 {
     $realm = $realm instanceof Realm ? $realm : Realm::query()->where('slug', $realm)->sole();
@@ -32,8 +27,6 @@ function realmUrl(Realm|string $realm, string $path = ''): string
 }
 
 /**
- * A named route of the pages a realm serves, on the realm's host.
- *
  * @param  array<string, mixed>  $parameters
  */
 function realmRoute(Realm|string $realm, string $name, array $parameters = []): string
@@ -48,4 +41,10 @@ function realmRoute(Realm|string $realm, string $name, array $parameters = []): 
 function domainReachesThisInstance(): void
 {
     Http::fake(fn (Request $request) => Http::response(DomainCheckToken::for((string) parse_url($request->url(), PHP_URL_HOST))));
+}
+
+function realmClient(Realm $realm, string $name = 'Existing app', bool $confidential = true): Client
+{
+    return $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
+        ->createAuthorizationCodeGrantClient($name, ['https://rp.test/callback'], $confidential));
 }

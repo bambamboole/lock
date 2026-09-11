@@ -15,10 +15,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('blocked_at')->nullable();
             $table->string('password');
-            $table->text('two_factor_secret')->nullable();
-            $table->text('two_factor_recovery_codes')->nullable();
-            $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->string('locale')->nullable();
             $table->string('timezone')->nullable();
             $table->rememberToken();
@@ -29,12 +27,12 @@ return new class extends Migration
             $table->unique(['realm_id', 'email']);
         });
 
-        // Keyed by email alone here; a later migration re-keys it by
-        // (realm_id, email) once the realm-aware token repository exists.
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->foreignUuid('realm_id')->constrained()->cascadeOnDelete();
+            $table->string('email');
             $table->string('token');
             $table->timestamp('created_at')->nullable();
+            $table->primary(['realm_id', 'email']);
         });
 
         Schema::create('sessions', function (Blueprint $table) {

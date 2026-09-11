@@ -16,11 +16,8 @@ use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
- * Brings the console client and the first administrator in line with the
- * environment, so a container comes up fully configured without anything
- * being written to a `.env` it does not have. The environment is the source
- * of truth on every run; a variable left unset means unmanaged, which is what
- * keeps this safe to repeat on every deploy.
+ * The environment is the source of truth on every run and an unset variable
+ * means unmanaged, which keeps this safe to repeat on every deploy.
  */
 #[Description('Reconcile the console client and the first administrator with the environment.')]
 #[Signature('app:bootstrap')]
@@ -31,9 +28,9 @@ final class BootstrapCommand extends Command
         $realm = Realm::master();
 
         try {
-            // One transaction across both items, and the report only after it
-            // commits: a deploy step that fails leaves nothing behind and says
-            // nothing it did not do.
+            // One transaction, and the report only after it commits: a failed
+            // deploy step leaves nothing behind and reports nothing it did not
+            // do.
             $outcomes = DB::transaction(fn (): array => [
                 'console client' => $this->provisionClient($clients, $realm),
                 'administrator' => $this->ensureAdministrator($administrators),
@@ -59,8 +56,8 @@ final class BootstrapCommand extends Command
 
     private function provisionClient(ProvisionsConsoleClient $clients, Realm $realm): ?BootstrapOutcome
     {
-        $clientId = $this->configured('oidc.clients.first_party.client_id');
-        $clientSecret = $this->configured('oidc.first_party_secret');
+        $clientId = $this->configured('lock.console_client.id');
+        $clientSecret = $this->configured('lock.console_client.secret');
         $appUrl = rtrim($this->configured('app.url'), '/');
 
         if ($clientId === '' || $clientSecret === '') {
@@ -76,9 +73,9 @@ final class BootstrapCommand extends Command
             name: $this->configured('app.name') ?: 'Lock',
             clientId: $clientId,
             clientSecret: $clientSecret,
-            trusted: (bool) config('oidc.clients.first_party.trusted', false),
-            redirectUris: [$appUrl.'/login/callback', ...$this->provisionList('redirect_uris')],
-            postLogoutRedirectUris: [$appUrl, ...$this->provisionList('post_logout_redirect_uris')],
+            trusted: true,
+            redirectUris: [$appUrl.'/login/callback'],
+            postLogoutRedirectUris: [$appUrl],
         );
     }
 
@@ -108,22 +105,5 @@ final class BootstrapCommand extends Command
         $value = config($key);
 
         return is_string($value) ? trim($value) : '';
-    }
-
-    /**
-     * The extra URIs `oidc:install-self` layers on top of the APP_URL-derived
-     * defaults, so both paths provision the same client.
-     *
-     * @return list<string>
-     */
-    private function provisionList(string $key): array
-    {
-        return array_values(array_filter(
-            array_map(
-                fn (mixed $value): string => is_string($value) ? trim($value) : '',
-                (array) config("oidc.clients.first_party.provision.{$key}", []),
-            ),
-            fn (string $value): bool => $value !== '',
-        ));
     }
 }

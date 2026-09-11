@@ -10,9 +10,6 @@ use SensitiveParameter;
 interface ProvisionsConsoleClient
 {
     /**
-     * Brings the realm's first-party client in line with the given id, secret
-     * and metadata, creating it when it does not exist yet.
-     *
      * @param  list<string>  $redirectUris
      * @param  list<string>  $postLogoutRedirectUris
      */

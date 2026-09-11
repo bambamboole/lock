@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
+use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\SetsClientRevocation;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -20,7 +21,7 @@ final class SetClientRevocation implements SetsClientRevocation
         DB::transaction(function () use ($client, $revoked): void {
             $client->forceFill(['revoked' => $revoked])->save();
 
-            Audit::record($revoked ? RealmAuditEvent::ClientRevoked : RealmAuditEvent::ClientRestored, $client, properties: [
+            Audit::record($revoked ? RealmAuditEvent::ClientRevoked : RealmAuditEvent::ClientRestored, $client, Realm::ofClient($client), [
                 'realm' => $client->realm_id,
                 'client_id' => $client->client_id,
             ]);

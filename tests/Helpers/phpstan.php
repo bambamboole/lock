@@ -9,9 +9,8 @@ use RuntimeException;
 use Tests\TestCase;
 
 /**
- * The running test case. Pest's `test()` hands back a proxy typed as
- * `HigherOrderTapProxy|TestCall`, so a helper function outside a test closure
- * cannot call test-case methods on it without losing every type.
+ * Pest's `test()` hands back a proxy typed as `HigherOrderTapProxy|TestCall`,
+ * so a helper outside a test closure would lose every type.
  */
 function runningTestCase(): TestCase
 {
@@ -25,12 +24,9 @@ function runningTestCase(): TestCase
 }
 
 /**
- * Narrows a value known to be non-null in context — a nullable relation right
- * after the write that set it, a lookup whose row the test just created — for
- * PHPStan, without weakening the property or return type itself. Throws if the
- * assumption is ever wrong instead of silently continuing. Deliberately not
- * named like a PHPUnit assertion: it is a narrowing assumption, not an
- * expectation the test is making.
+ * Narrows for PHPStan without weakening the property or return type, and throws
+ * if the assumption is ever wrong. Not named like an assertion: it is an
+ * assumption, not an expectation.
  *
  * @template T
  *

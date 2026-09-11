@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Auth\Actions;
 
-use App\Auth\Concerns\PasswordValidationRules;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Exceptions\MissingRealmContext;
@@ -14,15 +13,13 @@ use Illuminate\Validation\Rule;
 
 final class CreateNewUser implements CreateUser
 {
-    use PasswordValidationRules;
-
     /**
      * @param  array<string, mixed>  $input
      */
     public function __invoke(array $input): User
     {
-        // Registration lands in the realm named by the request path. Uniqueness
-        // follows the realm: the same address may already exist in a different one.
+        // Uniqueness follows the realm: the same address may exist in another
+        // one.
         $realm = Realm::fromContext() ?? throw new MissingRealmContext;
 
         Validator::make($input, [
@@ -31,7 +28,7 @@ final class CreateNewUser implements CreateUser
                 'required', 'string', 'email', 'max:255',
                 Rule::unique(User::class)->where('realm_id', $realm->id),
             ],
-            'password' => $this->passwordRules(),
+            'password' => ['required', 'string', 'confirmed'],
         ])->validate();
 
         return DB::transaction(fn (): User => User::create([

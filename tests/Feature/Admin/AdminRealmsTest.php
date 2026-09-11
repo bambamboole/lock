@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
 use App\Admin\Ui\Forms\RealmSettingForm;
@@ -19,10 +19,6 @@ use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
 
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
-
 test('every admin can list and open realms', function (string $roleName) {
     $realm = Realm::factory()->create();
 
@@ -30,7 +26,7 @@ test('every admin can list and open realms', function (string $roleName) {
     $this->loadTable(AdminRealmsTable::class)->assertOk();
     $this->get('/admin/realms')->assertOk();
     $this->get("/admin/realms/{$realm->slug}/settings")->assertOk();
-})->with(['support admin' => GlobalRoleSeeder::SUPPORT, 'super admin' => GlobalRoleSeeder::SUPER_ADMIN]);
+})->with(['support admin' => GlobalRoles::SUPPORT, 'super admin' => GlobalRoles::SUPER_ADMIN]);
 
 test('a realm user reaches neither the realms list nor a realm', function () {
     $realm = Realm::factory()->create();
@@ -44,7 +40,7 @@ test('a realm user reaches neither the realms list nor a realm', function () {
 test('only realms-manage admins see the editing tabs', function () {
     $realm = Realm::factory()->create();
 
-    $support = $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $support = $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 
     expect(renderedTabKeys($support))->toBe(['general'])
@@ -54,7 +50,7 @@ test('only realms-manage admins see the editing tabs', function () {
 test('only a realms-manage admin can delete a realm, and never the admin realm', function () {
     $realm = Realm::factory()->create();
 
-    $support = $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $support = $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $master = $this->get('/admin/realms/'.Realm::master()->slug.'/settings')->assertOk();
 
@@ -71,28 +67,13 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
 
     expect(rowClickHref(tableRow($rows, $realm->id)))->toBe("/admin/realms/{$realm->slug}/settings")
         ->and(rowMenuTriggers(tableRow($rows, $realm->id)))->toBe(["delete-realm-{$realm->slug}"])
-        ->and(rowMenuTriggers(tableRow($rows, $master->id)))->toBeEmpty()
-        ->and(tableRow($rows, $master->id))->not->toHaveKey('actions');
-});
-
-test('a realm row deletion trigger opens the form that demands the realm name', function () {
-    $realm = Realm::factory()->create(['name' => 'Globex']);
-
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk()->json('data');
-    $trigger = tableRow($rows, $realm->id)['actions'][0]['schema'][0] ?? [];
-
-    expect(data_get($trigger, 'props.modal.props.title'))->toBe(__('admin.realms.danger.heading'))
-        ->and(data_get($trigger, 'props.modal.schema.0.type'))->toBe('form');
-
-    $this->submitForm(DeleteRealmForm::class, ['name' => 'Wrong'], ['realm' => $realm->slug])->assertInvalid('name');
-
-    expect(Realm::query()->whereKey($realm->id)->exists())->toBeTrue();
+        ->and(rowMenuTriggers(tableRow($rows, $master->id)))->toBeEmpty();
 });
 
 test('a support admin cannot create, edit or delete a realm', function () {
     $realm = Realm::factory()->create();
 
-    $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT));
+    $this->actingAs(globalAdmin(GlobalRoles::SUPPORT));
     $this->get('/admin/realms/create')->assertForbidden();
     $this->submitDeniedForm(CreateRealmForm::class, ['name' => 'Forbidden', 'slug' => 'forbidden', 'domain' => 'forbidden.example.com'])->assertForbidden();
     $this->submitDeniedForm(UpdateRealmForm::class, ['name' => 'Renamed'], ['realm' => $realm->slug])->assertForbidden();

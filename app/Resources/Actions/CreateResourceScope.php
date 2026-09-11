@@ -20,7 +20,7 @@ final class CreateResourceScope implements CreatesResourceScope
                 'description' => $description,
             ]);
 
-            Audit::record(ResourceAuditEvent::ScopeCreated, $scope, properties: [
+            Audit::record(ResourceAuditEvent::ScopeCreated, $scope, $resource->realm, [
                 'realm' => $resource->realm->slug,
                 'resource' => $resource->identifier,
                 'value' => $scope->value,

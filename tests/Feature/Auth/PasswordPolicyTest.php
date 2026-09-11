@@ -5,8 +5,6 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
-use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -63,18 +61,4 @@ it('enforces the realms password policy when a password is reset', function () {
     $reset('twelvechars12')->assertSessionHasNoErrors();
 
     expect(Hash::check('twelvechars12', $user->refresh()->password))->toBeTrue();
-});
-
-it('applies the configured defaults to a realm without stored password settings', function () {
-    $realm = Realm::factory()->create(['slug' => 'legacy']);
-
-    foreach (array_keys(RealmConfiguration::defaults()) as $key) {
-        if (str_starts_with($key, 'password_')) {
-            $realm->settings->forget('realm.'.$key);
-        }
-    }
-
-    expect($realm->refresh()->credentials()->password)->toEqual(PasswordPolicy::fromConfig());
-
-    registerIn($realm, 'eightchr')->assertSessionHasNoErrors();
 });

@@ -7,38 +7,20 @@ use App\Auth\Ui\Forms\TimezoneForm;
 
 use function Tests\Helpers\realmRoute;
 
-it('saves the locale via the language form', function () {
+it('saves a known locale and rejects an unknown one', function () {
     $user = User::factory()->create(['locale' => 'en']);
 
-    $this->actingAs($user)
-        ->submitForm(LanguageForm::class, ['locale' => 'de'])
-        ->assertRedirect(realmRoute($user->realm, 'account'));
+    $this->actingAs($user)->submitForm(LanguageForm::class, ['locale' => 'xx'])->assertInvalid(['locale']);
+    $this->actingAs($user)->submitForm(LanguageForm::class, ['locale' => 'de'])->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->locale)->toBe('de');
 });
 
-it('saves the timezone via the timezone form', function () {
+it('saves a valid timezone and rejects an invalid one', function () {
     $user = User::factory()->create(['timezone' => null]);
 
-    $this->actingAs($user)
-        ->submitForm(TimezoneForm::class, ['timezone' => 'Europe/Berlin'])
-        ->assertRedirect(realmRoute($user->realm, 'account'));
+    $this->actingAs($user)->submitForm(TimezoneForm::class, ['timezone' => 'Not/AZone'])->assertInvalid(['timezone']);
+    $this->actingAs($user)->submitForm(TimezoneForm::class, ['timezone' => 'Europe/Berlin'])->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->timezone)->toBe('Europe/Berlin');
-});
-
-it('rejects an unknown locale', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)
-        ->submitForm(LanguageForm::class, ['locale' => 'xx'])
-        ->assertSessionHasErrors('locale');
-});
-
-it('rejects an invalid timezone', function () {
-    $user = User::factory()->create();
-
-    $this->actingAs($user)
-        ->submitForm(TimezoneForm::class, ['timezone' => 'Not/AZone'])
-        ->assertSessionHasErrors('timezone');
 });

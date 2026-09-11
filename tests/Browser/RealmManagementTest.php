@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
 
 it('creates a realm and saves its settings one disclosure row at a time', function () {
-    (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
     domainReachesThisInstance();
 

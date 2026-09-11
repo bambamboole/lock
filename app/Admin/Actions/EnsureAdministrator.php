@@ -84,8 +84,7 @@ final readonly class EnsureAdministrator implements EnsuresAdministrator
     }
 
     /**
-     * The environment wins over the console, but never over the realm: a
-     * password the policy rejects fails the deploy instead of landing
+     * A password the realm policy rejects fails the deploy instead of landing
      * half-applied.
      */
     private function assertSatisfiesPolicy(Realm $realm, #[SensitiveParameter] string $password): void

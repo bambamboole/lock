@@ -13,7 +13,7 @@ Every glob is a code span. Bare `*` in a table cell reads as markdown emphasis, 
 | `app/Shared/Audit/**` | .ai/rules/audit.md |
 | `app/*/Concerns/**`, `app/*/Ui/Concerns/**` | .ai/rules/concerns.md |
 | `database/data-migrations/**` | .ai/rules/data-migrations.md |
-| `app/**/Enums/*Permission.php`, `app/*/Policies/**`, `app/Auth/Support/PermissionRepository.php` | .ai/rules/enums.md |
+| `app/**/Enums/*Permission.php`, `app/*/Policies/**` | .ai/rules/enums.md |
 | `resources/css/**`, `composer.json` | .ai/rules/css.md |
 | `vite.config.ts`, `resources/css/**`, `resources/js/**` | .ai/rules/general.md |
 | `resources/icons/**` | .ai/rules/icons.md |

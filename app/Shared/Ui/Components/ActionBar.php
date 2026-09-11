@@ -12,13 +12,9 @@ use Lattice\Ui\Components\Link;
 use Lattice\Ui\Enums\Emphasis;
 
 /**
- * The one place a console action gets its appearance: outlined buttons for the
- * few actions an operator reaches for, a single overflow menu for the rest.
- *
- * An `Action` component ships whatever emphasis its definition set, and a
- * definition that sets none renders as bare text — so the emphasis is applied
- * here rather than left to each call site. Menu items need no emphasis at all:
- * the client styles everything inside an action group as a menu row.
+ * An `Action` renders with whatever emphasis its definition set, and one that
+ * sets none renders as bare text, so header buttons get theirs here. Menu rows
+ * need none: the client styles an action group's items itself.
  */
 final class ActionBar
 {
@@ -36,18 +32,14 @@ final class ActionBar
         return $menu instanceof ActionGroup ? [...$buttons, $menu] : $buttons;
     }
 
-    /**
-     * A single action rendered as a button rather than a menu row — the same
-     * appearance {@see self::make()} gives the primary actions of a header.
-     */
     public static function button(Action|Button $action): Action|Button
     {
         return $action->emphasis(Emphasis::Outline);
     }
 
     /**
-     * The `⋯` menu, or null when nothing inside it may be rendered — an action
-     * group with no items still draws its trigger.
+     * Null when nothing inside may render: an empty action group still draws
+     * its trigger.
      *
      * @param  array<int, Action|Link>  $actions
      */

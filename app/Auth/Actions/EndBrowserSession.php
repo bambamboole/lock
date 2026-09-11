@@ -10,11 +10,6 @@ use App\Auth\Support\BrowserSessions;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Ends one of the user's other browser sessions: the row goes, so that browser
- * is signed out at the provider, and the OIDC session it started is ended the
- * way an administrator ends one — revoked and its relying parties notified.
- */
 final readonly class EndBrowserSession
 {
     public function __construct(

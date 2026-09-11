@@ -6,10 +6,8 @@ use App\Auth\Models\User;
 use function Tests\Helpers\visitAccountAs;
 
 /**
- * Step two of the wizard is prepared by Lattice's resolve sub-request, so it is
- * only ever right in a browser: the server has the payload either way, but it
- * reaches the field through the resolved node rather than the schema the page
- * shipped with.
+ * Step two is prepared by Lattice's resolve sub-request, so only a browser
+ * shows whether it reaches the field.
  */
 beforeEach(function () {
     $this->user = User::factory()->create();

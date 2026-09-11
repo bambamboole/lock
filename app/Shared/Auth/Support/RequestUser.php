@@ -7,13 +7,9 @@ use App\Auth\Models\User;
 use Illuminate\Http\Request;
 
 /**
- * The human behind a request, or null when there is none.
- *
- * Since laravel-oidc 0.27 a `client_credentials` token passes the `auth:oidc`
- * guard and resolves to a `ClientPrincipal`: a client acting for itself, with
- * no realm, no roles and no `can()`. Calling a gate on it is a fatal error
- * rather than a denial, so anything that means a person asks here first
- * instead of testing the principal's class at each call site.
+ * A `client_credentials` token resolves to a ClientPrincipal with no realm, no
+ * roles and no `can()`, so calling a gate on it is a fatal error rather than a
+ * denial.
  */
 final class RequestUser
 {

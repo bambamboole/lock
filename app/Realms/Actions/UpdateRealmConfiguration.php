@@ -49,7 +49,7 @@ final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
             }
 
             if ($changes !== []) {
-                Audit::record(RealmAuditEvent::RealmUpdated, $realm, properties: ['changes' => $changes]);
+                Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => $changes]);
             }
         });
 

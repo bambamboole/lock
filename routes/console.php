@@ -7,4 +7,5 @@ Schedule::command('activitylog:clean')->daily();
 Schedule::command('oidc:purge')->daily();
 Schedule::command('oidc:dispatch-expired-session-logouts')->hourly();
 Schedule::command('oidc:prune-authentication-contexts')->daily();
+Schedule::command('oidc:prune-sessions')->daily();
 Schedule::command('lattice:notifications:prune')->daily();

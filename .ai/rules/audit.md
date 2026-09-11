@@ -7,7 +7,7 @@ paths:
 
 ## Two audit trails: activity_log for the admin trail, audit_events for security events
 
-`Audit::record()` writes the console's own trail to `activity_log` (spatie/activitylog): an actor changed a thing, with a subject model and a translated description key.
+`Audit::record()` writes the console's own trail to `activity_log` (spatie/activitylog): an actor changed a thing, with a subject model and a translated description key. What happens inside a realm — its clients, roles, resources and settings — is recorded with the realm so it lands on that realm's trail; creating and deleting a realm, and the user administration events, stay on the instance trail.
 
 `App\Shared\Audit\Support\DatabaseAuditSink` writes what the OIDC server raises — sign-ins, MFA, consent, token and key events — to `audit_events`. Those rows carry request provenance (ip, user agent, session, client), have no subject model, survive the deletion of the user and realm they name, and arrive at a far higher volume. Do not merge the two tables.
 

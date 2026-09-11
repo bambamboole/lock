@@ -10,11 +10,9 @@ use Illuminate\Database\Query\Builder;
 use RuntimeException;
 
 /**
- * Binds a reset token to (realm_id, email) instead of email alone.
- *
- * `users` is unique per realm, so one address can be two people. Keyed by email
- * alone, one realm's reset request deletes the other's pending token, and a
- * token minted for one realm's user validates for the other's.
+ * `users` is unique per realm, so keyed by email alone one realm's reset
+ * request would delete another's pending token, and a token minted for one
+ * realm's user would validate for the other's.
  */
 final class RealmTokenRepository extends DatabaseTokenRepository
 {

@@ -34,10 +34,8 @@ final class RealmFactory extends Factory
     }
 
     /**
-     * Signing keys are per realm and their `kid` is unique across the
-     * instance, so every realm needs a keypair of its own before it can mint a
-     * token or serve a JWKS — `App\Realms\Actions\CreateRealm` gives a real
-     * realm one, and a fixture realm is no use without it.
+     * A realm can neither mint a token nor serve a JWKS without a keypair of
+     * its own.
      */
     public function configure(): static
     {

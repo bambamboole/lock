@@ -10,10 +10,8 @@ use Bambamboole\LaravelOidc\Server\Shared\Scopes\ScopeCatalog;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 
 /**
- * The OAuth scope catalog of the current realm, read from its resources. A
- * scope belongs to exactly one resource, so the same value under two resources
- * is two different scopes and only the requested one is served — which is what
- * keeps the realm from issuing a scope the addressed resource never declared.
+ * Only the requested resource's scopes are served, which keeps the realm from
+ * issuing a scope the addressed resource never declared.
  */
 final readonly class ResourceScopeCatalog implements ScopeCatalog
 {

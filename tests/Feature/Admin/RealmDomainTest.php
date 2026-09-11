@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Actions\CheckRealmDomainAction;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\UpdateRealmDomainForm;
@@ -17,22 +16,7 @@ use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
-});
-
-it('creates a realm on a domain that reaches this instance', function () {
-    domainReachesThisInstance();
-
-    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners', 'domain' => 'auth.partners.test'])
-        ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'tokens']));
-
-    $realm = Realm::query()->where('slug', 'partners')->sole();
-
-    expect($realm->domain)->toBe('auth.partners.test')
-        ->and($realm->domain_status)->toBe(RealmDomainStatus::Verified)
-        ->and($realm->domain_checked_at)->not->toBeNull();
-    Http::assertSent(fn ($request): bool => $request->url() === 'http://auth.partners.test/.well-known/lock/domain-check');
 });
 
 it('keeps a realm whose domain does not reach this instance yet and says why', function (Closure $answer, RealmDomainStatus $status) {
@@ -82,7 +66,7 @@ it('moves a realm to another domain, which starts over and is checked right away
 
     expect($realm->refresh()->domain)->toBe('new.partners.test')
         ->and($realm->domain_status)->toBe(RealmDomainStatus::Unreachable)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.domain'))
+        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.domain'))
         ->toBe(['old' => 'old.partners.test', 'new' => 'new.partners.test']);
 });
 

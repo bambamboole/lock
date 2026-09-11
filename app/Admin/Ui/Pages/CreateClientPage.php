@@ -19,38 +19,24 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/clients/create', name: 'admin.realms.clients.create', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class CreateClientPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
     public function title(): string
     {
         return __('admin.clients.create.heading');
     }
 
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('admin.clients.create.heading'), route('admin.realms.clients.create', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
-        $this->realm = $realm;
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $realm->slug], false)),
+            Breadcrumb::make(__('admin.clients.create.heading'), route('admin.realms.clients.create', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-create-client-page')->gap(Gap::Large)->width(Width::Medium)->schema([
                 PageHeader::make(__('admin.clients.create.heading'), __('admin.clients.create.description', ['realm' => $realm->name])),
                 Card::make(__('admin.clients.sections.general'))->schema([
-                    Form::use(CreateClientForm::class, ['realm' => $realm->slug]),
+                    Form::use(CreateClientForm::class),
                 ]),
             ]),
         ]);

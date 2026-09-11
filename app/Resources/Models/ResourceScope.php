@@ -12,10 +12,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A scope of exactly one resource. The description is free text shown on the
- * consent screen and in the scope catalog; without one the value speaks for
- * itself.
- *
  * @property string $id
  * @property string $resource_id
  * @property string $value

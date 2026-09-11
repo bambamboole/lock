@@ -15,9 +15,6 @@ return [
         'password' => 'Passwort',
         'role' => 'Rolle',
     ],
-    'api' => [
-        'no-realm-context' => 'Dieses Token ist an keinen Realm gebunden.',
-    ],
     'value' => [
         'yes' => 'Ja',
         'no' => 'Nein',

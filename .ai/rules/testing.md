@@ -12,11 +12,12 @@ Tests are Pest. `Tests\TestCase` uses `RefreshDatabase` itself, and `tests/Pest.
 back onto the Pest binding: a trait on the per-file class Pest generates wins over the inherited method and would
 shadow `TestCase::migrateDatabases()`.
 
-## Data migrations are already applied in every test
+## Data migrations and the protected roles are already there in every test
 
-`Tests\TestCase` runs `database/data-migrations` once per process, before the per-test transaction opens — the data is
-present in every `Feature` and `Browser` test, and per-test mutations of it roll back. Never run them explicitly (no
-`artisan migrate --path=database/data-migrations` in a test). Explicit `$this->seed()` is only for a domain seeder a
+`Tests\TestCase` runs `database/data-migrations` and `GlobalRoleSeeder` once per process, before the per-test
+transaction opens — the master realm and the `Super Admin`/`Support` roles are present in every `Feature` and
+`Browser` test, and per-test mutations of them roll back. Never run them explicitly (no
+`artisan migrate --path=database/data-migrations` or `GlobalRoleSeeder` in a test). Explicit `$this->seed()` is only for a domain seeder a
 test actually exercises; never seed the full `DatabaseSeeder` except when the test is about the seeder itself.
 
 ## Prefer feature tests
@@ -115,8 +116,10 @@ Shared helper functions are namespaced `Tests\Helpers` in `tests/Helpers/*.php` 
 imported per file with `use function Tests\Helpers\globalAdmin;`. `tests/Pest.php` holds only the
 `pest()->extend()` bindings. Never define a new global (unnamespaced) shared helper: every file-local test helper
 shares one global function table across the suite, so a name reused in a second file is a fatal redeclare.
-`globalAdmin()` (an administrator in the master realm) and `realmFormData()` (a realm's configuration as the
-admin form submits it) are the shared fixtures — reuse them instead of hand-rolling admin and realm setup.
+`globalAdmin()` (an administrator holding a protected role), `globalAdminWith(AdminPermission ...)` (one holding
+exactly those permissions — the actor for a "forbidden without X" test), `identitySessionFor()`/`consoleSessionFor()`
+(a signed-in session for either guard) and `realmSetting()` (one realm setting as the admin form submits it) are the
+shared fixtures — reuse them instead of hand-rolling admin, session and realm setup.
 
 ## Browser tests for client-only behavior
 

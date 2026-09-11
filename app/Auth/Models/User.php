@@ -8,8 +8,6 @@ use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Auth\Contracts\PermissionEnum;
-use App\Shared\Settings\Concerns\HasSettings;
-use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
 use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
 use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
@@ -72,15 +70,12 @@ use Laravel\Passkeys\Passkey;
  */
 #[Fillable(['name', 'email', 'password', 'realm_id', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
-final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser, ProvidesSettings
+final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasSettings, HasUuids, Notifiable;
+    use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasUuids, Notifiable;
 
     /**
-     * The one realm this user exists in. Identity does not cross realms: two
-     * rows with the same email in different realms are two unrelated people.
-     *
      * @return BelongsTo<Realm, $this>
      */
     public function realm(): BelongsTo
@@ -126,19 +121,11 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->blocked_at !== null;
     }
 
-    /**
-     * A confirmed authenticator app or a passkey: the factors the login
-     * challenges, which is what "MFA active" means to an administrator.
-     */
     public function hasSecondFactor(): bool
     {
         return $this->totpFactors()->whereNotNull('confirmed_at')->exists() || $this->passkeys()->exists();
     }
 
-    /**
-     * Global permissions come from instance-wide roles, which only users of the
-     * master realm can hold: every other realm is data to the admin console.
-     */
     public function hasGlobalPermission(PermissionEnum $permission): bool
     {
         if (! $this->realm->isMaster()) {
@@ -156,14 +143,9 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     }
 
     /**
-     * Read through the relation rather than a fresh query on every check: one
-     * console page runs a gate check per action it offers, and a table row
-     * multiplies that by its rows — a users table went from eight queries to
-     * over three hundred when each check re-read the pivot.
-     *
-     * The relation is therefore the cache, and `refresh()` (or a new request,
-     * which resolves the user again) is what picks up a role change made after
-     * a check on the same instance.
+     * Read through the loaded relation: a users table ran over three hundred
+     * queries when every gate check re-read the pivot. `refresh()` picks up a
+     * role change made after a check.
      *
      * @return SupportCollection<int, string>
      */

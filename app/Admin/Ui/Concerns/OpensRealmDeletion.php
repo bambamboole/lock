@@ -11,9 +11,8 @@ use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Modal;
 
 /**
- * Deleting a realm is a form, not an action: it only proceeds once the realm's
- * name has been typed back. The trigger carries that form in a modal so it can
- * sit in an action menu next to plain actions.
+ * Deleting a realm is a form, because the name has to be typed back; the
+ * trigger opens it in a modal so it can sit in an action menu.
  */
 trait OpensRealmDeletion
 {
@@ -22,7 +21,7 @@ trait OpensRealmDeletion
         return Link::make(__('admin.realms.danger.submit'), 'delete-realm-'.$slug)
             ->unstyled()
             ->can(AdminPermission::ManageRealms)
-            ->visible($slug !== config('realm.master_slug'))
+            ->visible($slug !== config('lock.master_realm'))
             ->modal(
                 Modal::make('admin.realms.delete.'.$slug)
                     ->title(__('admin.realms.danger.heading'))

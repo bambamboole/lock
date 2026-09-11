@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
+use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\DeletesClient;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -33,7 +34,7 @@ final class DeleteClient implements DeletesClient
 
             $client->delete();
 
-            Audit::record(RealmAuditEvent::ClientDeleted, $client, properties: [
+            Audit::record(RealmAuditEvent::ClientDeleted, $client, Realm::ofClient($client), [
                 'realm' => $client->realm_id,
                 'client_id' => $client->client_id,
                 'name' => $client->name,

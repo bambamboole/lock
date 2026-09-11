@@ -25,23 +25,17 @@ Do not add `HasUuids` or `#[Fillable]` to it — configure the package instead.
 laravel-oidc is not extensible this way: it hardcodes its own `Token` and `Client` classes everywhere it writes, so
 a subclass would never be the hydrated model. Read its rows through the package classes.
 
-## Realm-owned models extend BusinessModel; scoping is automatic
+## Realm-owned models are reached through their realm
 
-A model that belongs to a realm extends `App\Shared\Models\BusinessModel` — it bundles `BelongsToRealm` (strict `RealmScope` global scope plus a `realm_id` backfill on create), `HasUuids`, `RecordsActivity`, and `SoftDeletes`. Never hand-write `where('realm_id', …)` on such a model.
-
-`RealmScope` is strict: a query with no `realm_id` in `Context` throws `MissingRealmContext` instead of quietly reading every realm. Make a realm current with `$realm->makeCurrent()` (request paths) or `$realm->runAsCurrent(fn () => …)` (schedulers, jobs, maintenance scripts — it restores the previous context). A deliberate cross-realm read is `withoutGlobalScope(RealmScope::class)`, spelled out at the call site. `bootstrap/app.php` renders the exception as a 403 on `api/*`.
-
-A model that must also show shared/global rows (`realm_id` null) carries **both** `#[ScopedBy(GlobalOrRealmScope::class)]` and the `BelongsToRealmOrGlobal` trait — `#[ScopedBy]` adds a scope, it does not replace the strict one, and the trait is what neutralises it. Creation stays realm-bound either way: a shared row is never implicit, it needs the explicit `->asGlobal()` switch.
-
-`App\Resources\Models\Resource` and its `ResourceScope` follow the same shape as `RealmRole` for the same reason —
-the console reads a realm's resources while the administrator's own realm is current — so they are plain models
-reached through `$realm->realmResources()`, and they are listed in `architectureSharedKernel()` because the admin
-console binds a `Resource` by route and names it in contracts. `Realm::resources()` is the package's settings
+The console reads a realm's rows while the administrator's own realm is current, so realm-owned models carry no
+global scope. `RealmRole`, `App\Resources\Models\Resource` and its `ResourceScope` are plain models reached through
+`$realm->realmRoles()` and `$realm->realmResources()`, never a hand-written `realm_id` constraint. `Resource` and
+`ResourceScope` are listed in `architectureSharedKernel()` because the admin console binds a `Resource` by route and
+names it in contracts. `Realm::resources()` is the package's settings
 contract, not the relation; the relation has to be called something else.
 
 `resource` is a soft-reserved PHP type keyword, so Pint's `phpdoc_types` fixer lowercases a bare `Resource` in any
 docblock and PHPStan then rejects the case. Write the class fully qualified (`\App\Resources\Models\Resource`) in
 generics, `@property` tags and `@extends` clauses.
 
-The identity models (Realm, User, Role, RealmRole) deliberately stay unscoped: the admin console reads them across
-realms — a realm's roles are reached through `$realm->realmRoles()`, never a hand-written `realm_id` constraint. `Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from.
+`Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from.

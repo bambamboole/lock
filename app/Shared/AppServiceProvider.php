@@ -12,7 +12,6 @@ use Illuminate\Foundation\DevCommands;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\Rules\Password;
 use RuntimeException;
 
 final class AppServiceProvider extends ServiceProvider
@@ -20,6 +19,22 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(SettingsRegistry::class);
+
+        $this->configureOidc();
+    }
+
+    /**
+     * The console is its own relying party against the master realm, so the
+     * package reads both from Lock's configuration unless OIDC_RP_* points the
+     * console at another provider.
+     */
+    private function configureOidc(): void
+    {
+        config([
+            'oidc.realm' => config('lock.master_realm'),
+            'oidc-client.client_id' => config('oidc-client.client_id') ?: config('lock.console_client.id'),
+            'oidc-client.client_secret' => config('oidc-client.client_secret') ?: config('lock.console_client.secret'),
+        ]);
     }
 
     public function boot(): void
@@ -55,19 +70,5 @@ final class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
-
-        Password::defaults(fn (): ?Password => Realm::fromContext()?->passwordPolicy()->rule() ?? $this->passwordRuleOutsideRealms());
-    }
-
-    private function passwordRuleOutsideRealms(): ?Password
-    {
-        return app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null;
     }
 }

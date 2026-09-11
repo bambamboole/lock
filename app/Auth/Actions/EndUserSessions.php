@@ -38,7 +38,7 @@ final readonly class EndUserSessions implements EndsUserSessions
 
         /*
          * The notifier looks the session up in the current realm, and an
-         * administrator acts from outside the user's realm.
+         * administrator acts from outside it.
          */
         $user->realm->runAsCurrent(function () use ($sids): void {
             foreach ($sids as $notified) {
@@ -50,9 +50,9 @@ final readonly class EndUserSessions implements EndsUserSessions
     }
 
     /**
-     * Only the database driver lets a server end a browser session it did not
-     * receive a cookie for; every other driver relies on the user provider
-     * refusing the user on the next request.
+     * Only the database driver lets the server end a browser session it holds
+     * no cookie for; with any other driver the user provider refuses the user
+     * on the next request.
      */
     private function forgetBrowserSessions(User $user): void
     {

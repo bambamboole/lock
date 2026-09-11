@@ -11,6 +11,7 @@ use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
+use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
@@ -81,12 +82,12 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public static function master(): self
     {
-        return self::where('slug', config('realm.master_slug'))->firstOrFail();
+        return self::where('slug', config('lock.master_realm'))->firstOrFail();
     }
 
     public function isMaster(): bool
     {
-        return $this->slug === config('realm.master_slug');
+        return $this->slug === config('lock.master_realm');
     }
 
     public static function fromContext(): ?self
@@ -97,8 +98,8 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * The current realm's key without loading it — for callers that only need
-     * to scope a query and would otherwise pay a lookup per call.
+     * For callers that only scope a query and would otherwise pay a lookup per
+     * call.
      */
     public static function currentId(): ?string
     {
@@ -108,12 +109,17 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * The host the master realm is served from: the one in APP_URL, which is
-     * why it is never stored on the row.
+     * The master realm is served from APP_URL's host, which is why its row
+     * stores no domain.
      */
     public static function masterHost(): string
     {
         return strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+    }
+
+    public static function ofClient(Client $client): self
+    {
+        return self::query()->where('slug', $client->realm_id)->sole();
     }
 
     public static function findByHost(string $host): ?self
@@ -122,7 +128,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         $query = self::query()->with('storedSettings');
 
         return $host === self::masterHost()
-            ? $query->where('slug', config('realm.master_slug'))->first()
+            ? $query->where('slug', config('lock.master_realm'))->first()
             : $query->where('domain', $host)->first();
     }
 
@@ -132,9 +138,8 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * Where the realm is reachable, and so its issuer. Every realm host shares
-     * the scheme and port of APP_URL — a port only ever appears locally, where
-     * `acme.localhost:8000` sits next to `localhost:8000`.
+     * Every realm host shares APP_URL's scheme and port; a port only appears
+     * locally, where `acme.localhost:8000` sits next to `localhost:8000`.
      */
     public function origin(): string
     {
@@ -145,19 +150,15 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * Context is dehydrated into queued jobs, so anything dispatched while this
-     * realm is current can resolve it later via Realm::fromContext().
+     * Context travels into queued jobs, so work dispatched while this realm is
+     * current runs in it too.
      */
     public function makeCurrent(): void
     {
         Context::add('realm_id', $this->id);
     }
 
-    /**
-     * Escape hatch for schedulers, queue workers and maintenance scripts that
-     * start without a request-bound realm. Restores the previous context, so
-     * nesting a run inside another realm's is safe.
-     */
+    /** Restores the previous realm afterwards, so runs nest. */
     public function runAsCurrent(callable $callback): mixed
     {
         $previousRealmId = Context::get('realm_id');
@@ -207,6 +208,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     protected function casts(): array
     {
         return [
+            // The package contract's id() method would otherwise make `id` read as a relation.
             'id' => 'string',
             'domain_status' => RealmDomainStatus::class,
             'domain_checked_at' => 'datetime',

@@ -20,7 +20,7 @@ final class CreateRealmRole implements CreatesRealmRole
                 'description' => $description,
             ]);
 
-            Audit::record(RealmAuditEvent::RoleCreated, $role, properties: [
+            Audit::record(RealmAuditEvent::RoleCreated, $role, $realm, [
                 'realm' => $realm->slug,
                 'name' => $role->name,
             ]);

@@ -2,29 +2,33 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
 use App\Admin\Ui\Forms\RealmSettingForm;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Realms\Models\RealmRole;
+use App\Resources\Models\Resource;
+use App\Resources\Models\ResourceScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\realmClient;
 use function Tests\Helpers\realmSetting;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
 });
 
@@ -33,17 +37,18 @@ it('creates an independent realm with default configuration through the admin fo
 
     domainReachesThisInstance();
 
-    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners', 'domain' => 'partners.example.com'])
+    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners', 'domain' => 'auth.partners.test'])
         ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'tokens']));
 
     $realm = Realm::query()->where('slug', 'partners')->sole();
 
     expect($realm->name)->toBe('Partners')
+        ->and($realm->domain)->toBe('auth.partners.test')
+        ->and($realm->domain_status)->toBe(RealmDomainStatus::Verified)
+        ->and($realm->domain_checked_at)->not->toBeNull()
         ->and($realm->tokens()->accessTokenLifetime)->toBe(900)
-        ->and($realm->clients()->dynamicRegistration)->toBeFalse()
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmCreated->eventName())->sole()->subject_id)->toBe($realm->id);
-
-    $this->getJson('http://partners.example.com/.well-known/openid-configuration')->assertOk();
+    Http::assertSent(fn ($request): bool => $request->url() === 'http://auth.partners.test/.well-known/lock/domain-check');
 });
 
 it('rejects duplicate and unsafe realm identifiers', function (string $slug) {
@@ -64,7 +69,7 @@ it('renames a realm without touching its identifier or configuration', function 
     expect($realm->refresh()->name)->toBe('External partners')
         ->and($realm->slug)->toBe('partners')
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
+        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
 });
 
 it('saves one setting at a time for the signed realm and leaves every other realm alone', function (string $slug) {
@@ -99,7 +104,7 @@ it('saves one setting at a time for the signed realm and leaves every other real
         ->and($realm->clients()->defaultScopes)->toBe(['openid', 'profile'])
         ->and($other->refresh()->tokens()->accessTokenLifetime)->toBe(900);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
+    $activity = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
 
     expect($activity?->subject_id)->toBe($realm->id)
         ->and($activity?->getProperty('changes.access_token_lifetime'))->toBe(['old' => 900, 'new' => 300]);
@@ -137,7 +142,7 @@ it('saves the password policy of the signed realm and audits the change', functi
         ->and($other->credentials()->password->minLength)->toBe(8)
         ->and($other->credentials()->password->maxAgeDays)->toBeNull();
 
-    $changes = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
+    $changes = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
         ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
 
     expect($changes['password_min_length'])->toBe(['old' => 8, 'new' => 12])
@@ -164,7 +169,7 @@ it('reports a conflict with a setting the form does not show on the field being 
         ->assertInvalid(['session_token_ttl' => __('admin.realms.fields.session-token-refresh-skew.label')]);
 
     expect($realm->refresh()->sessions()->tokenTtl)->toBe(3600)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
+        ->and(Activity::query()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
 });
 
 it('reports invalid list entries on the matching configuration field', function (string $field, string $value) {
@@ -186,8 +191,7 @@ it('reports invalid list entries on the matching configuration field', function 
 it('only trusts active clients belonging to the configured realm', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
     $master = Realm::master();
-    $client = $master->runAsCurrent(fn () => app(ClientRepository::class)
-        ->createAuthorizationCodeGrantClient('Master client', ['https://rp.test/callback']));
+    $client = realmClient($master, 'Master client');
 
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'trusted_clients', $client->client_id))->assertInvalid(['trusted_clients']);
     $this->submitForm(RealmSettingForm::class, ...realmSetting($master, 'trusted_clients', $client->client_id))->assertRedirect()->assertValid();
@@ -195,12 +199,17 @@ it('only trusts active clients belonging to the configured realm', function () {
     expect($master->refresh()->clients()->trustedClients)->toBe([$client->client_id]);
 });
 
-it('deletes a realm with its users, clients and sessions and frees the identifier', function () {
+it('deletes a realm with its users, clients, sessions, roles and resources and frees the identifier', function () {
     $realm = Realm::factory()->create(['name' => 'Partners', 'slug' => 'partners']);
     $user = User::factory()->for($realm)->create();
-    $client = $realm->runAsCurrent(fn () => app(ClientRepository::class)->createAuthorizationCodeGrantClient('Partner app', ['https://rp.test/callback']));
+    $role = RealmRole::factory()->for($realm)->create(['name' => 'member']);
+    $user->realmRoles()->attach($role);
+    $keptRole = RealmRole::factory()->for(Realm::master())->create(['name' => 'elsewhere']);
+    $resource = Resource::factory()->for($realm)->create();
+    $scope = ResourceScope::factory()->for($resource)->create();
+    $client = realmClient($realm, 'Partner app');
     OidcSession::query()->forceCreate(['sid' => fake()->uuid(), 'realm_id' => 'partners', 'user_id' => $user->id, 'expires_at' => now()->addHour()]);
-    $masterClient = Realm::master()->runAsCurrent(fn () => app(ClientRepository::class)->createAuthorizationCodeGrantClient('Admin app', ['https://rp.test/callback']));
+    $masterClient = realmClient(Realm::master(), 'Admin app');
 
     $this->submitForm(DeleteRealmForm::class, ['name' => 'Partners'], ['realm' => $realm->slug])
         ->assertRedirect(route('admin.realms'));
@@ -210,12 +219,16 @@ it('deletes a realm with its users, clients and sessions and frees the identifie
         ->and(Client::query()->whereKey($client->id)->exists())->toBeFalse()
         ->and(Client::query()->whereKey($masterClient->id)->exists())->toBeTrue()
         ->and(OidcSession::query()->where('realm_id', 'partners')->exists())->toBeFalse()
+        ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeFalse()
+        ->and(DB::table('realm_role_user')->where('realm_role_id', $role->id)->exists())->toBeFalse()
+        ->and(RealmRole::query()->whereKey($keptRole->id)->exists())->toBeTrue()
+        ->and(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
+        ->and(ResourceScope::query()->whereKey($scope->id)->exists())->toBeFalse()
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmDeleted->eventName())->sole()->getProperty('slug'))->toBe('partners');
 
     domainReachesThisInstance();
 
     $this->submitForm(CreateRealmForm::class, ['name' => 'Partners again', 'slug' => 'partners', 'domain' => 'partners.example.com'])->assertRedirect();
-    $this->getJson('http://partners.example.com/.well-known/openid-configuration')->assertOk();
 });
 
 it('requires the realm name to confirm a deletion', function () {

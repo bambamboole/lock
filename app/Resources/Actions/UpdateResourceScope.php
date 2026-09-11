@@ -27,7 +27,7 @@ final class UpdateResourceScope implements UpdatesResourceScope
             }
 
             if ($changes !== []) {
-                Audit::record(ResourceAuditEvent::ScopeUpdated, $scope, properties: [
+                Audit::record(ResourceAuditEvent::ScopeUpdated, $scope, $scope->resource->realm, [
                     'realm' => $scope->resource->realm->slug,
                     'resource' => $scope->resource->identifier,
                     'value' => $scope->value,

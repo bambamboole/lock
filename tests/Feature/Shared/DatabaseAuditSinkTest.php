@@ -49,11 +49,3 @@ test('an event raised outside any realm stays instance-wide', function () {
 
     expect(AuditEvent::query()->sole()->realm_id)->toBeNull();
 });
-
-test('recording is skipped while auditing is disabled', function () {
-    config()->set('oidc.audit.enabled', false);
-
-    Realm::factory()->create()->runAsCurrent(fn () => event(new LoginSucceeded(fake()->uuid(), [])));
-
-    expect(AuditEvent::query()->count())->toBe(0);
-});

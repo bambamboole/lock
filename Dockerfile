@@ -15,9 +15,6 @@ COPY . .
 RUN composer dump-autoload --no-dev --optimize --no-scripts \
     && php artisan package:discover --no-interaction
 
-# The Lattice Vite plugin discovers component packages from vendor/composer/installed.json.
-# `npm install`, not `npm ci`: the lockfile is generated on macOS and lacks the linux-only
-# optional packages, which `npm ci` rejects as out of sync.
 FROM node:24-bookworm-slim AS assets
 
 WORKDIR /app
@@ -26,6 +23,7 @@ COPY package.json package-lock.json .npmrc ./
 RUN --mount=type=cache,target=/root/.npm \
     npm install --no-audit --no-fund
 
+# The Lattice Vite plugin discovers component packages from vendor/composer/installed.json.
 COPY --from=vendor /var/www/html/vendor ./vendor
 COPY vite.config.ts tsconfig.json ./
 COPY resources ./resources
@@ -34,8 +32,6 @@ RUN VITE_APP_NAME=Lock npm run build
 
 FROM base AS app
 
-# Every container start runs `php artisan optimize`; migrations stay with `php artisan app:deploy`,
-# which also runs the data migrations and which the hook below runs when AUTORUN_APP_DEPLOY=true.
 ENV AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=false \
     AUTORUN_APP_DEPLOY=false \
@@ -46,8 +42,7 @@ ENV AUTORUN_ENABLED=true \
     APP_NAME=Lock \
     LOG_CHANNEL=stderr \
     LOG_LEVEL=info \
-    SESSION_SECURE_COOKIE=true \
-    OIDC_FIRST_PARTY_TRUSTED=true
+    SESSION_SECURE_COOKIE=true
 
 COPY --chmod=755 <<'EOF' /etc/entrypoint.d/60-app-deploy.sh
 #!/bin/sh

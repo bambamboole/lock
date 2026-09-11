@@ -18,10 +18,9 @@ use Bambamboole\LaravelOidc\Server\Tokens\Models\RefreshToken;
 use Illuminate\Support\Facades\DB;
 
 /**
- * The package rows that name a user carry no foreign key to `users`, so they
- * are removed here explicitly — the same way DeleteRealm removes the rows
- * keyed by a realm. Relying parties are told first, while the sessions still
- * exist to build a logout token from.
+ * The package rows naming a user carry no foreign key to `users`, so they go
+ * explicitly. Relying parties are told first, while the sessions still exist to
+ * build a logout token from.
  */
 final readonly class DeleteUser implements DeletesUser
 {
@@ -48,10 +47,7 @@ final readonly class DeleteUser implements DeletesUser
             SocialAccount::query()->whereMorphedTo('authenticatable', $user)->delete();
             PasswordHistory::query()->whereMorphedTo('authenticatable', $user)->delete();
 
-            $user->passkeys()->delete();
             $user->notifications()->delete();
-            $user->roles()->detach();
-            $user->realmRoles()->detach();
 
             DB::table('password_reset_tokens')
                 ->where('realm_id', $user->realm_id)

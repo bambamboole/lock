@@ -15,10 +15,7 @@ use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
-/**
- * Points the relying-party configuration at a client served by this same app,
- * so a login round-trip stays entirely in-process.
- */
+/** Keeps a login round-trip entirely in-process. */
 function selfSsoProviderFake(?Client $client = null): OidcClientFake
 {
     $client ??= app(ClientRepository::class)->createAuthorizationCodeGrantClient(
@@ -40,46 +37,6 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
 }
 
 /**
- * Walks the full authorization-code + PKCE flow against $test->client and
- * returns the issued access token.
- */
-function loginAccessToken(TestCase $test): string
-{
-    $verifier = str_repeat('v', 64);
-    $challenge = rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '=');
-
-    $view = $test->actingAs($test->user, 'identity')
-        ->withSession(['oidc.auth_time' => time()])
-        ->get(route('oidc.authorize', [
-            'client_id' => $test->client->client_id,
-            'redirect_uri' => 'https://rp.test/callback',
-            'response_type' => 'code',
-            'scope' => 'openid',
-            'state' => 's',
-            'code_challenge' => $challenge,
-            'code_challenge_method' => 'S256',
-        ]))
-        ->assertOk();
-
-    $approve = $test->post(route('oidc.approve'), ['auth_token' => $view->json('authToken')])
-        ->assertRedirect();
-
-    parse_str((string) parse_url((string) $approve->headers->get('Location'), PHP_URL_QUERY), $params);
-
-    return $test->post(route('oidc.token'), [
-        'grant_type' => 'authorization_code',
-        'client_id' => $test->client->client_id,
-        'client_secret' => $test->client->plainSecret,
-        'redirect_uri' => 'https://rp.test/callback',
-        'code' => $params['code'],
-        'code_verifier' => $verifier,
-    ])->json('access_token');
-}
-
-/**
- * A `client_credentials` token request from $test->client, with the RFC 8707
- * `resource` and the `scope` the caller wants to try.
- *
  * @param  array<string, string>  $payload
  * @return TestResponse<Response>
  */

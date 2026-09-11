@@ -30,9 +30,8 @@ use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
 /**
- * Edits exactly one realm setting, named by the `field` context. The input is
- * derived from the setting's declared type, so a new setting in
- * {@see RealmConfiguration} reaches the console without a form of its own.
+ * The input derives from the setting's declared type, so a new setting in
+ * {@see RealmConfiguration} needs no form of its own.
  */
 #[AsForm('admin.realms.setting', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class RealmSettingForm extends FormDefinition

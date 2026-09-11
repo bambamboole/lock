@@ -7,7 +7,6 @@ namespace App\Shared\Audit\Models;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Enums\AuditEventType;
-use App\Shared\Audit\Support\DatabaseAuditSink;
 use Carbon\CarbonImmutable;
 use Database\Factories\AuditEventFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -22,10 +21,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * A security-relevant event recorded by {@see DatabaseAuditSink}.
- * Separate from `activity_log`: these rows carry request provenance (ip, user
- * agent, session), survive the deletion of everything they point at, and
- * arrive at a volume the admin trail never reaches.
+ * Separate from `activity_log`: these rows carry request provenance, outlive
+ * everything they point at, and arrive at a far higher volume.
  *
  * @property string $id
  * @property string|null $realm_id
@@ -109,8 +106,7 @@ final class AuditEvent extends Model
     }
 
     /**
-     * A type this app does not know — a case a package update added — still
-     * has to list, so it renders as its own raw code.
+     * A type a package update added still lists, as its raw code.
      *
      * @return Attribute<string, never>
      */

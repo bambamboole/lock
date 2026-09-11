@@ -10,19 +10,12 @@ use App\Shared\Settings\SettingsBag;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 trait HasSettings
 {
     protected static function bootHasSettings(): void
     {
         static::deleting(function (Model&ProvidesSettings $model): void {
-            $usesSoftDeletes = in_array(SoftDeletes::class, class_uses_recursive($model), true);
-
-            if ($usesSoftDeletes && method_exists($model, 'isForceDeleting') && ! $model->isForceDeleting()) {
-                return;
-            }
-
             $model->storedSettings()->delete();
         });
     }

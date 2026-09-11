@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
+use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\DeleteClient;
 use App\Admin\Ui\Actions\RestoreClient;
 use App\Admin\Ui\Actions\RevokeClient;
@@ -29,12 +29,12 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\latticeSchema;
+use function Tests\Helpers\realmClient;
 use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });
@@ -56,20 +56,11 @@ function clientFormData(array $overrides = []): array
 }
 
 /**
- * One client setting as `UpdateClientForm` receives it: the payload and the
- * context naming the field, ready to spread into `submitForm()`.
- *
  * @return array{0: array<string, mixed>, 1: array<string, string>}
  */
 function clientSetting(Client $client, string $field, mixed $value): array
 {
     return [[$field => $value], ['realm' => $client->realm_id, 'client' => $client->id, 'field' => $field]];
-}
-
-function realmClient(Realm $realm, string $name = 'Existing app', bool $confidential = true): Client
-{
-    return $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
-        ->createAuthorizationCodeGrantClient($name, ['https://rp.test/callback'], $confidential));
 }
 
 /**
@@ -116,7 +107,7 @@ test('the clients console is forbidden without realms-manage', function (Closure
 
     expect(Client::query()->count())->toBe(1);
 })->with([
-    'support admin' => fn () => globalAdmin(GlobalRoleSeeder::SUPPORT),
+    'support admin' => fn () => globalAdmin(GlobalRoles::SUPPORT),
     'realm user' => fn () => User::factory()->create(),
 ]);
 
@@ -178,7 +169,7 @@ test('creating a confidential client reveals its secret exactly once', function 
         ->and($this->realm->runAsCurrent(fn () => app(ClientRepository::class)->findActive($client->client_id)))->not->toBeNull()
         ->and($this->other->runAsCurrent(fn () => app(ClientRepository::class)->find($client->client_id)))->toBeNull();
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::ClientCreated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientCreated->eventName())->sole();
 
     expect($activity->subject_id)->toBe($client->id)
         ->and($activity->getProperty('realm'))->toBe('acme')
@@ -245,7 +236,7 @@ test('each client row saves on its own and leaves the rest of the client alone',
         ->and($client->backchannel_logout_uri)->toBe('https://rp.test/backchannel')
         ->and($client->confidential())->toBeTrue();
 
-    $changes = Activity::global()->where('event', RealmAuditEvent::ClientUpdated->eventName())->get()
+    $changes = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientUpdated->eventName())->get()
         ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
 
     expect($changes['name']['new'])->toBe('Renamed app')
@@ -302,7 +293,7 @@ test('rotating the secret replaces it and reveals the new one once', function ()
         ->and($currentHash)->not->toBe($previousHash)
         ->and(Hash::check($secrets[0], $currentHash))->toBeTrue()
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty()
-        ->and(Activity::global()->where('event', RealmAuditEvent::ClientSecretRotated->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientSecretRotated->eventName())->sole()->subject_id)->toBe($client->id);
 });
 
 test('a public client has no secret to rotate', function () {
@@ -322,14 +313,14 @@ test('blocking a client stops it from being resolved as active until it is unblo
 
     expect($client->refresh()->revoked)->toBeTrue()
         ->and($active())->toBeNull()
-        ->and(Activity::global()->where('event', RealmAuditEvent::ClientRevoked->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientRevoked->eventName())->sole()->subject_id)->toBe($client->id);
 
     $this->callDeniedAction(RevokeClient::class, [], $context)->assertForbidden();
     $this->callAction(RestoreClient::class, [], $context)->assertReloadsPage();
 
     expect($client->refresh()->revoked)->toBeFalse()
         ->and($active())->not->toBeNull()
-        ->and(Activity::global()->where('event', RealmAuditEvent::ClientRestored->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientRestored->eventName())->sole()->subject_id)->toBe($client->id);
 });
 
 test('deleting a client removes its tokens, codes, consents and session participations', function () {
@@ -362,7 +353,7 @@ test('deleting a client removes its tokens, codes, consents and session particip
         ->and(AuthorizationCode::query()->where('client_id', $survivor->id)->count())->toBe(1)
         ->and(Consent::query()->where('client_id', $survivor->id)->count())->toBe(1)
         ->and(SessionParticipant::query()->where('client_id', $survivor->id)->count())->toBe(1)
-        ->and(Activity::global()->where('event', RealmAuditEvent::ClientDeleted->eventName())->sole()->getProperty('client_id'))->toBe($client->client_id);
+        ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientDeleted->eventName())->sole()->getProperty('client_id'))->toBe($client->client_id);
 });
 
 test('a client row opens its detail page and carries the same actions as it', function () {

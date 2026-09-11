@@ -6,6 +6,9 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Forms\EmailForm;
 use App\Auth\Ui\Forms\NameForm;
 use App\Auth\Ui\Forms\PasswordForm;
+use App\Realms\Actions\UpdateRealmConfiguration;
+use App\Shared\Audit\Enums\AuditEventType;
+use App\Shared\Audit\Models\AuditEvent;
 use Illuminate\Support\Facades\Hash;
 
 use function Tests\Helpers\realmRoute;
@@ -20,27 +23,31 @@ test('users can update their name', function () {
     expect($user->refresh()->name)->toBe('New Name');
 });
 
-test('users can update their email', function () {
-    $user = User::factory()->create(['email' => 'old@example.com']);
+test('changing the email saves it and resets the verification status', function () {
+    $user = User::factory()->create(['email' => 'old@example.com', 'email_verified_at' => now()]);
 
     $this->actingAs($user)
         ->submitForm(EmailForm::class, ['email' => 'new@example.com'])
         ->assertRedirect(realmRoute($user->realm, 'account'));
 
-    expect($user->refresh()->email)->toBe('new@example.com');
+    expect($user->refresh()->email)->toBe('new@example.com')
+        ->and($user->email_verified_at)->toBeNull();
 });
 
-test('changing the email resets the verification status', function () {
-    $user = User::factory()->create([
-        'email' => 'old@example.com',
-        'email_verified_at' => now(),
-    ]);
+test('an address is only taken within the user own realm', function () {
+    $user = User::factory()->create();
+    User::factory()->for($user->realm)->create(['email' => 'taken@example.com']);
+    User::factory()->create(['email' => 'elsewhere@example.com']);
 
     $this->actingAs($user)
-        ->submitForm(EmailForm::class, ['email' => 'new@example.com'])
-        ->assertRedirect();
+        ->submitForm(EmailForm::class, ['email' => 'taken@example.com'])
+        ->assertInvalid(['email']);
 
-    expect($user->refresh()->email_verified_at)->toBeNull();
+    $this->actingAs($user)
+        ->submitForm(EmailForm::class, ['email' => 'elsewhere@example.com'])
+        ->assertRedirect(realmRoute($user->realm, 'account'));
+
+    expect($user->refresh()->email)->toBe('elsewhere@example.com');
 });
 
 test('users can update their password', function () {
@@ -89,4 +96,20 @@ test('updating with an unchanged email keeps the verification status', function 
         ->assertRedirect();
 
     expect($user->refresh()->email_verified_at)->not->toBeNull();
+});
+
+test('a changed password honours the realm password history and is recorded', function () {
+    $user = User::factory()->create();
+    app(UpdateRealmConfiguration::class)->handle($user->realm, ['password_history' => 2]);
+    $change = fn (string $password) => $this->actingAs($user)->submitForm(PasswordForm::class, [
+        'current_password' => 'password',
+        'password' => $password,
+        'password_confirmation' => $password,
+    ]);
+
+    $change('password')->assertInvalid(['password']);
+    $change('another-secure-password')->assertSessionHasNoErrors();
+
+    expect(Hash::check('another-secure-password', $user->refresh()->password))->toBeTrue()
+        ->and(AuditEvent::query()->where('type', AuditEventType::PasswordChanged->value)->where('user_id', $user->id)->exists())->toBeTrue();
 });

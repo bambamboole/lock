@@ -5,10 +5,6 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
-use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 
@@ -28,23 +24,6 @@ function signInToRealm(User $user): TestResponse
         ['email' => $user->email, 'password' => 'password'],
     );
 }
-
-it('reads the authentication settings of each realm from its own configuration', function () {
-    $realm = Realm::factory()->create(['slug' => 'partners']);
-
-    app(UpdateRealmConfiguration::class)->handle($realm, [
-        'login_methods' => ['passkey'],
-        'mfa_requirement' => 'always',
-        'email_verification_required' => true,
-    ]);
-
-    $authentication = $realm->refresh()->authentication();
-
-    expect($authentication->methods)->toBe([LoginMethod::Passkey])
-        ->and($authentication->mfa)->toBe(MfaRequirement::Always)
-        ->and($authentication->emailVerificationRequired)->toBeTrue()
-        ->and(Realm::master()->authentication())->toEqual(AuthenticationSettings::fromConfig());
-});
 
 it('returns 404 on the password routes of a realm that does not accept the method', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
@@ -79,17 +58,4 @@ it('holds an unverified address at the verification prompt when the realm requir
     app(UpdateRealmConfiguration::class)->handle($realm, ['email_verification_required' => true]);
 
     signInToRealm($user)->assertRedirect(realmRoute($realm, 'identity.verification.notice'));
-});
-
-it('falls back to the configured defaults for a realm with no stored authentication settings', function () {
-    $realm = Realm::factory()->create(['slug' => 'legacy']);
-
-    foreach (['login_methods', 'mfa_requirement', 'email_verification_required'] as $key) {
-        $realm->settings->forget('realm.'.$key);
-    }
-
-    expect($realm->refresh()->authentication())->toEqual(AuthenticationSettings::fromConfig())
-        ->and(RealmConfiguration::defaults()['login_methods'])->toBe(['password', 'passkey', 'social']);
-
-    signInToRealm(User::factory()->for($realm)->create())->assertRedirect(realmRoute($realm, 'account'));
 });

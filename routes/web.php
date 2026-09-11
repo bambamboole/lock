@@ -16,8 +16,6 @@ use Lattice\Http\Controllers\FragmentController;
 use Lattice\Http\Controllers\RemoteSourceTokenController;
 use Lattice\Table\Http\Controllers\TableController;
 
-// Lattice pages self-register their routes via #[AsPage]; only non-page routes live here.
-
 Route::get('/', function (Request $request) {
     $user = RequestUser::of($request);
 

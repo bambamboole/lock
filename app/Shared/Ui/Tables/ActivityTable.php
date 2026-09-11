@@ -29,9 +29,7 @@ abstract class ActivityTable extends EloquentTableDefinition
     abstract protected function changesFragment(array $row): Fragment;
 
     /**
-     * The event vocabulary of this scope, as value => translated label — the
-     * event column filters as a select over these. The description column is
-     * deliberately not searchable: it stores a translation key.
+     * The description column is not searchable: it stores a translation key.
      *
      * @return array<string, string>
      */

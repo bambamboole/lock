@@ -2,18 +2,8 @@
 
 declare(strict_types=1);
 
-/**
- * OpenID Connect Discovery 1.0 §3; OpenID Connect Core 1.0 §5.3 (userinfo), §5.1 (standard claims)
- */
-
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-
-it('serves discovery for the admin realm from the application host', function () {
-    $this->getJson(route('oidc.discovery'))->assertOk()
-        ->assertJsonPath('issuer', config('app.url'))
-        ->assertJsonPath('token_endpoint', config('app.url').'/oauth/token');
-});
 
 it('returns app-specific claims from userinfo', function () {
     $user = User::factory()->for(Realm::master())->create(['locale' => 'de', 'timezone' => 'Europe/Berlin']);

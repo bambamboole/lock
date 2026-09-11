@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
-use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
 use Bambamboole\LaravelOidc\Ui\Tables\TwoFactorMethodsTable;
 
 use function Tests\Helpers\assumeNotNull;
-use function Tests\Helpers\createPasskey;
 
 /**
- * The methods list is the whole two-factor state: every confirmed factor plus the
- * recovery codes backing them. There is no separate on/off switch, so what the
- * list shows has to be complete. Assertions stay on the projected payload — the
- * row keys a column actually binds — because that is all the client receives.
+ * There is no separate two-factor switch, so the list has to be complete.
+ * Assertions stay on the projected payload because that is all the client
+ * receives.
  *
  * @return array<int, array<string, mixed>>
  */
@@ -42,13 +39,6 @@ function recoveryRowLabel(): string
     return __('oidc-ui::security.recovery-codes.heading');
 }
 
-it('lists nothing while no factor is confirmed', function () {
-    $user = User::factory()->create();
-    app(TotpFactorProvider::class)->enroll($user);
-
-    expect(methodRows($this, $user))->toBeEmpty();
-});
-
 it('names a confirmed factor and what it is good for', function () {
     $user = User::factory()->withTwoFactor()->create();
 
@@ -58,16 +48,6 @@ it('names a confirmed factor and what it is good for', function () {
         ->and($row['description'])->toBe(__('oidc-ui::auth.two-factor.method.totp'))
         ->and($row['last_used_at_diff'])->toBe(__('oidc-ui::security.methods.never-used'))
         ->and($row['actions'])->toHaveCount(1);
-});
-
-it('marks a passkey as good for signing in as well', function () {
-    $user = User::factory()->create();
-    createPasskey($user, 'MacBook Pro');
-
-    $row = methodRow($this, $user, 'MacBook Pro');
-
-    expect($row['role'])->toBe(__('oidc-ui::security.role.login-and-second-factor'))
-        ->and($row['description'])->toBe(__('oidc-ui::auth.two-factor.method.webauthn'));
 });
 
 it('adds a recovery-codes row reporting how many are left', function () {

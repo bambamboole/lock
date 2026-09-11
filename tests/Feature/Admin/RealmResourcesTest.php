@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\CreateResourceAction;
@@ -21,18 +20,17 @@ use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });
 
-/** An administrator who may look at resources but not change them. */
 $resourceViewer = function (): User {
     $viewer = User::factory()->for(Realm::master())->create();
     $role = Role::factory()->create(['name' => 'Resource viewer']);
-    $role->syncPermissions([AdminPermission::Access->value, AdminPermission::ViewResources->value]);
+    $role->syncPermissions([AdminPermission::Access, AdminPermission::ViewResources]);
     $viewer->roles()->attach($role);
 
     return $viewer;
@@ -50,7 +48,7 @@ test('a resources-manage admin adds a resource and it is recorded', function () 
         ->and($resource->name)->toBe('Orders API')
         ->and($resource->realm_id)->toBe($this->realm->id);
 
-    $activity = Activity::global()->where('event', ResourceAuditEvent::ResourceCreated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceCreated->eventName())->sole();
 
     expect($activity->subject_id)->toBe($resource->id)
         ->and($activity->getProperty('realm'))->toBe('acme')
@@ -214,7 +212,7 @@ test('a view-only admin reads the console but cannot change anything', function 
 test('the resources console is closed without a resources permission', function () {
     $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api']);
 
-    $this->actingAs(User::factory()->for($this->realm)->create());
+    $this->actingAs(globalAdminWith(AdminPermission::Access));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
     $this->loadDeniedTable(AdminResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();

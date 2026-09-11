@@ -20,40 +20,26 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/resources', name: 'admin.realms.resources', can: [AdminPermission::Access, AdminPermission::ViewResources])]
 final class RealmResourcesPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
     public function title(): string
     {
         return __('admin.resources.heading');
     }
 
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.resources'), route('admin.realms.resources', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
-        $this->realm = $realm;
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.resources'), route('admin.realms.resources', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-realm-resources-page')
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.resources.heading'), __('admin.resources.description', ['realm' => $realm->name]), ActionBar::make(primary: [
-                        Action::use(CreateResourceAction::class, ['realm' => $realm->slug]),
+                        Action::use(CreateResourceAction::class),
                     ])),
-                    Table::use(AdminResourcesTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminResourcesTable::class),
                 ]),
         ]);
     }

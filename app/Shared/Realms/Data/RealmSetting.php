@@ -17,10 +17,6 @@ final readonly class RealmSetting
         public RealmSettingType $type,
     ) {}
 
-    /**
-     * The kebab-cased leaf the `admin.realms.fields.*` translations are keyed
-     * by.
-     */
     public function translationKey(): string
     {
         return str_replace('_', '-', $this->name);
@@ -33,9 +29,8 @@ final readonly class RealmSetting
     }
 
     /**
-     * The rules a form holding this setting alone can check. A rule comparing
-     * it to another setting needs the whole configuration, so it is left to
-     * the merged validation the update runs.
+     * A rule comparing against another setting needs the whole configuration,
+     * so it is left to the update's merged validation.
      *
      * @return list<string|In>
      */

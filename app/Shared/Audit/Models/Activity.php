@@ -67,9 +67,7 @@ final class Activity extends BaseActivity
     }
 
     /**
-     * The description column stores a translation key; reading resolves it in
-     * the viewer's locale. Raw text (or a key whose translation was removed)
-     * falls through unchanged, so pre-existing rows keep rendering.
+     * The column stores a translation key, resolved in the viewer's locale.
      *
      * @return Attribute<string|null, never>
      */

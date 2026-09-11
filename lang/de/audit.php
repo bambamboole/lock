@@ -14,7 +14,7 @@ return [
                 'failed' => 'Anmeldung fehlgeschlagen',
             ],
             'logout' => 'Abgemeldet',
-            'password' => ['reset' => 'Passwort zurückgesetzt'],
+            'password' => ['reset' => 'Passwort zurückgesetzt', 'changed' => 'Passwort geändert'],
             'registration' => ['succeeded' => 'Registrierung abgeschlossen'],
             'mfa' => [
                 'challenge-succeeded' => 'Zweiter Faktor akzeptiert',
@@ -46,11 +46,6 @@ return [
         ],
     ],
     'events' => [
-        'model' => [
-            'created' => 'Erstellt',
-            'updated' => 'Aktualisiert',
-            'deleted' => 'Gelöscht',
-        ],
         'realm' => [
             'created' => 'Realm angelegt',
             'updated' => 'Realm aktualisiert',
