@@ -18,7 +18,7 @@ RUN composer dump-autoload --no-dev --optimize --no-scripts \
 # The Lattice Vite plugin discovers component packages from vendor/composer/installed.json.
 # `npm install`, not `npm ci`: the lockfile is generated on macOS and lacks the linux-only
 # optional packages, which `npm ci` rejects as out of sync.
-FROM node:22-bookworm-slim AS assets
+FROM node:24-bookworm-slim AS assets
 
 WORKDIR /app
 

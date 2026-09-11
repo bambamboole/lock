@@ -13,7 +13,7 @@ never share state.
   `laravel/octane` as a dependency. The image brings its own Caddyfile, entrypoint, PHP settings, and healthcheck
   scripts; the Dockerfile only adds the `bcmath`, `gmp`, and `intl` extensions and sets environment defaults, so the
   repository carries no Caddyfile, entrypoint, or `php.ini` of its own.
-- Multi-stage: `composer install --no-dev` → Vite build on Node 22 (the version CI uses; nothing in the repo pins
+- Multi-stage: `composer install --no-dev` → Vite build on Node 24 (the version CI uses; nothing in the repo pins
   one) → runtime image. The Vite stage needs `vendor/` because the Lattice Vite plugin discovers component packages
   from `vendor/composer/installed.json`. It runs `npm install` rather than `npm ci` for the same reason CI does: the
   lockfile is generated on macOS and lacks the Linux-only optional packages.
