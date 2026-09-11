@@ -4,14 +4,12 @@ declare(strict_types=1);
 namespace App\Auth\Support;
 
 use App\Shared\Auth\Attributes\AsPermission;
-use App\Shared\Auth\Attributes\AsScope;
 use App\Shared\Auth\Contracts\PermissionCatalog;
 use App\Shared\Auth\Contracts\PermissionEnum;
 use App\Shared\Auth\Data\PermissionDefinition;
 use BackedEnum;
 use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
-use ReflectionEnumUnitCase;
 use RuntimeException;
 use Spatie\Attributes\Attributes;
 use Spatie\StructureDiscoverer\Discover;
@@ -75,24 +73,6 @@ final class PermissionRepository implements PermissionCatalog
         return array_map(fn (PermissionDefinition $permission): string => $permission->value, $this->all());
     }
 
-    /**
-     * API scope value => translated description, realm-scoped `#[AsScope]`-tagged cases only.
-     *
-     * @return array<string, string>
-     */
-    public function apiScopes(): array
-    {
-        $scopes = [];
-
-        foreach ($this->realm() as $permission) {
-            if ($permission->isScope) {
-                $scopes[$permission->value] = __($permission->descriptionKey);
-            }
-        }
-
-        return $scopes;
-    }
-
     public function rebuild(): int
     {
         Cache::forget(self::CACHE_KEY);
@@ -146,10 +126,10 @@ final class PermissionRepository implements PermissionCatalog
 
     /**
      * Sorted by file name because the discoverer otherwise yields the filesystem's own
-     * readdir order, which differs per machine — the catalog order reaches the OIDC
-     * scope catalog and the roles UI, and neither must drift.
+     * readdir order, which differs per machine — the catalog order reaches the roles UI
+     * and must not drift.
      *
-     * @return list<array{enum: class-string<BackedEnum>, case: string, value: string, group: string, global: bool, description: string, scope: bool}>
+     * @return list<array{enum: class-string<BackedEnum>, case: string, value: string, group: string, global: bool, description: string}>
      */
     private function discover(): array
     {
@@ -178,12 +158,6 @@ final class PermissionRepository implements PermissionCatalog
                     throw new RuntimeException(sprintf('%s must implement %s.', $enum, PermissionEnum::class));
                 }
 
-                $isScope = new ReflectionEnumUnitCase($enum, $case->name)->getAttributes(AsScope::class) !== [];
-
-                if ($attribute->global && $isScope) {
-                    throw new RuntimeException(sprintf('Global permission %s::%s cannot be exposed as an API scope.', $enum, $case->name));
-                }
-
                 $rows[] = [
                     'enum' => $enum,
                     'case' => $case->name,
@@ -191,7 +165,6 @@ final class PermissionRepository implements PermissionCatalog
                     'group' => $attribute->label,
                     'global' => $attribute->global,
                     'description' => $case->getTranslationKey(),
-                    'scope' => $isScope,
                 ];
             }
         }
@@ -231,7 +204,6 @@ final class PermissionRepository implements PermissionCatalog
                 group: (string) $row['group'],
                 global: (bool) $row['global'],
                 descriptionKey: (string) $row['description'],
-                isScope: (bool) $row['scope'],
             );
         }
 

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Auth\Support\OidcScopeCatalog;
+use App\Resources\Support\ResourceScopeCatalog;
 use App\Shared\Audit\Support\DatabaseAuditSink;
 use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
 use Bambamboole\LaravelOidc\Server\Credentials\TotpFactorProvider;
@@ -59,7 +59,9 @@ return [
         'log_channel' => env('OIDC_AUDIT_LOG_CHANNEL'),
     ],
 
+    // A scope belongs to exactly one resource of the realm, so the catalog is
+    // read per requested RFC 8707 `resource` rather than configured statically.
     'scopes' => [
-        'catalog' => OidcScopeCatalog::class,
+        'catalog' => ResourceScopeCatalog::class,
     ],
 ];
