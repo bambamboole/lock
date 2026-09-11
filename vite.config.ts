@@ -18,19 +18,6 @@ const latticeRoot = useLocalLattice
     : undefined;
 
 export default defineConfig({
-    build: {
-        rollupOptions: {
-            output: {
-                // The rich editor is large and used by a minority of pages;
-                // splitting it keeps it out of the entry chunk every page pays for.
-                manualChunks(id) {
-                    if (id.includes("prosemirror") || id.includes("@tiptap")) {
-                        return "rich-editor-vendor";
-                    }
-                },
-            },
-        },
-    },
     resolve: {
         alias: {
             "@": path.resolve(import.meta.dirname, "resources/js"),
