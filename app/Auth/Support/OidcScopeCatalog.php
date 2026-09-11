@@ -15,9 +15,10 @@ final readonly class OidcScopeCatalog implements ScopeCatalog
     public function __construct(private PermissionRepository $permissions) {}
 
     /**
+     * @param  list<string>  $audiences
      * @return array<string, string>
      */
-    public function scopes(): array
+    public function scopes(array $audiences): array
     {
         return $this->permissions->apiScopes();
     }

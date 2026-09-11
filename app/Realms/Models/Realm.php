@@ -9,6 +9,7 @@ use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
@@ -248,6 +249,11 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
             logoutRedirect: route('identity.login', ['realm' => $this->slug], absolute: false),
             acrValues: $configured->acrValues,
         );
+    }
+
+    public function authentication(): AuthenticationSettings
+    {
+        return AuthenticationSettings::fromConfig();
     }
 
     public function brokering(): BrokeringSettings
