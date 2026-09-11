@@ -56,6 +56,21 @@ it('mints its form endpoints below the account and accepts the identity session 
     expect($user->refresh()->name)->toBe('New Name');
 });
 
+it('mints the two-factor setup form below the account as well', function () {
+    $realm = Realm::factory()->create(['slug' => 'acme']);
+    $user = User::factory()->for($realm)->create();
+
+    $page = $this->actingAs($user, 'identity')
+        ->withSession(['auth.password_confirmed_at' => time()])
+        ->get(realmRoute('acme', 'identity.two-factor.setup'))
+        ->assertOk();
+
+    $form = latticeSchema($page)->find(fn (ComponentNode $node): bool => $node->type() === 'form');
+    assumeNotNull($form, 'The setup page renders the setup form.');
+
+    expect($form->prop('action'))->toBeString()->toStartWith('/account/lattice/forms/');
+});
+
 it('sends a signed-in identity from the realm sign-in to its account', function () {
     $realm = Realm::factory()->create(['slug' => 'acme']);
     $user = User::factory()->for($realm)->create();

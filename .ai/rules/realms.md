@@ -55,9 +55,10 @@ because a passkey is bound to the host it was created on.
 then `web`, then `AuthenticateIdentity:identity` — and `bootstrap/app.php` pins `ResolveRealm` before `StartSession`
 in the middleware priority so a page may list them in any order. The root Lattice endpoints (`/lattice/forms/…`)
 authenticate with the console's `web` guard, which on the master realm's host shares the session with the identity
-guard, so `routes/web.php` registers the same endpoints once more below `/account/lattice/…` behind the identity guard,
-and `App\Realms\Support\RealmScopedLatticeEndpoints` (a `URL::formatPathUsing` hook) moves every Lattice URL minted
-during a realm request there. `Realm::login()` sends a realm login home to that account page and a realm logout back
+guard, so `AuthServiceProvider` registers Lattice's `account` endpoint area (`/account/lattice/…`, behind the same
+middleware as the page) and the account page names it (`#[AsPage(endpoints: 'account')]`). laravel-oidc renders its
+two-factor setup page from its own controller, so Lock binds `App\Auth\Ui\Pages\SetupTwoFactorPage`, a subclass that
+names the area, as the package's `FactorSetupView`. `Realm::login()` sends a realm login home to that account page and a realm logout back
 to the realm's own sign-in — never to `/` on the master host, which is its relying-party entry.
 
 ## A realm's domain is checked, never trusted

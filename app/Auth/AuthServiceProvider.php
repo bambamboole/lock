@@ -15,13 +15,17 @@ use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
+use App\Auth\Ui\Pages\SetupTwoFactorPage;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
+use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginApi;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
 use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
+use Bambamboole\LaravelOidc\Server\Credentials\Views\FactorSetupView;
+use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
@@ -47,6 +51,8 @@ final class AuthServiceProvider extends ServiceProvider
         $this->app->bind(ResetsUserMfa::class, ResetUserMfa::class);
         $this->app->bind(ClaimsResolver::class, UserClaimsResolver::class);
 
+        $this->app->bind(FactorSetupView::class, SetupTwoFactorPage::class);
+
         if ($this->app->environment('local')) {
             $this->app->bind(LoginView::class, DevLoginPage::class);
         }
@@ -60,6 +66,7 @@ final class AuthServiceProvider extends ServiceProvider
         ));
 
         Lattice::context('user', User::class);
+        Lattice::endpoints('account', prefix: 'account/lattice', middleware: [ResolveRealm::class, 'web', AuthenticateIdentity::class.':identity']);
 
         /*
          * The user provider already hides blocked users; this catches the
