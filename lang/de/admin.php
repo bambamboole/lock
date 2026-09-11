@@ -388,6 +388,7 @@ return [
         ],
         'sections' => [
             'general' => 'Allgemein',
+            'login' => 'Anmeldung',
             'tokens' => 'Token-Laufzeiten',
             'sessions' => 'Sitzungen',
             'mfa' => 'Mehrfaktor-Authentifizierung',
@@ -397,6 +398,16 @@ return [
         'factors' => [
             'totp' => 'Authenticator-App (TOTP)',
             'webauthn' => 'Sicherheitsschlüssel oder Passkey (WebAuthn)',
+        ],
+        'login-methods' => [
+            'password' => 'E-Mail-Adresse und Passwort',
+            'passkey' => 'Passkey',
+            'social' => 'Social-Login-Anbieter',
+        ],
+        'mfa-requirements' => [
+            'never' => 'Nie',
+            'if-enrolled' => 'Wenn der Benutzer einen Faktor hat',
+            'always' => 'Immer',
         ],
         'fields' => [
             'name' => [
@@ -437,6 +448,18 @@ return [
             'session-token-refresh-skew' => [
                 'label' => 'Erneuerungsfenster für Sitzungstokens',
                 'help-text' => 'Anzahl der Sekunden vor Ablauf, ab der ein Sitzungstoken erneuert wird.',
+            ],
+            'login-methods' => [
+                'label' => 'Erlaubte Anmeldemethoden',
+                'help-text' => 'Methoden, die dieser Realm anbietet. Eine weggelassene Methode ist gesperrt und nicht nur ausgeblendet; Registrierung und Passwort-Reset hängen an der Passwortmethode.',
+            ],
+            'email-verification-required' => [
+                'label' => 'Bestätigte E-Mail-Adresse verlangen',
+                'help-text' => 'Benutzer mit unbestätigter Adresse müssen sie bestätigen, bevor ihre Anmeldung abgeschlossen wird.',
+            ],
+            'mfa-requirement' => [
+                'label' => 'Zweiter Faktor',
+                'help-text' => 'Wann der Realm einen zweiten Faktor verlangt. „Immer“ führt Benutzer ohne Faktor vor Abschluss der Anmeldung durch die Einrichtung.',
             ],
             'challenge-providers' => [
                 'label' => 'Verfügbare zweite Faktoren',

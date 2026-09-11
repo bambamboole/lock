@@ -388,6 +388,7 @@ return [
         ],
         'sections' => [
             'general' => 'General',
+            'login' => 'Sign-in',
             'tokens' => 'Token lifetimes',
             'sessions' => 'Sessions',
             'mfa' => 'Multi-factor authentication',
@@ -397,6 +398,16 @@ return [
         'factors' => [
             'totp' => 'Authenticator app (TOTP)',
             'webauthn' => 'Security key or passkey (WebAuthn)',
+        ],
+        'login-methods' => [
+            'password' => 'Email address and password',
+            'passkey' => 'Passkey',
+            'social' => 'Social provider',
+        ],
+        'mfa-requirements' => [
+            'never' => 'Never',
+            'if-enrolled' => 'When the user has a factor',
+            'always' => 'Always',
         ],
         'fields' => [
             'name' => [
@@ -437,6 +448,18 @@ return [
             'session-token-refresh-skew' => [
                 'label' => 'Session token renewal window',
                 'help-text' => 'How many seconds before expiry a session token is renewed.',
+            ],
+            'login-methods' => [
+                'label' => 'Accepted sign-in methods',
+                'help-text' => 'Methods this realm offers. A method left out is closed rather than hidden, and registration as well as password reset hang off the password method.',
+            ],
+            'email-verification-required' => [
+                'label' => 'Require a verified email address',
+                'help-text' => 'Users with an unconfirmed address have to verify it before their sign-in completes.',
+            ],
+            'mfa-requirement' => [
+                'label' => 'Second factor',
+                'help-text' => 'When the realm challenges for a second factor. Always sends a user without one to enrollment before the sign-in completes.',
             ],
             'challenge-providers' => [
                 'label' => 'Available second factors',

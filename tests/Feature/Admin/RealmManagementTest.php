@@ -15,6 +15,8 @@ use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\globalAdmin;
@@ -71,6 +73,10 @@ it('saves one setting at a time for the signed realm and leaves every other real
         ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'tokens']));
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'session_cookie_name', 'custom-identity'))
         ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'sessions']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'login_methods', ['password', 'passkey']))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'login']));
+    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'mfa_requirement', 'always'))
+        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'mfa']));
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'challenge_providers', ['totp']))
         ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'mfa']));
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'dynamic_registration', true))
@@ -85,6 +91,9 @@ it('saves one setting at a time for the signed realm and leaves every other real
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
         ->and($realm->sessions()->cookieName)->toBe('custom-identity')
         ->and($other->sessions()->cookieName)->toBeNull()
+        ->and($realm->authentication()->methods)->toBe([LoginMethod::Password, LoginMethod::Passkey])
+        ->and($realm->authentication()->mfa)->toBe(MfaRequirement::Always)
+        ->and($other->authentication()->mfa)->toBe(MfaRequirement::IfEnrolled)
         ->and($realm->credentials()->challengeProviders)->toBe(['totp'])
         ->and($realm->clients()->dynamicRegistration)->toBeTrue()
         ->and($realm->clients()->allowedRedirectDomains)->toBe(['partner.test', 'localhost'])
@@ -173,6 +182,7 @@ it('reports invalid list entries on the matching configuration field', function 
     'unsafe scheme' => ['allowed_redirect_schemes', 'javascript'],
     'URL instead of host' => ['allowed_redirect_domains', 'https://partner.test/path'],
     'unknown trusted client' => ['trusted_clients', 'missing-client'],
+    'unknown mfa requirement' => ['mfa_requirement', 'sometimes'],
 ]);
 
 it('only trusts active clients belonging to the configured realm', function () {

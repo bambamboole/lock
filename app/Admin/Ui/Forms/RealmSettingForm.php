@@ -9,6 +9,8 @@ use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Enums\RealmSettingType;
 use App\Shared\Realms\Support\RealmConfiguration;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Lattice\Facades\Effects;
@@ -18,6 +20,7 @@ use Lattice\Form\Components\CheckboxGroup;
 use Lattice\Form\Components\Field;
 use Lattice\Form\Components\Form as FormComponent;
 use Lattice\Form\Components\NumberInput;
+use Lattice\Form\Components\Select;
 use Lattice\Form\Components\Textarea;
 use Lattice\Form\Components\TextInput;
 use Lattice\Form\FormData;
@@ -93,6 +96,23 @@ final class RealmSettingForm extends FormDefinition
                 ])
                 ->rules($rules)
                 ->helperText($helperText),
+            RealmSettingType::LoginMethods => CheckboxGroup::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->options(array_map(
+                    fn (LoginMethod $method): mixed => CheckboxGroup::option(__('admin.realms.login-methods.'.$method->value), $method->value),
+                    LoginMethod::cases(),
+                ))
+                ->rules($rules)
+                ->helperText($helperText),
+            RealmSettingType::MfaRequirement => Select::make($setting->name, $label)
+                ->value($value, editable: true)
+                ->options(array_map(
+                    fn (MfaRequirement $requirement): mixed => Select::option(__('admin.realms.mfa-requirements.'.str_replace('_', '-', $requirement->value)), $requirement->value),
+                    MfaRequirement::cases(),
+                ))
+                ->required()
+                ->rules($rules)
+                ->helperText($helperText),
             RealmSettingType::StringList => Textarea::make($setting->name, $label)
                 ->value(implode("\n", is_array($value) ? $value : []), editable: true)
                 ->rows(4)
@@ -112,7 +132,8 @@ final class RealmSettingForm extends FormDefinition
             RealmSettingType::Duration, RealmSettingType::Days, RealmSettingType::Count => $data->integer($setting->name),
             RealmSettingType::Text => (string) $data->string($setting->name),
             RealmSettingType::Flag => $data->boolean($setting->name),
-            RealmSettingType::Factors => array_values(array_filter((array) $data->get($setting->name, []), is_string(...))),
+            RealmSettingType::Factors, RealmSettingType::LoginMethods => array_values(array_filter((array) $data->get($setting->name, []), is_string(...))),
+            RealmSettingType::MfaRequirement => (string) $data->string($setting->name),
             RealmSettingType::StringList => array_values(array_filter(
                 array_map(trim(...), preg_split('/\R/u', (string) $data->string($setting->name)) ?: []),
                 fn (string $line): bool => $line !== '',
