@@ -8,12 +8,14 @@ use App\Auth\Models\User;
 use App\Auth\Support\BrowserSession;
 use App\Auth\Support\BrowserSessions;
 use App\Shared\Auth\Contracts\EndsUserSessions;
+use Bambamboole\LaravelOidc\Server\Sessions\OidcSessionRepository;
 use Illuminate\Support\Facades\DB;
 
 final readonly class EndBrowserSession
 {
     public function __construct(
         private BrowserSessions $sessions,
+        private OidcSessionRepository $oidcSessions,
         private EndsUserSessions $endUserSessions,
     ) {}
 
@@ -30,7 +32,7 @@ final readonly class EndBrowserSession
             ->where('id', $session->id)
             ->delete();
 
-        $sid = $session->oidcSessionId();
+        $sid = $this->oidcSessions->findByBrowserSession($session->id)?->sid;
 
         if ($sid !== null) {
             $this->endUserSessions->handle($user, $sid);
