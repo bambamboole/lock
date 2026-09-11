@@ -12,25 +12,22 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+use function Tests\Helpers\globPaths;
+
 /**
- * Derived from the directories that exist, so a new domain or slice is covered
- * without editing this file. Ui slices are the Lattice adapter layer and are
- * excluded.
+ * Every child of a module except its Ui slice and its service provider, derived
+ * from what exists so a new slice or root class is covered without editing
+ * this file.
  *
  * @return array<int, string>
  */
-function architectureDomainNamespaces(): array
+function architectureLayerNamespaces(): array
 {
-    $slices = '{Actions,Attributes,Concerns,Console,Contracts,Data,Database,Enums,Events,Http,Models,Notifications,Observers,Policies,Services,Settings,Support}';
     $appPath = dirname(__DIR__, 2).'/app';
 
-    return collect([
-        ...glob("{$appPath}/*/{$slices}", GLOB_ONLYDIR | GLOB_BRACE) ?: [],
-        ...glob("{$appPath}/Shared/*/{$slices}", GLOB_ONLYDIR | GLOB_BRACE) ?: [],
-    ])
-        ->reject(fn (string $path): bool => str_contains($path, '/Ui/'))
-        ->map(fn (string $path): string => 'App\\'.str_replace('/', '\\', Str::after($path, $appPath.'/')))
-        ->unique()
+    return collect(globPaths("{$appPath}/*/*"))
+        ->reject(fn (string $path): bool => basename($path) === 'Ui' || str_ends_with($path, 'ServiceProvider.php'))
+        ->map(fn (string $path): string => 'App\\'.str_replace(['/', '.php'], ['\\', ''], Str::after($path, $appPath.'/')))
         ->sort()
         ->values()
         ->all();
@@ -43,7 +40,7 @@ function architectureUiNamespaces(): array
 {
     $appPath = dirname(__DIR__, 2).'/app';
 
-    return collect(glob("{$appPath}/*/Ui", GLOB_ONLYDIR) ?: [])
+    return collect(globPaths("{$appPath}/*/Ui", GLOB_ONLYDIR))
         ->map(fn (string $path): string => 'App\\'.str_replace('/', '\\', Str::after($path, $appPath.'/')))
         ->sort()
         ->values()
@@ -61,12 +58,12 @@ function architectureLatticeNamespaces(): array
 {
     $targets = [];
 
-    foreach (glob(dirname(__DIR__, 2).'/vendor/lattice-php/*/composer.json') ?: [] as $manifest) {
-        /** @var array{autoload?: array{"psr-4"?: array<string, string>}} $package */
-        $package = json_decode((string) file_get_contents($manifest), true);
+    foreach (globPaths(dirname(__DIR__, 2).'/vendor/lattice-php/*/composer.json') as $manifest) {
+        $package = json_decode((string) file_get_contents($manifest), true, flags: JSON_THROW_ON_ERROR);
+        $autoload = is_array($package) && is_array($package['autoload']['psr-4'] ?? null) ? $package['autoload']['psr-4'] : [];
 
-        foreach ($package['autoload']['psr-4'] ?? [] as $prefix => $sourcePath) {
-            $prefix = rtrim($prefix, '\\');
+        foreach ($autoload as $prefix => $sourcePath) {
+            $prefix = rtrim((string) $prefix, '\\');
 
             if ($prefix !== 'Lattice') {
                 $targets[] = $prefix;
@@ -74,13 +71,13 @@ function architectureLatticeNamespaces(): array
                 continue;
             }
 
-            $sourceDir = dirname($manifest).'/'.trim($sourcePath, '/');
+            $sourceDir = dirname($manifest).'/'.trim((string) $sourcePath, '/');
 
-            foreach (glob("{$sourceDir}/*", GLOB_ONLYDIR) ?: [] as $directory) {
+            foreach (globPaths("{$sourceDir}/*", GLOB_ONLYDIR) as $directory) {
                 $targets[] = 'Lattice\\'.basename($directory);
             }
 
-            foreach (glob("{$sourceDir}/[A-Z]*.php") ?: [] as $file) {
+            foreach (globPaths("{$sourceDir}/[A-Z]*.php") as $file) {
                 $targets[] = 'Lattice\\'.basename($file, '.php');
             }
         }
@@ -98,14 +95,9 @@ function architectureLatticeNamespaces(): array
 function architectureDomainModels(): array
 {
     $appPath = dirname(__DIR__, 2).'/app';
-    $files = [
-        ...glob("{$appPath}/*/Models/*.php") ?: [],
-        ...glob("{$appPath}/Shared/*/Models/*.php") ?: [],
-    ];
-
     $models = [];
 
-    foreach ($files as $file) {
+    foreach ([...globPaths("{$appPath}/*/Models/*.php"), ...globPaths("{$appPath}/Shared/*/Models/*.php")] as $file) {
         $class = 'App\\'.str_replace('/', '\\', substr($file, strlen($appPath) + 1, -4));
 
         if (! class_exists($class) || ! is_subclass_of($class, Model::class)) {
@@ -125,24 +117,13 @@ function architectureDomainModels(): array
 }
 
 /**
- * A domain write that sends an in-app notification may use Lattice's
- * notification API. Additions here need a reason of the same kind.
- *
- * @return array<int, class-string>
- */
-function architectureSanctionedLatticeConsumers(): array
-{
-    return [];
-}
-
-/**
  * @return array<int, string>
  */
 function architectureDomains(): array
 {
     $appPath = dirname(__DIR__, 2).'/app';
 
-    return collect(glob("{$appPath}/*", GLOB_ONLYDIR) ?: [])
+    return collect(globPaths("{$appPath}/*", GLOB_ONLYDIR))
         ->map(fn (string $path): string => basename($path))
         ->reject(fn (string $domain): bool => $domain === 'Shared')
         ->sort()
@@ -170,17 +151,6 @@ function architectureSharedKernel(): array
 }
 
 /**
- * This list only shrinks: route the dependency through App\Shared and delete
- * the entry.
- *
- * @return array<int, class-string>
- */
-function architectureDomainBoundaryBaseline(): array
-{
-    return [];
-}
-
-/**
  * @param  ReflectionClass<Model>  $class
  */
 function architectureExtendsVendorModel(ReflectionClass $class): bool
@@ -194,19 +164,24 @@ function architectureExtendsVendorModel(ReflectionClass $class): bool
     return false;
 }
 
+it('finds the namespaces its layer rules check', function () {
+    expect(architectureLayerNamespaces())->not->toBeEmpty()
+        ->and(architectureUiNamespaces())->not->toBeEmpty()
+        ->and(architectureLatticeNamespaces())->not->toBeEmpty()
+        ->and(architectureDomains())->not->toBeEmpty();
+});
+
 // One arch() per source namespace: `expect([A, B])->not->toUse(X)` passes as
 // soon as ANY source lacks the dependency (pest-arch inverts "every source uses
 // X"), so an array of sources silently checks nothing.
-foreach (architectureDomainNamespaces() as $namespace) {
+foreach (architectureLayerNamespaces() as $namespace) {
     arch("{$namespace} does not depend on the lattice ui layer")
         ->expect($namespace)
-        ->not->toUse(architectureUiNamespaces())
-        ->ignoring(architectureSanctionedLatticeConsumers());
+        ->not->toUse(architectureUiNamespaces());
 
     arch("{$namespace} does not depend on lattice")
         ->expect($namespace)
-        ->not->toUse(architectureLatticeNamespaces())
-        ->ignoring(architectureSanctionedLatticeConsumers());
+        ->not->toUse(architectureLatticeNamespaces());
 }
 
 foreach (architectureDomains() as $domain) {
@@ -219,13 +194,13 @@ foreach (architectureDomains() as $domain) {
     arch("App\\{$domain} reaches other domains only through App\\Shared")
         ->expect("App\\{$domain}")
         ->not->toUse($neighbours)
-        ->ignoring([...architectureSharedKernel(), ...architectureDomainBoundaryBaseline()]);
+        ->ignoring(architectureSharedKernel());
 }
 
 arch('App\Shared does not depend on a domain')
     ->expect('App\Shared')
     ->not->toUse(array_map(fn (string $domain): string => "App\\{$domain}", architectureDomains()))
-    ->ignoring([...architectureSharedKernel(), ...architectureDomainBoundaryBaseline()]);
+    ->ignoring(architectureSharedKernel());
 
 it('uses uuid primary keys on all domain models', function () {
     $models = architectureDomainModels();

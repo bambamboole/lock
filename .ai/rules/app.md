@@ -18,5 +18,5 @@ Context resolvers (`Lattice::context('realm', …)`), slot extensions
 (`Lattice::extend('app.user-menu', …)`), container singletons, gate hooks, and middleware appended to a group
 belong here — that keeps a module's entry points in one file instead of scattered across the slice it happens to
 touch. Register dependent context keys beside their parent domain resolver and resolve the parent through
-`ContextResolutions`. Providers sit outside the domain slices `tests/Feature/ArchitectureTest.php` scans, so
-importing `Lattice\…` here is allowed without an entry in `architectureSanctionedLatticeConsumers()`.
+`ContextResolutions`. The architecture test's no-Lattice rules skip service providers, so importing `Lattice\…` here
+is allowed.

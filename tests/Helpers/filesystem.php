@@ -26,9 +26,9 @@ function readEnvironmentFile(string $path): array
 /**
  * @return list<string>
  */
-function globPaths(string $pattern): array
+function globPaths(string $pattern, int $flags = 0): array
 {
-    $paths = glob($pattern);
+    $paths = glob($pattern, $flags);
 
     if ($paths === false) {
         throw new RuntimeException("Unable to expand the glob pattern {$pattern}.");

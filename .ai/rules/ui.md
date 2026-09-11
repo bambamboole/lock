@@ -8,10 +8,8 @@ paths:
 ## The Ui slice is the only place that may touch Lattice
 
 `app/{Domain}/Ui/**` is the Lattice adapter layer. Everything outside it — models, actions, policies, support
-classes — must not import `Lattice\…` or another domain's `Ui\…`. `tests/Feature/ArchitectureTest.php` states this
-but does not currently enforce it: `expect([$a, $b])->not->toUse($x)` passes as soon as _any_ one source lacks the
-dependency, and both rules pass an array. Treat the convention as unchecked until that test is rewritten one
-`arch()` per namespace.
+classes — must not import `Lattice\…` or another domain's `Ui\…`. `tests/Feature/ArchitectureTest.php` checks every
+child of a module except its `Ui` slice and service provider.
 
 ## The admin console is the only management UI
 
