@@ -36,13 +36,10 @@ FROM base AS app
 
 # Every container start runs `php artisan optimize`; migrations stay with the explicit
 # `php artisan app:deploy` release step, which also runs the data migrations.
-# The image's Caddyfile answers 403 for every dotted path segment except a root-level
-# /.well-known/, which would block each realm's discovery document and JWKS. Routing them
-# to index.php up front skips that rule; Laravel still sees the original request URI.
 ENV AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=false \
-    CADDY_SERVER_EXTRA_DIRECTIVES="rewrite /realms/*/.well-known/* /index.php" \
     HEALTHCHECK_PATH=/up \
+    OCTANE_SERVER=frankenphp \
     PHP_OPCACHE_ENABLE=1 \
     APP_NAME=Lock \
     LOG_CHANNEL=stderr \
@@ -54,3 +51,5 @@ COPY --from=vendor --chown=www-data:www-data /var/www/html /var/www/html
 COPY --from=assets --chown=www-data:www-data /app/public/build /var/www/html/public/build
 
 USER www-data
+
+CMD ["php", "artisan", "octane:start", "--host=0.0.0.0", "--port=8080"]
