@@ -202,6 +202,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     protected function casts(): array
     {
         return [
+            // The package contract's id() method would otherwise make `id` read as a relation.
             'id' => 'string',
             'domain_status' => RealmDomainStatus::class,
             'domain_checked_at' => 'datetime',

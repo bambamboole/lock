@@ -19,7 +19,6 @@ use Bambamboole\LaravelOidc\Server\Tokens\Models\AuthorizationCode;
 use Bambamboole\LaravelOidc\Server\Tokens\Models\RefreshToken;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use LogicException;
 
 final class DeleteRealm implements DeletesRealm
 {
@@ -43,12 +42,7 @@ final class DeleteRealm implements DeletesRealm
     /** The row goes for good, so a deleted realm's slug is free again. */
     public function handle(Realm $realm): void
     {
-        if ($realm->isMaster()) {
-            throw new LogicException('The administration realm cannot be deleted.');
-        }
-
         DB::transaction(function () use ($realm): void {
-            DB::table('realm_role_user')->whereIn('realm_role_id', $realm->realmRoles()->select('id'))->delete();
             $realm->realmRoles()->delete();
             $realm->users()->each(fn ($user) => $user->delete());
 
