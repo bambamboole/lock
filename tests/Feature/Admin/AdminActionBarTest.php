@@ -7,11 +7,11 @@ use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Lattice\Support\Testing\ComponentNode;
+use Lattice\Support\Testing\TableRow;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerSlot;
 use function Tests\Helpers\realmClient;
-use function Tests\Helpers\rowMenus;
 
 /**
  * Both only send a mail the recipient can ignore; everything else changes state
@@ -33,8 +33,8 @@ test('every console action that changes something confirms first', function () {
     $surfaces = collect([
         headerSlot($this->get("/admin/realms/acme/users/{$this->target->id}")->assertOk()),
         headerSlot($this->get("/admin/realms/acme/clients/{$this->client->id}")->assertOk()),
-        ...rowMenus($this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data')),
-        ...rowMenus($this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->json('data')),
+        ...array_map(fn (TableRow $row): ComponentNode => $row->actions(), $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->rows()),
+        ...array_map(fn (TableRow $row): ComponentNode => $row->actions(), $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->rows()),
     ])->filter(fn (mixed $node): bool => $node instanceof ComponentNode);
 
     $unconfirmed = $surfaces

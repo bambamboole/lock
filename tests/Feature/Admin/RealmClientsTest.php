@@ -26,9 +26,6 @@ use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\realmClient;
-use function Tests\Helpers\rowClickHref;
-use function Tests\Helpers\rowMenuTriggers;
-use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
@@ -339,15 +336,15 @@ test('a client row opens its detail page and carries the same actions as it', fu
 
     $this->actingAs(globalAdmin());
     $detail = $this->get("/admin/realms/acme/clients/{$client->id}")->assertOk();
-    $row = tableRow($this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->json('data'), $client->id);
+    $row = $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->row($client->id);
 
-    expect(rowClickHref($row))->toBe("/admin/realms/acme/clients/{$client->id}")
+    expect($row->clickHref())->toBe("/admin/realms/acme/clients/{$client->id}")
         ->and(headerTriggers($detail))->toBe([
             'admin.clients.rotate-secret',
             'admin.clients.revoke',
             'admin.clients.delete',
         ])
-        ->and(rowMenuTriggers($row))->toBe(headerTriggers($detail));
+        ->and($row->actionIds())->toBe(headerTriggers($detail));
 });
 
 test('a client row menu follows the state of its own client', function () {
@@ -356,8 +353,8 @@ test('a client row menu follows the state of its own client', function () {
 
     $this->actingAs(globalAdmin());
     $this->callAction(RevokeClient::class, [], ['realm' => 'acme', 'client' => $revoked->id])->assertOk();
-    $rows = $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+    $table = $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk();
 
-    expect(rowMenuTriggers(tableRow($rows, $public->id)))->toBe(['admin.clients.revoke', 'admin.clients.delete'])
-        ->and(rowMenuTriggers(tableRow($rows, $revoked->id)))->toBe(['admin.clients.rotate-secret', 'admin.clients.restore', 'admin.clients.delete']);
+    expect($table->row($public->id)->actionIds())->toBe(['admin.clients.revoke', 'admin.clients.delete'])
+        ->and($table->row($revoked->id)->actionIds())->toBe(['admin.clients.rotate-secret', 'admin.clients.restore', 'admin.clients.delete']);
 });

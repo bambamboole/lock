@@ -12,12 +12,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
-use Lattice\Core\Attributes\AsFragment;
-use Lattice\Core\Contracts\SignsComponentReferences;
-use Lattice\Fragments\FragmentRegistry;
-use Spatie\Attributes\Attributes;
 
-use function Tests\Helpers\assumeNotNull;
 use function Tests\Helpers\globalAdmin;
 
 test('a role update that changes nothing is not logged', function () {
@@ -68,15 +63,8 @@ test('the row detail renders the recorded properties for an admin', function () 
 });
 
 test('a non-admin cannot read an activity row detail', function () {
-    $fragment = Attributes::get(AdminActivityChangesFragment::class, AsFragment::class);
-    assumeNotNull($fragment);
-
-    $key = $fragment->key;
-    $url = app(FragmentRegistry::class)->endpointFor($key);
-    $ref = app(SignsComponentReferences::class)->seal('fragment', $key, ['activity' => 1]);
-
     $this->actingAs(User::factory()->create())
-        ->getJson($url, ['X-Lattice-Ref' => $ref])
+        ->loadDeniedFragment(AdminActivityChangesFragment::class, ['activity' => 1])
         ->assertForbidden();
 });
 

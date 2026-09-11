@@ -12,9 +12,6 @@ use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
 use function Tests\Helpers\grantGlobalRole;
 use function Tests\Helpers\headerTriggers;
-use function Tests\Helpers\rowClickHref;
-use function Tests\Helpers\rowMenuTriggers;
-use function Tests\Helpers\tableRow;
 
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['slug' => 'acme']);
@@ -90,11 +87,10 @@ test('the user detail page offers its actions in the header, led by the two an o
 test('a user row opens the detail page and carries the same actions as it', function () {
     $target = User::factory()->for($this->realm)->create();
 
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
-    $row = tableRow($rows, $target->id);
+    $row = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->row($target->id);
 
-    expect(rowClickHref($row))->toBe("/admin/realms/acme/users/{$target->id}")
-        ->and(rowMenuTriggers($row))->toBe([
+    expect($row->clickHref())->toBe("/admin/realms/acme/users/{$target->id}")
+        ->and($row->actionIds())->toBe([
             'admin.users.send-password-reset',
             'admin.users.block',
             'admin.users.sessions.end-all',
@@ -106,20 +102,20 @@ test('a user row menu follows the state of its own user', function () {
     $blocked = User::factory()->for($this->realm)->create(['blocked_at' => now()]);
     $unverified = User::factory()->for($this->realm)->unverified()->create();
 
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
+    $table = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
 
-    expect(rowMenuTriggers(tableRow($rows, $blocked->id)))
+    expect($table->row($blocked->id)->actionIds())
         ->toBe(['admin.users.unblock', 'admin.users.sessions.end-all', 'admin.users.delete'])
-        ->and(rowMenuTriggers(tableRow($rows, $unverified->id)))
+        ->and($table->row($unverified->id)->actionIds())
         ->toContain('admin.users.resend-verification');
 });
 
 test('an admin cannot block or delete themselves from the users table', function () {
     $admin = globalAdmin();
 
-    $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
+    $row = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->row($admin->id);
 
-    expect(rowMenuTriggers(tableRow($rows, $admin->id)))
+    expect($row->actionIds())
         ->not->toContain('admin.users.block')
         ->not->toContain('admin.users.delete');
 });
