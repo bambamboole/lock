@@ -15,25 +15,25 @@
         "@inertiajs/vite": "^3.7.0",
         "@tailwindcss/vite": "^4.3.3",
         "@types/node": "^26.5.0",
-        "@types/react": "^19.2.18",
-        "@types/react-dom": "^19.2.7",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
         "@vitejs/plugin-react": "^6.1.1",
         "laravel-vite-plugin": "^3.2.0",
         "oxfmt": "^0.67.0",
         "oxlint": "^1.82.0",
         "playwright": "^1.63.0",
         "typescript": "^7.0.2",
-        "vite": "^8.2.2"
+        "vite": "^8.3.0"
     },
     "dependencies": {
         "@fontsource-variable/instrument-sans": "^5.3.0",
         "@inertiajs/react": "^3.7.0",
         "@laravel/passkeys": "^0.4.0",
-        "@lattice-php/core": "^0.75.0",
-        "@lattice-php/lattice": "^0.75.0",
-        "@lattice-php/ui": "^0.75.0",
-        "react": "^19.2.8",
-        "react-dom": "^19.2.8",
+        "@lattice-php/core": "^0.76.1",
+        "@lattice-php/lattice": "^0.76.1",
+        "@lattice-php/ui": "^0.76.1",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
         "tailwindcss": "^4.3.3"
     }
 }
