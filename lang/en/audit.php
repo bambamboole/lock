@@ -14,7 +14,7 @@ return [
                 'failed' => 'Sign-in failed',
             ],
             'logout' => 'Signed out',
-            'password' => ['reset' => 'Password reset'],
+            'password' => ['reset' => 'Password reset', 'changed' => 'Password changed'],
             'registration' => ['succeeded' => 'Registration completed'],
             'mfa' => [
                 'challenge-succeeded' => 'Second factor accepted',

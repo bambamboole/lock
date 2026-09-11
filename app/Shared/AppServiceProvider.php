@@ -12,7 +12,6 @@ use Illuminate\Foundation\DevCommands;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\Rules\Password;
 use RuntimeException;
 
 final class AppServiceProvider extends ServiceProvider
@@ -71,19 +70,5 @@ final class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
-
-        Password::defaults(fn (): ?Password => Realm::fromContext()?->passwordPolicy()->rule() ?? $this->passwordRuleOutsideRealms());
-    }
-
-    private function passwordRuleOutsideRealms(): ?Password
-    {
-        return app()->isProduction()
-            ? Password::min(12)
-                ->mixedCase()
-                ->letters()
-                ->numbers()
-                ->symbols()
-                ->uncompromised()
-            : null;
     }
 }

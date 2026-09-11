@@ -14,6 +14,7 @@ enum AuditEventType: string
     case LoginFailed = 'auth.login.failed';
     case LoggedOut = 'auth.logout';
     case PasswordReset = 'auth.password.reset';
+    case PasswordChanged = 'auth.password.changed';
     case RegistrationSucceeded = 'auth.registration.succeeded';
     case MfaChallengeSucceeded = 'auth.mfa.challenge_succeeded';
     case MfaChallengeFailed = 'auth.mfa.challenge_failed';
