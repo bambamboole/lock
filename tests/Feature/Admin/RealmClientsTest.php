@@ -17,11 +17,7 @@ use App\Shared\Realms\Enums\RealmAuditEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Consents\Models\Consent;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
 use Bambamboole\LaravelOidc\Server\Tokens\Models\AccessToken;
-use Bambamboole\LaravelOidc\Server\Tokens\Models\AuthorizationCode;
-use Bambamboole\LaravelOidc\Server\Tokens\Models\RefreshToken;
 use Illuminate\Support\Facades\Hash;
 use Lattice\Support\Testing\ComponentNode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -323,36 +319,18 @@ test('blocking a client stops it from being resolved as active until it is unblo
         ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientRestored->eventName())->sole()->subject_id)->toBe($client->id);
 });
 
-test('deleting a client removes its tokens, codes, consents and session participations', function () {
+test('deleting a client removes what was issued to it and records the deletion', function () {
     $client = realmClient($this->realm);
     $survivor = realmClient($this->realm, 'Survivor app');
     $user = User::factory()->for($this->realm)->create();
-
-    $issue = function (Client $client, string $prefix) use ($user): void {
-        AccessToken::query()->forceCreate(['id' => "{$prefix}-access", 'realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'expires_at' => now()->addHour()]);
-        RefreshToken::query()->forceCreate(['id' => "{$prefix}-refresh", 'realm_id' => 'acme', 'access_token_id' => "{$prefix}-access", 'expires_at' => now()->addDay()]);
-        AuthorizationCode::query()->forceCreate(['id' => "{$prefix}-code", 'realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'code_challenge' => str_repeat('c', 43), 'code_challenge_method' => 'S256', 'expires_at' => now()->addMinute()]);
-        Consent::query()->forceCreate(['realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'resource' => 'http://acme.localhost', 'scopes' => ['openid'], 'granted_at' => now()]);
-        SessionParticipant::query()->forceCreate(['sid' => fake()->uuid(), 'client_id' => $client->id]);
-    };
-    $issue($client, 'doomed');
-    $issue($survivor, 'kept');
+    AccessToken::factory()->forClient($client)->forUser($user)->create();
+    AccessToken::factory()->forClient($survivor)->forUser($user)->create();
 
     $this->actingAs(globalAdmin())->callAction(DeleteClient::class, [], ['realm' => 'acme', 'client' => $client->id])
         ->assertRedirectsToRoute('admin.realms.clients', ['realm' => 'acme']);
 
-    expect(Client::query()->whereKey($client->id)->exists())->toBeFalse()
-        ->and(AccessToken::query()->where('client_id', $client->id)->exists())->toBeFalse()
-        ->and(RefreshToken::query()->whereKey('doomed-refresh')->exists())->toBeFalse()
-        ->and(AuthorizationCode::query()->where('client_id', $client->id)->exists())->toBeFalse()
-        ->and(Consent::query()->where('client_id', $client->id)->exists())->toBeFalse()
-        ->and(SessionParticipant::query()->where('client_id', $client->id)->exists())->toBeFalse()
-        ->and(Client::query()->whereKey($survivor->id)->exists())->toBeTrue()
-        ->and(AccessToken::query()->where('client_id', $survivor->id)->count())->toBe(1)
-        ->and(RefreshToken::query()->whereKey('kept-refresh')->exists())->toBeTrue()
-        ->and(AuthorizationCode::query()->where('client_id', $survivor->id)->count())->toBe(1)
-        ->and(Consent::query()->where('client_id', $survivor->id)->count())->toBe(1)
-        ->and(SessionParticipant::query()->where('client_id', $survivor->id)->count())->toBe(1)
+    expect(Client::query()->pluck('id')->all())->toContain($survivor->id)->not->toContain($client->id)
+        ->and(AccessToken::query()->pluck('client_id')->all())->toBe([$survivor->id])
         ->and(Activity::forRealm($this->realm)->where('event', RealmAuditEvent::ClientDeleted->eventName())->sole()->getProperty('client_id'))->toBe($client->client_id);
 });
 

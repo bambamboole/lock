@@ -38,4 +38,4 @@ contract, not the relation; the relation has to be called something else.
 docblock and PHPStan then rejects the case. Write the class fully qualified (`\App\Resources\Models\Resource`) in
 generics, `@property` tags and `@extends` clauses.
 
-`Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from.
+`Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from. Deleting a user, client or realm goes through laravel-oidc's `PurgeUser`, `PurgeClient` and `PurgeRealm`, which know every package table; never list package tables in the app.
