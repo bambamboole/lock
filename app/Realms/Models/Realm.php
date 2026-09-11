@@ -14,7 +14,9 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\KeySettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ResourceSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ScopeSettings;
@@ -253,7 +255,13 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public function authentication(): AuthenticationSettings
     {
-        return AuthenticationSettings::fromConfig();
+        $settings = $this->settings;
+
+        return new AuthenticationSettings(
+            methods: LoginMethod::listFromConfig($this->stringList('login_methods')),
+            mfa: MfaRequirement::fromConfig($settings->string('realm.mfa_requirement')),
+            emailVerificationRequired: $settings->boolean('realm.email_verification_required'),
+        );
     }
 
     public function brokering(): BrokeringSettings

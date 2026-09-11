@@ -19,4 +19,6 @@ enum RealmSettingType
     case Flag;
     case StringList;
     case Factors;
+    case LoginMethods;
+    case MfaRequirement;
 }
