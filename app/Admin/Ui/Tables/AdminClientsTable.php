@@ -66,7 +66,7 @@ final class AdminClientsTable extends EloquentTableDefinition
                     TokenEndpointAuthMethod::ClientSecretBasic->value => 'purple',
                     TokenEndpointAuthMethod::ClientSecretPost->value => 'purple',
                 ]),
-            TextColumn::make('grant_types')->label(__('admin.clients.columns.grant-types'))->options($this->grantTypeCombinations()),
+            TextColumn::make('grant_types')->label(__('admin.clients.columns.grant-types'))->options($this->grantTypeLabels()),
             BadgeColumn::make('status')
                 ->label(__('admin.clients.columns.status'))
                 ->options([
@@ -78,31 +78,17 @@ final class AdminClientsTable extends EloquentTableDefinition
     }
 
     /**
-     * The cell receives the JSON list as-is and matches it against the option
-     * values by its comma-joined string form, so every combination of grant
-     * types the console can assign gets a translated label.
-     *
      * @return array<string, string>
      */
-    private function grantTypeCombinations(): array
+    private function grantTypeLabels(): array
     {
         $labels = [];
 
-        foreach (ClientAttributes::GRANT_TYPES as $grantType) {
+        foreach ([...ClientAttributes::GRANT_TYPES, 'personal_access'] as $grantType) {
             $labels[$grantType] = __('admin.clients.grant-types.'.str_replace('_', '-', $grantType));
         }
 
-        $labels['personal_access'] = __('admin.clients.grant-types.personal-access');
-        $options = [];
-        $grantTypes = array_keys($labels);
-        $count = count($grantTypes);
-
-        for ($mask = 1; $mask < (1 << $count); $mask++) {
-            $combination = array_values(array_filter($grantTypes, fn (int $index): bool => ($mask & (1 << $index)) !== 0, ARRAY_FILTER_USE_KEY));
-            $options[implode(',', $combination)] = implode(', ', array_map(fn (string $grantType): string => $labels[$grantType], $combination));
-        }
-
-        return $options;
+        return $labels;
     }
 
     #[\Override]
