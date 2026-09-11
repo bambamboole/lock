@@ -1,21 +1,15 @@
-# Local trial overlay: builds the image from this checkout and publishes the
-# web port. Run with:
+# Local trial overlay: builds the image from this checkout and publishes the web port.
 #
-#   docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml up --build
+#   docker compose --env-file compose.local.env -f compose.yaml -f compose.local.yaml up --build
+
+x-build: &build
+  image: lock:local
+  build: .
+
 services:
   app:
-    build:
-      context: .
-      target: app
+    <<: *build
     ports:
       - "8080:8080"
-
-  queue:
-    build:
-      context: .
-      target: app
-
-  scheduler:
-    build:
-      context: .
-      target: app
+  queue: *build
+  scheduler: *build
