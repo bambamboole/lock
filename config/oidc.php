@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Resources\Support\ResourceScopeCatalog;
 use App\Shared\Audit\Support\DatabaseAuditSink;
 
@@ -11,9 +10,6 @@ return [
     'issuer' => null,
 
     'routes' => [
-        // The protocol endpoints outside the web group mint URLs too (the
-        // discovery document), and those have to name the realm's own host.
-        'middleware' => [SetCurrentRealm::class],
         'realms' => 'domain',
     ],
 

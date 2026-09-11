@@ -13,4 +13,4 @@ paths:
 
 The sink is named by `config('oidc.audit.sink')`. `mergeConfigFrom` merges only the top level, so `config/oidc.php` has to repeat the package's whole `audit` block (`enabled`, `sink`, `log_channel`), not just the key it overrides. The package's listener swallows whatever the sink throws, so a failure here is silent — a broken sink shows up as missing rows, never as a failed login.
 
-The realm is stamped from `Realm::currentId()` at write time, not from the record. An event raised outside a realm (console provisioning, key rotation) is instance-wide and reads back with `realm_id` null.
+The realm is stamped from `Realm::current()` at write time, not from the record: the realm laravel-oidc serves, which for a console command that names none (provisioning, key rotation) is the master realm.

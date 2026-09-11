@@ -11,7 +11,6 @@ use App\Auth\Actions\ResetUserMfa;
 use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Models\User;
 use App\Auth\Support\DatabaseRealmRepository;
-use App\Auth\Support\DatabaseRealmResolver;
 use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\UserClaimsResolver;
@@ -25,7 +24,6 @@ use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
 use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
 use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
@@ -42,7 +40,6 @@ final class AuthServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
-        $this->app->singleton(RealmResolver::class, DatabaseRealmResolver::class);
         $this->app->bind(CreateUser::class, CreateNewUser::class);
         $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
         $this->app->bind(DeletesUser::class, DeleteUser::class);

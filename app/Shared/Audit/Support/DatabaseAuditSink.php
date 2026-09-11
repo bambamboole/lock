@@ -16,13 +16,12 @@ use Bambamboole\LaravelOidc\Server\Shared\Audit\AuditSink;
 final class DatabaseAuditSink implements AuditSink
 {
     /**
-     * The record carries no realm: it is written while its realm is current,
-     * and one raised outside any realm stays instance-wide.
+     * The record carries no realm: it is written while its realm is current.
      */
     public function record(AuditRecord $record): void
     {
         AuditEvent::create([
-            'realm_id' => Realm::currentId(),
+            'realm_id' => Realm::current()->id,
             'type' => $record->type,
             'category' => $record->category(),
             'user_id' => $record->userId,

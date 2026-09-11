@@ -54,9 +54,8 @@ it('lists the user browser sessions and marks the current one', function () {
 });
 
 it('signs out another browser session and revokes the provider session behind it', function () {
-    $realm = Realm::factory()->create(['slug' => 'acme']);
-    $user = User::factory()->for($realm)->create();
-    $oidcSession = OidcSession::factory()->forUser($user)->create(['realm_id' => 'acme', 'session_id' => 'other-session']);
+    $user = User::factory()->for(Realm::master())->create();
+    $oidcSession = OidcSession::factory()->forUser($user)->create(['session_id' => 'other-session']);
     browserSessionRow($user, 'other-session');
 
     $this->actingAs($user)

@@ -10,6 +10,7 @@ use Amp\Http\Server\Request as ServerRequest;
 use Amp\Http\Server\RequestHandler\ClosureRequestHandler;
 use Amp\Http\Server\Response as ServerResponse;
 use Amp\Http\Server\SocketHttpServer;
+use Illuminate\Http\Request;
 use Pest\Browser\Drivers\LaravelHttpServer;
 use Pest\Browser\Playwright\Playwright;
 use Pest\Browser\ServerManager;
@@ -26,6 +27,7 @@ abstract class BrowserTestCase extends TestCase
         parent::setUp();
 
         $this->startBrowserHttpServerWithLongKeepAlive();
+        $this->serveTheMasterRealmFromTheBrowserServer();
     }
 
     protected function tearDown(): void
@@ -33,6 +35,18 @@ abstract class BrowserTestCase extends TestCase
         Playwright::setHost(null);
 
         parent::tearDown();
+    }
+
+    /**
+     * The plugin points `app.url` at its own server, which makes that server's
+     * host the master realm's; what a test runs in-process has to resolve the
+     * realm from the same host.
+     */
+    private function serveTheMasterRealmFromTheBrowserServer(): void
+    {
+        ServerManager::instance()->http()->bootstrap();
+
+        app()->instance('request', Request::create((string) config('app.url')));
     }
 
     /**

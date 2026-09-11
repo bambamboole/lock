@@ -13,10 +13,9 @@ paths:
 `users` is unique on `(realm_id, email)`, so one address can be two unrelated people. `config/auth.php` therefore
 runs the `realm-eloquent` driver, not `eloquent`: `App\Auth\Support\RealmUserProvider` overrides `newModelQuery()` —
 the one seam `retrieveById`, `retrieveByToken` and `retrieveByCredentials` all build on — and scopes it to
-`Realm::currentId()`.
+`Realm::current()`.
 
-The constraint is inert while no realm is current. On every route a realm serves `SetCurrentRealm` derives the realm
-from the request host, so it protects every login, session and token lookup there. Do not
+There is always a current realm, so the constraint protects every login, session and token lookup. Do not
 "simplify" the driver back to `eloquent`: without it a password valid in one realm authenticates in all of them, and
 a session cookie minted in one resolves a user in another. `tests/Feature/Auth/RealmIsolationTest.php` fails on
 every one of those.
@@ -37,14 +36,12 @@ host in `APP_URL` (never stored, `Realm::masterHost()`), every other realm from 
 the realms by origin, so there is no per-realm session cookie any more; `SESSION_DOMAIN` has to stay empty, or realms
 on subdomains of one parent would share a cookie. Do not bring back a `/realms/{slug}` path or a cookie-name setting.
 
-On the routes a realm serves — every route behind laravel-oidc's `ResolveRealm` middleware (`ResolveRealm::appliesTo()`):
-the package's own, the account page and its Lattice endpoints — the host decides the realm
-(`App\Auth\Support\DatabaseRealmResolver`). Everywhere else the
-current realm comes from `Context` (`Realm::currentId()` / `Realm::fromContext()`): `SetCurrentRealm` fills it from
-the host on those routes and from the signed-in user's own realm everywhere else. It also runs on the protocol
-endpoints outside the `web` group (`oidc.routes.middleware`), so the realm constraint on user lookup holds for
-`userinfo` too. There is no fallback realm for writes: `App\Auth\Actions\CreateNewUser` throws `MissingRealmContext`
-when no realm is current. An admin page's `{realm}` parameter is data, not the acting realm.
+The current realm is laravel-oidc's: its `DomainRealmResolver` reads it from the request host on every request, and
+`Realm::current()` hands the app the `realms` row. `$realm->runAsCurrent()` (the package's `CurrentRealm::runAs()`)
+overrides it for a callback, and the jobs dispatched inside carry it to the worker; a console command that names no
+realm runs in the master realm (`oidc.realm`). Do not bring back a realm of the app's own in `Context` or a middleware
+that sets one from the signed-in user: two answers to "which realm" is how a lookup ends up in the wrong one. An admin
+page's `{realm}` parameter is data, not the acting realm.
 
 `App\Realms\Support\RealmHostGate` runs on `RouteMatched`: a host no realm is served from gets a 404 on everything
 but `/up` and the domain check (which keeps a forged Host header out of every URL the app would mint from it), the
@@ -74,8 +71,8 @@ lowercase host names — no IP literals, ports or paths.
 
 ## laravel-oidc reads realms from the database
 
-`App\Auth\Support\DatabaseRealmResolver` and `DatabaseRealmRepository` (bound in `AuthServiceProvider::register()`)
-hand the package the `realms` row for the request host (`findByDomain()`), and `App\Realms\Models\Realm` implements
+`App\Auth\Support\DatabaseRealmRepository` (bound in `AuthServiceProvider::register()`) hands the package's resolver
+the `realms` row for the request host (`findByDomain()`), and `App\Realms\Models\Realm` implements
 the package's `Realm` contract by reading its settings (`realm.*` keys, seeded from
 `App\Shared\Realms\Support\RealmConfiguration::defaults()` when the realm is created). Package rows (clients, tokens,
 sessions, consents) carry the realm slug in `realm_id`, so a client only exists inside the realm it was created in:

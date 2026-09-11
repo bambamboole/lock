@@ -25,9 +25,8 @@ final class RealmUserProvider extends EloquentUserProvider
      */
     protected function newModelQuery($model = null)
     {
-        $query = parent::newModelQuery($model)->whereNull('blocked_at');
-        $realmId = Realm::currentId();
-
-        return $realmId === null ? $query : $query->where('realm_id', $realmId);
+        return parent::newModelQuery($model)
+            ->whereNull('blocked_at')
+            ->where('realm_id', Realm::current()->id);
     }
 }
