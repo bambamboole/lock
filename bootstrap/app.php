@@ -40,9 +40,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: ['appearance']);
 
-        // The framework default probes route('dashboard'), which does not exist.
-        // A signed-in identity lands on its realm's account page; the home
-        // route sorts everyone else between the console and their account.
+        // A signed-in identity goes straight to its realm's account page instead
+        // of through the console's relying-party login behind the home route.
         $middleware->redirectUsersTo(function (Request $request): string {
             $identity = RequestUser::of($request, 'identity');
 
