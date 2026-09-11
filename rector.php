@@ -15,10 +15,10 @@ return RectorConfig::configure()
         __DIR__.'/tests',
     ])
     ->withPhpVersion(PhpVersion::PHP_84)
+    ->withComposerBased(laravel: true)
     ->withSets([
         PestSetList::CODING_STYLE,
         LevelSetList::UP_TO_PHP_84,
-        LaravelSetList::LARAVEL_130,
         LaravelSetList::LARAVEL_CODE_QUALITY,
     ])
     ->withSkip([
