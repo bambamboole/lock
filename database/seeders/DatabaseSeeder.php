@@ -6,10 +6,10 @@ namespace Database\Seeders;
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
+use Bambamboole\LaravelOidc\Server\Shared\Installation\EnvironmentFile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 final class DatabaseSeeder extends Seeder
@@ -27,28 +27,39 @@ final class DatabaseSeeder extends Seeder
 
         Artisan::call('admin:grant', ['email' => 'test@example.com']);
 
-        Realm::master()->runAsCurrent(fn () => $this->ensureSelfSsoClient());
+        Realm::master()->runAsCurrent(fn () => $this->callOrFail('oidc:rotate-keys', ['--if-missing' => true]));
+
+        $this->ensureConsoleClientCredentials();
+        $this->callOrFail('app:bootstrap');
     }
 
     /**
-     * Re-seeding a fresh database wipes the oidc_clients table while .env still
-     * points at the deleted first-party client, breaking self-SSO login. Provision
-     * a fresh client (and rewrite .env) whenever the configured one is gone.
+     * A local setup gets console credentials of its own, written to `.env` so
+     * the next request signs in with them; a deploy brings its own.
      */
-    private function ensureSelfSsoClient(): void
+    private function ensureConsoleClientCredentials(): void
     {
-        if (Artisan::call('oidc:rotate-keys', ['--if-missing' => true, '--no-interaction' => true]) !== 0) {
-            throw new RuntimeException('Failed to prepare OIDC signing keys: '.trim(Artisan::output()));
-        }
-
-        $clientId = app(RealmResolver::class)->current()->clients()->firstPartyClientId;
-
-        if (is_string($clientId) && Client::query()->inRealm()->where('client_id', $clientId)->exists()) {
+        if (filled(config('lock.console_client.id')) && filled(config('lock.console_client.secret'))) {
             return;
         }
 
-        if (Artisan::call('oidc:install-self', ['--fresh' => true, '--force' => true]) !== 0) {
-            throw new RuntimeException('Failed to provision the self-SSO client: '.trim(Artisan::output()));
+        $credentials = ['id' => 'lock-console', 'secret' => Str::random(40)];
+
+        app(EnvironmentFile::class)->write([
+            'LOCK_CONSOLE_CLIENT_ID' => $credentials['id'],
+            'LOCK_CONSOLE_CLIENT_SECRET' => $credentials['secret'],
+        ]);
+
+        config(['lock.console_client' => $credentials]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $parameters
+     */
+    private function callOrFail(string $command, array $parameters = []): void
+    {
+        if (Artisan::call($command, $parameters) !== 0) {
+            throw new RuntimeException(trim(Artisan::output()));
         }
     }
 }

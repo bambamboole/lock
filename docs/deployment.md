@@ -153,7 +153,7 @@ credentials that sign an administrator in interactively are the ones an automate
 ### Without the bootstrap variables
 
 Leaving `LOCK_CONSOLE_CLIENT_SECRET` empty keeps the manual path open. Provision the client once and set
-`LOCK_CONSOLE_CLIENT_ID`, `OIDC_RP_CLIENT_ID`, and `OIDC_RP_CLIENT_SECRET` from the output, then add the client id
+`OIDC_RP_CLIENT_ID` and `OIDC_RP_CLIENT_SECRET` from the output, then add the client id
 to the master realm's **Trusted clients** in the console so the login skips consent:
 
 ```bash
@@ -171,8 +171,8 @@ A plain re-run creates a second client; re-run with `--adopt=<client_id>` to upd
 docker compose run --rm app php artisan admin:grant you@example.com
 ```
 
-`oidc:install-self` is the local-development equivalent of `app:bootstrap` and stays supported there; it is not
-usable in a container, because it writes the credentials it generates to a `.env` the image does not have.
+Locally, `php artisan db:seed` (and `composer fresh`) generates console credentials into `.env` when none are set
+and then runs `app:bootstrap`.
 
 ## Realms and SaaS clients
 
