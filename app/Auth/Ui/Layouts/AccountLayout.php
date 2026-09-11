@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Auth\Ui\Layouts;
 
 use App\Auth\Models\User;
-use App\Realms\Models\Realm;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
@@ -58,7 +57,7 @@ final class AccountLayout extends LayoutDefinition
                             ->width(Width::Auto)
                             ->gap(Gap::Medium)
                             ->schema([
-                                BrandMark::wordmark('account-brand', $this->accountUrl($realm)),
+                                BrandMark::wordmark('account-brand', $this->accountUrl()),
                                 Text::make('/')->size(Size::Sm)->color(ColorName::Muted)->visibleFrom(Breakpoint::Md),
                                 Text::make($realm->name, 'account-realm-name')->size(Size::Sm)->visibleFrom(Breakpoint::Md),
                             ]),
@@ -71,7 +70,7 @@ final class AccountLayout extends LayoutDefinition
                             ->schema([
                                 $this->userMenu($user, [
                                     Slot::make('app.user-menu'),
-                                    $this->logoutMenuItem(route('oidc.logout', ['realm' => $realm->slug], absolute: false)),
+                                    $this->logoutMenuItem(route('oidc.logout', absolute: false)),
                                 ]),
                             ]),
                     ]),
@@ -85,8 +84,8 @@ final class AccountLayout extends LayoutDefinition
         ]);
     }
 
-    private function accountUrl(Realm $realm): string
+    private function accountUrl(): string
     {
-        return route('account', ['realm' => $realm->slug], absolute: false);
+        return route('account', absolute: false);
     }
 }

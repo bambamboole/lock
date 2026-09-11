@@ -433,10 +433,33 @@ return [
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
+            'domain' => 'Domain',
+            'domain-status' => 'Domain status',
             'users' => 'Users',
             'created-at' => 'Created',
         ],
         'created' => 'Realm created.',
+        'created-unverified' => 'Realm created. :outcome',
+        'domain' => [
+            'master' => 'Taken from APP_URL.',
+            'status' => [
+                'pending' => 'Not checked',
+                'verified' => 'Verified',
+                'unreachable' => 'Unreachable',
+                'misrouted' => 'Wrong server',
+            ],
+            'outcome' => [
+                'pending' => 'Not checked yet.',
+                'verified' => ':domain reaches this instance.',
+                'unreachable' => ':domain does not answer. Check its DNS record, the proxy entry and the TLS certificate.',
+                'misrouted' => ':domain answers, but not as this Lock instance.',
+            ],
+            'checked-at' => 'Checked :time.',
+            'change-warning' => 'The domain is the realm\'s issuer. Changing it signs every user out and every client, redirect URI and passkey of the realm has to follow.',
+            'submit' => 'Save domain',
+            'updated' => 'Domain changed.',
+            'check' => 'Check again',
+        ],
         'updated' => 'Realm updated.',
         'configuration-saved' => 'Realm configuration saved.',
         'deleted' => 'Realm deleted.',
@@ -501,7 +524,11 @@ return [
             ],
             'slug' => [
                 'label' => 'Realm identifier',
-                'help-text' => 'Used in realm URLs. Lowercase letters, numbers and single hyphens only. Cannot be changed later.',
+                'help-text' => 'Identifies the realm in the console. Lowercase letters, numbers and single hyphens only. Cannot be changed later.',
+            ],
+            'domain' => [
+                'label' => 'Domain',
+                'help-text' => 'The host the realm is served from, e.g. auth.example.com. Point its DNS at this server and add it to the platform proxy; the realm is created either way.',
             ],
             'access-token-lifetime' => [
                 'label' => 'Access token lifetime',
@@ -518,10 +545,6 @@ return [
             'refresh-token-lifetime' => [
                 'label' => 'Refresh token lifetime',
                 'help-text' => 'Lifetime in seconds for newly issued refresh tokens.',
-            ],
-            'session-cookie-name' => [
-                'label' => 'Session cookie name',
-                'help-text' => 'Leave empty to generate a separate cookie name for this realm. Changing it requires signing in again.',
             ],
             'session-absolute-lifetime' => [
                 'label' => 'Maximum session lifetime',

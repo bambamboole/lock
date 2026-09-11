@@ -10,11 +10,11 @@ it('hands a two-factor user off to the challenge route after login', function ()
         'password' => 'password',
     ]);
 
-    $page = visit('/realms/admin/auth/login');
+    $page = visit('/auth/login');
 
     $page->fill('email', 'grace@example.com')
         ->fill('password', 'password')
         ->click('button[type="submit"]')
-        ->assertPathIs('/realms/admin/auth/two-factor-challenge')
+        ->assertPathIs('/auth/two-factor-challenge')
         ->assertNoJavaScriptErrors();
 });

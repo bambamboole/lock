@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Resources\Support\ResourceScopeCatalog;
 use App\Shared\Audit\Support\DatabaseAuditSink;
 use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
@@ -9,11 +10,17 @@ use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
 
 return [
     'realm' => env('REALM_MASTER_SLUG', 'admin'),
-    'issuer' => env('OIDC_ISSUER', env('APP_URL')),
+    // Empty, so the package takes the origin from `app.url` at runtime: the
+    // master realm is served from APP_URL, and every realm host shares its
+    // scheme and port.
+    'issuer' => null,
 
     'routes' => [
-        'middleware' => [],
-        'realms' => 'path',
+        // The protocol endpoints outside the web group mint URLs too (the
+        // discovery document), and those have to name the realm's own host.
+        'middleware' => [SetCurrentRealm::class],
+        // Every realm is served from its own host; the master realm from APP_URL's.
+        'realms' => 'domain',
     ],
 
     // mergeConfigFrom replaces the auth array, so retain its defaults when overriding home.

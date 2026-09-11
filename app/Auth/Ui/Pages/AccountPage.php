@@ -50,14 +50,13 @@ use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 /**
- * Lives below `/realms/{realm}` like the package's own sign-in pages, so the
- * realm's session cookie — the only login a realm user has — reaches it. The
+ * Served from the realm's own host like the package's sign-in pages. The
  * middleware order mirrors the package routes: the realm is resolved before
  * the session starts, and the identity guard, not the app's web guard, decides
  * who is signed in.
  */
 #[AsPage(
-    route: 'realms/{realm}/account',
+    route: 'account',
     name: 'account',
     layout: 'account',
     middleware: [ResolveRealm::class, 'web', AuthenticateIdentity::class.':identity'],
@@ -83,7 +82,7 @@ final class AccountPage extends Page
         $securityUnlocked = PasswordConfirmation::confirmedRecently($request->session());
 
         if (! $securityUnlocked) {
-            $request->session()->put('url.intended', route('account', ['realm' => $user->realm->slug]));
+            $request->session()->put('url.intended', route('account'));
         }
 
         return $schema->schema([

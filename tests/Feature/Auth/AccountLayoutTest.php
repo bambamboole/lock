@@ -42,8 +42,8 @@ it('offers the realm end-session as logout and the console only to admins', func
     grantGlobalRole($user, GlobalRoleSeeder::SUPPORT);
     $hrefsAfter = accountUserMenuHrefs($user->refresh());
 
-    expect($hrefsBefore)->toBe(['/realms/admin/oauth/logout'])
-        ->and($hrefsAfter)->toBe(['/admin/realms', '/realms/admin/oauth/logout']);
+    expect($hrefsBefore)->toBe(['/oauth/logout'])
+        ->and($hrefsAfter)->toBe(['/admin/realms', '/oauth/logout']);
 });
 
 it('names the realm and links the brand to the realm account', function () {
@@ -53,5 +53,5 @@ it('names the realm and links the brand to the realm account', function () {
     $schema = accountLayoutSchema($user);
 
     expect($schema->firstOfTypeOrFail('text', 'account-realm-name')->prop('text'))->toBe('Acme Corp')
-        ->and($schema->firstOfTypeOrFail('link', 'account-brand')->prop('href'))->toBe('/realms/acme/account');
+        ->and($schema->firstOfTypeOrFail('link', 'account-brand')->prop('href'))->toBe('/account');
 });

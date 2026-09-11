@@ -26,6 +26,6 @@ abstract class ProfileForm extends FormDefinition
     {
         return Effects::respond()
             ->toast($message, Variant::Success)
-            ->toRoute('account', ['realm' => $this->currentUser()->realm->slug]);
+            ->toRoute('account');
     }
 }

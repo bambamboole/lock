@@ -11,6 +11,7 @@ use Amp\Http\Server\RequestHandler\ClosureRequestHandler;
 use Amp\Http\Server\Response as ServerResponse;
 use Amp\Http\Server\SocketHttpServer;
 use Pest\Browser\Drivers\LaravelHttpServer;
+use Pest\Browser\Playwright\Playwright;
 use Pest\Browser\ServerManager;
 use Psr\Log\NullLogger;
 use ReflectionMethod;
@@ -25,6 +26,13 @@ abstract class BrowserTestCase extends TestCase
         parent::setUp();
 
         $this->startBrowserHttpServerWithLongKeepAlive();
+    }
+
+    protected function tearDown(): void
+    {
+        Playwright::setHost(null);
+
+        parent::tearDown();
     }
 
     /**

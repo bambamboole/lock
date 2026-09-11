@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Testing\TestResponse;
 
+use function Tests\Helpers\realmRoute;
 use function Tests\Helpers\runningTestCase;
 
 /**
@@ -21,7 +22,7 @@ function registerIn(Realm $realm, string $password): TestResponse
 {
     auth()->forgetGuards();
 
-    return runningTestCase()->post(route('identity.register.store', ['realm' => $realm->slug]), [
+    return runningTestCase()->post(realmRoute($realm, 'identity.register.store'), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => $password,
@@ -48,7 +49,7 @@ it('enforces the realms password policy when a password is reset', function () {
     $user = User::factory()->for($realm)->create();
     $token = $realm->runAsCurrent(fn (): string => Password::broker()->createToken($user));
 
-    $reset = fn (string $password) => $this->post(route('identity.password.update', ['realm' => $realm->slug]), [
+    $reset = fn (string $password) => $this->post(realmRoute($realm, 'identity.password.update'), [
         'token' => $token,
         'email' => $user->email,
         'password' => $password,

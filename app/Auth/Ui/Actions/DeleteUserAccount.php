@@ -38,7 +38,7 @@ final class DeleteUserAccount extends ActionDefinition
     public function handle(Request $request): ActionResult
     {
         $user = $this->currentUser();
-        $login = route('identity.login', ['realm' => $user->realm->slug], absolute: false);
+        $login = route('identity.login', absolute: false);
 
         Auth::logout();
 

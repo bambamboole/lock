@@ -5,12 +5,14 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Forms\LanguageForm;
 use App\Auth\Ui\Forms\TimezoneForm;
 
+use function Tests\Helpers\realmRoute;
+
 it('saves the locale via the language form', function () {
     $user = User::factory()->create(['locale' => 'en']);
 
     $this->actingAs($user)
         ->submitForm(LanguageForm::class, ['locale' => 'de'])
-        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
+        ->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->locale)->toBe('de');
 });
@@ -20,7 +22,7 @@ it('saves the timezone via the timezone form', function () {
 
     $this->actingAs($user)
         ->submitForm(TimezoneForm::class, ['timezone' => 'Europe/Berlin'])
-        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
+        ->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->timezone)->toBe('Europe/Berlin');
 });

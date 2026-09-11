@@ -9,6 +9,8 @@ use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
+use function Tests\Helpers\realmRoute;
+
 beforeEach(function () {
     new GlobalRoleSeeder()->run();
 
@@ -21,7 +23,7 @@ beforeEach(function () {
         'lock.admin.password' => 'CorrectHorse42',
     ]);
 
-    $this->tokenRequest = fn (string $secret) => $this->post(route('oidc.token', ['realm' => 'admin']), [
+    $this->tokenRequest = fn (string $secret) => $this->post(realmRoute('admin', 'oidc.token'), [
         'grant_type' => 'client_credentials',
         'client_id' => 'lock-console',
         'client_secret' => $secret,

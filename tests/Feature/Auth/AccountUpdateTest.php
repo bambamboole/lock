@@ -8,12 +8,14 @@ use App\Auth\Ui\Forms\NameForm;
 use App\Auth\Ui\Forms\PasswordForm;
 use Illuminate\Support\Facades\Hash;
 
+use function Tests\Helpers\realmRoute;
+
 test('users can update their name', function () {
     $user = User::factory()->create(['name' => 'Old Name']);
 
     $this->actingAs($user)
         ->submitForm(NameForm::class, ['name' => 'New Name'])
-        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
+        ->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->name)->toBe('New Name');
 });
@@ -23,7 +25,7 @@ test('users can update their email', function () {
 
     $this->actingAs($user)
         ->submitForm(EmailForm::class, ['email' => 'new@example.com'])
-        ->assertRedirect(route('account', ['realm' => $user->realm->slug]));
+        ->assertRedirect(realmRoute($user->realm, 'account'));
 
     expect($user->refresh()->email)->toBe('new@example.com');
 });

@@ -83,7 +83,7 @@ final class AdminLayout extends LayoutDefinition
                                     ->emphasis(Emphasis::Ghost)
                                     ->effects(Effects::toggleSidebar('admin-sidebar')),
                                 BrandMark::make('admin-topbar-logo')->hiddenFrom(Breakpoint::Md),
-                                $this->backToAppButton($user),
+                                $this->backToAppButton(),
                                 Breadcrumbs::make('admin-breadcrumbs')->visibleFrom(Breakpoint::Md),
                                 Stack::make('admin-topbar-end')
                                     ->float(Side::End)
@@ -93,7 +93,7 @@ final class AdminLayout extends LayoutDefinition
                                     ->gap(Gap::Small)
                                     ->schema([
                                         $this->userMenu($user, [
-                                            $this->accountMenuItem($user),
+                                            $this->accountMenuItem(),
                                             $this->logoutMenuItem(),
                                         ]),
                                     ]),
@@ -186,11 +186,11 @@ final class AdminLayout extends LayoutDefinition
         ];
     }
 
-    private function backToAppButton(User $user): Button
+    private function backToAppButton(): Button
     {
         return Button::make(__('navigation.back-to-app'))
             ->icon(Icon::ChevronLeft)
             ->emphasis(Emphasis::Ghost)
-            ->effects(Effects::redirect(route('account', ['realm' => $user->realm->slug], absolute: false)));
+            ->effects(Effects::redirect(route('account', absolute: false)));
     }
 }

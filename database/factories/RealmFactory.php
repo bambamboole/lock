@@ -27,6 +27,9 @@ final class RealmFactory extends Factory
         return [
             'name' => $name,
             'slug' => Str::slug($name),
+            // Browsers resolve every `*.localhost` to the loopback address, so
+            // a fixture realm is reachable in browser tests without DNS.
+            'domain' => fn (array $attributes): string => $attributes['slug'].'.localhost',
         ];
     }
 

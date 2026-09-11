@@ -271,7 +271,7 @@ test('deleting a user removes their tokens, sessions, consents and factors', fun
     $session = activeSessionFor($target, $client);
     $this->realm->runAsCurrent(fn () => $this->issueTokenFor($target, $client));
     Consent::query()->forceCreate([
-        'realm_id' => 'acme', 'user_id' => $target->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'granted_at' => now(),
+        'realm_id' => 'acme', 'user_id' => $target->id, 'client_id' => $client->id, 'resource' => 'http://acme.localhost', 'scopes' => ['openid'], 'granted_at' => now(),
     ]);
 
     $this->actingAs(globalAdmin())->callAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertOk();

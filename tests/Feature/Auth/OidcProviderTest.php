@@ -7,15 +7,16 @@ declare(strict_types=1);
  */
 
 use App\Auth\Models\User;
+use App\Realms\Models\Realm;
 
-it('serves discovery under the admin realm issuer', function () {
+it('serves discovery for the admin realm from the application host', function () {
     $this->getJson(route('oidc.discovery'))->assertOk()
-        ->assertJsonPath('issuer', config('app.url').'/realms/admin')
-        ->assertJsonPath('token_endpoint', config('app.url').'/realms/admin/oauth/token');
+        ->assertJsonPath('issuer', config('app.url'))
+        ->assertJsonPath('token_endpoint', config('app.url').'/oauth/token');
 });
 
 it('returns app-specific claims from userinfo', function () {
-    $user = User::factory()->create(['locale' => 'de', 'timezone' => 'Europe/Berlin']);
+    $user = User::factory()->for(Realm::master())->create(['locale' => 'de', 'timezone' => 'Europe/Berlin']);
     $token = $this->issueTokenFor($user, scopes: ['openid', 'profile', 'email']);
 
     $this->withToken($token)->getJson(route('oidc.userinfo'))

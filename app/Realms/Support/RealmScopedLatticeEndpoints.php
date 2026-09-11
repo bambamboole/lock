@@ -8,11 +8,11 @@ use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Http\Request;
 
 /**
- * Below `/realms/{realm}` the provider session lives in a cookie scoped to
- * that path, so a page rendered there can only call Lattice endpoints that
- * live below it as well. Every Lattice URL minted while a realm request is
- * being served is therefore moved under the realm; `routes/web.php` registers
- * the matching endpoints. Root requests keep the root endpoints.
+ * A page a realm serves is signed in through the identity guard, which the
+ * root Lattice endpoints do not consult. Every Lattice URL minted while such
+ * a request is being served is therefore moved below `/account`, where
+ * `routes/web.php` registers the same endpoints behind that guard. Console
+ * requests keep the root endpoints.
  */
 final readonly class RealmScopedLatticeEndpoints
 {
@@ -26,6 +26,6 @@ final readonly class RealmScopedLatticeEndpoints
             return $path;
         }
 
-        return '/realms/'.$realm.$path;
+        return '/account'.$path;
     }
 }

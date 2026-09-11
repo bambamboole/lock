@@ -26,12 +26,13 @@ final readonly class CreateRealm implements CreatesRealm
      * without one can neither mint a token nor serve a JWKS. It gets its own
      * keypair here rather than sharing the instance's.
      */
-    public function handle(string $name, ?string $slug = null): Realm
+    public function handle(string $name, string $domain, ?string $slug = null): Realm
     {
-        return DB::transaction(function () use ($name, $slug): Realm {
+        return DB::transaction(function () use ($name, $domain, $slug): Realm {
             $realm = Realm::create(array_filter([
                 'name' => $name,
                 'slug' => $slug,
+                'domain' => strtolower($domain),
             ]));
 
             $realm->runAsCurrent(fn () => $this->store->rotate($this->keys->generate()));

@@ -57,10 +57,10 @@ trait RendersUserMenu
             ->items($items);
     }
 
-    private function accountMenuItem(User $user): MenuItem
+    private function accountMenuItem(): MenuItem
     {
         return MenuItem::make(__('navigation.account'))
-            ->href(route('account', ['realm' => $user->realm->slug], absolute: false))
+            ->href(route('account', absolute: false))
             ->prefix(Affix::icon('circle-user'));
     }
 

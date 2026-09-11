@@ -49,38 +49,52 @@ per deployment as `${VAR}`, so Coolify can present them as deployment variables.
 defaults every deployment shares. `APP_ENV` and `APP_DEBUG` are left to the framework defaults, `production` and
 `false`; cache, cache locks, sessions, and the queue use the framework's `database` drivers.
 
-| Variable                                             | Default                              | Notes                                                                                                                                                                                                         |
-| ---------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_KEY`                                            | required                             | `docker run --rm ghcr.io/bambamboole/lock php artisan key:generate --show`. Rotating it invalidates sessions and every encrypted value, signing keys included.                                                |
-| `APP_URL`                                            | required                             | Public HTTPS origin, no trailing slash. It is the OIDC issuer prefix: every realm's issuer is `APP_URL/realms/{slug}`, and it is baked into signed URLs and the first-party client's redirect URI.            |
-| `DB_PASSWORD`                                        | required                             | Postgres password; the compose file feeds the same value to the `postgres` service.                                                                                                                           |
-| `MAIL_FROM_ADDRESS`                                  | required                             | Sender of verification, password reset, and invitation mails. The sender name is `APP_NAME`.                                                                                                                  |
-| `MAIL_URL`                                           | empty                                | The SMTP connection as one URL, e.g. `smtp://user:password@mail.example.com:587` (STARTTLS) or `smtps://…:465` (implicit TLS). URL-encode special characters in the credentials. Without it no mail goes out. |
-| `MAIL_MAILER`                                        | `smtp`                               | The app's own default in `config/mail.php`, so `compose.yaml` does not set it. Add `MAIL_MAILER: log` to the `environment` block to write mails to the log stream instead; the local trial overlay does.      |
-| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_FIRST_PARTY_SECRET` | empty                                | The console's own OIDC client. Pick both values yourself; every deploy provisions or re-provisions exactly that client. Leave either empty and the client is left as it is.                                   |
-| `LOCK_ADMIN_EMAIL`, `LOCK_ADMIN_PASSWORD`            | empty                                | The first administrator, created in the master realm, verified, and holding Super Admin. The password is re-applied on every deploy; leave it empty to manage the password in the console instead.            |
-| `AUTORUN_APP_DEPLOY`                                 | `false`; `true` on the `app` service | Runs `php artisan app:deploy` on container start, before the server. `compose.yaml` sets it on `app` only; `queue` and `scheduler` wait for `app` to be healthy, so they start against a migrated schema.     |
-| `LOCK_IMAGE`                                         | `ghcr.io/bambamboole/lock:latest`    | Not a container variable: the image tag the stack runs. Pin it to a `sha-<commit>` tag (see [Staging versus production](#staging-versus-production)).                                                         |
-| `APP_NAME`                                           | `Lock`                               | Set in the image. Names the session cookie and the mail sender.                                                                                                                                               |
-| `DB_CONNECTION`                                      | `pgsql`                              | Set in the image. The framework also reads it for the failed-jobs and job-batches tables.                                                                                                                     |
-| `LOG_CHANNEL`, `LOG_LEVEL`                           | `stderr`, `info`                     | Set in the image. Every log line goes to the container output.                                                                                                                                                |
-| `SESSION_SECURE_COOKIE`                              | `true`                               | Set in the image. Cookies are only ever sent over HTTPS (browsers exempt `localhost`).                                                                                                                        |
-| `OIDC_FIRST_PARTY_TRUSTED`                           | `true`                               | Set in the image. The console skips its own consent screen; applied to the master realm on every deploy.                                                                                                      |
-| `OCTANE_SERVER`                                      | `frankenphp`                         | Set in the image, so `octane:status` and `octane:reload` address the running server.                                                                                                                          |
+| Variable                                             | Default                              | Notes                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `APP_KEY`                                            | required                             | `docker run --rm ghcr.io/bambamboole/lock php artisan key:generate --show`. Rotating it invalidates sessions and every encrypted value, signing keys included.                                                                                                                                         |
+| `APP_URL`                                            | required                             | Public HTTPS origin, no trailing slash. It is the host of the console and of the master realm, whose issuer it is; every other realm is served from its own domain with the same scheme (see [Realm domains](#realm-domains)). It is baked into signed URLs and the first-party client's redirect URI. |
+| `DB_PASSWORD`                                        | required                             | Postgres password; the compose file feeds the same value to the `postgres` service.                                                                                                                                                                                                                    |
+| `MAIL_FROM_ADDRESS`                                  | required                             | Sender of verification, password reset, and invitation mails. The sender name is `APP_NAME`.                                                                                                                                                                                                           |
+| `MAIL_URL`                                           | empty                                | The SMTP connection as one URL, e.g. `smtp://user:password@mail.example.com:587` (STARTTLS) or `smtps://…:465` (implicit TLS). URL-encode special characters in the credentials. Without it no mail goes out.                                                                                          |
+| `MAIL_MAILER`                                        | `smtp`                               | The app's own default in `config/mail.php`, so `compose.yaml` does not set it. Add `MAIL_MAILER: log` to the `environment` block to write mails to the log stream instead; the local trial overlay does.                                                                                               |
+| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_FIRST_PARTY_SECRET` | empty                                | The console's own OIDC client. Pick both values yourself; every deploy provisions or re-provisions exactly that client. Leave either empty and the client is left as it is.                                                                                                                            |
+| `LOCK_ADMIN_EMAIL`, `LOCK_ADMIN_PASSWORD`            | empty                                | The first administrator, created in the master realm, verified, and holding Super Admin. The password is re-applied on every deploy; leave it empty to manage the password in the console instead.                                                                                                     |
+| `AUTORUN_APP_DEPLOY`                                 | `false`; `true` on the `app` service | Runs `php artisan app:deploy` on container start, before the server. `compose.yaml` sets it on `app` only; `queue` and `scheduler` wait for `app` to be healthy, so they start against a migrated schema.                                                                                              |
+| `LOCK_IMAGE`                                         | `ghcr.io/bambamboole/lock:latest`    | Not a container variable: the image tag the stack runs. Pin it to a `sha-<commit>` tag (see [Staging versus production](#staging-versus-production)).                                                                                                                                                  |
+| `APP_NAME`                                           | `Lock`                               | Set in the image. Names the session cookie and the mail sender.                                                                                                                                                                                                                                        |
+| `DB_CONNECTION`                                      | `pgsql`                              | Set in the image. The framework also reads it for the failed-jobs and job-batches tables.                                                                                                                                                                                                              |
+| `LOG_CHANNEL`, `LOG_LEVEL`                           | `stderr`, `info`                     | Set in the image. Every log line goes to the container output.                                                                                                                                                                                                                                         |
+| `SESSION_SECURE_COOKIE`                              | `true`                               | Set in the image. Cookies are only ever sent over HTTPS (browsers exempt `localhost`).                                                                                                                                                                                                                 |
+| `OIDC_FIRST_PARTY_TRUSTED`                           | `true`                               | Set in the image. The console skips its own consent screen; applied to the master realm on every deploy.                                                                                                                                                                                               |
+| `OCTANE_SERVER`                                      | `frankenphp`                         | Set in the image, so `octane:status` and `octane:reload` address the running server.                                                                                                                                                                                                                   |
 
 Any other Laravel or app setting (`SESSION_LIFETIME`, `ACTIVITYLOG_CLEAN_AFTER_DAYS`, `LOCK_ADMIN_NAME`, …) keeps
 its default until you add it to the `environment` block. The console signs in against the master realm `admin` with
 the first-party client's credentials, which is what self-SSO wants; only to sign it in against another provider, add
 `OIDC_RP_ISSUER`, `OIDC_RP_CLIENT_ID`, and `OIDC_RP_CLIENT_SECRET`.
 
-### Session cookie and the realm path
+### Realm domains
 
-Realms are resolved from the request **path** (`/realms/{slug}`), not the host, so every realm shares one session
-cookie: `config/session.php` sets no `path`, and the framework default `/` applies. Until the app scopes
-`session.path` per realm (tracked in `.ai/rules/realms.md`), a login in one realm is a login in every realm served by
-the same deployment. That is acceptable while every realm on one instance belongs to the same operator; do not host
-mutually untrusted tenants on one deployment. Setting `SESSION_PATH` in the environment does not help — it would only
-move the single shared cookie.
+Every realm is served from a host of its own: the master realm from the host in `APP_URL`, every other realm from the
+domain given when it is created (**Realms → Create realm**). The host is the realm's issuer, so the browser keeps
+each realm's session apart by origin. Leave `SESSION_DOMAIN` unset: a cookie scoped to a parent domain would be shared
+by every realm below it.
+
+For a realm's domain to reach the instance:
+
+1. Point its DNS record (`A`/`AAAA`, or a `CNAME` to the `APP_URL` host) at the platform.
+2. Add it to the domains of the `app` service in Coolify, next to `APP_URL`'s host, so the proxy routes it to the
+   container and requests its TLS certificate.
+
+Lock checks a domain when the realm is created, when its domain changes, and on **Check again** in the realm's
+settings: it requests `https://<domain>/.well-known/lock/domain-check` and expects the answer only this instance
+(keyed with `APP_KEY`) gives, without following redirects. A realm whose check fails is created anyway and marked
+_Unreachable_ (no answer: DNS, proxy entry, or certificate missing) or _Wrong server_ (something else answers). The
+container has to reach its own public domains for the check to pass. A request for any host that is neither
+`APP_URL`'s nor a realm's is answered with `404`.
+
+Changing a realm's domain changes its issuer: every client of the realm has to follow, existing sessions stay behind
+on the old host, and passkeys, being bound to the host they were created on, have to be registered again.
 
 ## First deploy
 
@@ -135,7 +149,7 @@ new `app` container deploys before it serves. Coolify needs no pre-deployment co
 
 The console client carries the `authorization_code`, `refresh_token`, and `client_credentials` grants: the same
 credentials that sign an administrator in interactively are the ones an automated caller uses to get a token from
-`APP_URL/realms/admin/oauth/token`. Treat `OIDC_FIRST_PARTY_SECRET` as a production secret.
+`APP_URL/oauth/token`. Treat `OIDC_FIRST_PARTY_SECRET` as a production secret.
 
 ### Without the bootstrap variables
 
@@ -152,7 +166,7 @@ docker compose run --rm app php artisan oidc:client --first-party --trusted \
 
 A plain re-run creates a second client; re-run with `--adopt=<client_id>` to update the existing one, and add
 `--rotate` to issue a new secret. Register the first administrator on the master realm's registration page
-(`APP_URL/realms/admin/auth/register`), verify the address, then grant the global role:
+(`APP_URL/auth/register`), verify the address, then grant the global role:
 
 ```bash
 docker compose run --rm app php artisan admin:grant you@example.com
@@ -164,16 +178,14 @@ usable in a container, because it writes the credentials it generates to a `.env
 ## Realms and SaaS clients
 
 The SaaS uses two realms, `staging` and `production`, next to the master realm `admin`. Create them in the console
-(**Realms → Create realm**) with exactly those slugs. Creating a realm mints its signing keypair. Each realm then
-exposes its own issuer, discovery document, and JWKS:
+(**Realms → Create realm**) with exactly those slugs and a domain each (see [Realm domains](#realm-domains)). Creating
+a realm mints its signing keypair. Each realm then exposes its own issuer, discovery document, and JWKS on its domain:
 
 ```text
-https://<host>/realms/staging/.well-known/openid-configuration
-https://<host>/realms/staging/.well-known/jwks.json
-https://<host>/realms/production/.well-known/openid-configuration
+https://auth.staging.saas.example/.well-known/openid-configuration
+https://auth.staging.saas.example/.well-known/jwks.json
+https://auth.saas.example/.well-known/openid-configuration
 ```
-
-There is no discovery document at the root: with path-based realm routing every issuer carries its realm.
 
 Clients belong to the realm they are created in, and `php artisan oidc:client` only knows the master realm. Until the
 console grows client management for realms, create the SaaS's client inside the target realm with tinker; the plain
@@ -242,7 +254,7 @@ ones out.
   `ACTIVITYLOG_CLEAN_AFTER_DAYS`; the scheduler runs `activitylog:clean` daily along with `oidc:purge` (expired
   tokens and codes), `oidc:dispatch-expired-session-logouts`, `oidc:prune-authentication-contexts`, and
   `lattice:notifications:prune`.
-- **Discovery**: probe `APP_URL/realms/<slug>/.well-known/openid-configuration` and `.well-known/jwks.json` per realm;
+- **Discovery**: probe `https://<realm domain>/.well-known/openid-configuration` and `.well-known/jwks.json` per realm;
   a `500` on JWKS means the realm has no signing key (run `app:deploy` again) or `APP_KEY` no longer decrypts it.
 
 ## Staging versus production
@@ -259,13 +271,16 @@ those values distinguishes the two, so a staging stack can be recreated from scr
 docker compose --env-file compose.local.env -f compose.yaml -f compose.local.yaml up --build --wait
 ```
 
-The `app` container deploys on start. Then open `http://localhost:8080/realms/admin/.well-known/openid-configuration`
+The `app` container deploys on start. Then open `http://localhost:8080/.well-known/openid-configuration`
 and its `jwks.json`, which the deploy step has already keyed, and sign in at `http://localhost:8080` with the `LOCK_ADMIN_EMAIL` and `LOCK_ADMIN_PASSWORD`
 from `compose.local.env`. The same file's client id and secret get a machine token:
 
 ```bash
-curl -s -X POST http://localhost:8080/realms/admin/oauth/token \
+curl -s -X POST http://localhost:8080/oauth/token \
     -d grant_type=client_credentials -d client_id=lock-console -d client_secret=local-console-secret
 ```
+
+A realm created in the trial can take `<slug>.localhost` as its domain: browsers resolve every `*.localhost` to the
+loopback address, and the realm shares `APP_URL`'s port, so it is served at `http://<slug>.localhost:8080`.
 
 Every value in `compose.local.env` is a public throwaway; never reuse it.

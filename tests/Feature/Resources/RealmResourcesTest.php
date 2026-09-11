@@ -18,6 +18,9 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
+use function Tests\Helpers\realmRoute;
+use function Tests\Helpers\realmUrl;
+
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
 });
@@ -25,7 +28,7 @@ beforeEach(function () {
 test('a realm without resources keeps its issuer as its only audience', function () {
     expect($this->realm->resources()->resources)->toBeEmpty()
         ->and($this->realm->runAsCurrent(fn (): array => app(RealmAudiences::class)->all()))
-        ->toBe([config('app.url').'/realms/acme']);
+        ->toBe([realmUrl($this->realm, '')]);
 });
 
 test('a realm serves its resources and their scopes to the oidc server', function () {
@@ -49,14 +52,14 @@ test('a path-relative resource is advertised through rfc 9728 and an absolute on
     $external = app(CreatesResource::class)->handle($this->realm, 'https://billing.test', 'Billing');
     app(CreatesResourceScope::class)->handle($external, 'invoices.read', null);
 
-    $this->getJson(route('oidc.protected-resource', ['realm' => 'acme', 'path' => 'api']))
+    $this->getJson(realmRoute('acme', 'oidc.protected-resource', ['path' => 'api']))
         ->assertOk()
         ->assertJson([
-            'resource' => config('app.url').'/realms/acme/api',
+            'resource' => realmUrl($this->realm, 'api'),
             'scopes_supported' => ['orders.read'],
         ]);
 
-    $this->getJson(route('oidc.protected-resource', ['realm' => 'acme', 'path' => 'billing.test']))->assertNotFound();
+    $this->getJson(realmRoute('acme', 'oidc.protected-resource', ['path' => 'billing.test']))->assertNotFound();
 });
 
 test('an identifier is unique per realm but free in another', function () {

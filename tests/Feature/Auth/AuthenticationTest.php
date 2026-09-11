@@ -9,12 +9,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\realmRoute;
 
 test('the root path sends a master realm user to their account and an admin to the realms console', function () {
     (new GlobalRoleSeeder)->run();
 
     $this->get('/')->assertRedirect(route('login'));
-    $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(route('account', ['realm' => Realm::master()->slug]));
+    $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(realmRoute(Realm::master(), 'account'));
     $this->actingAs(globalAdmin(GlobalRoleSeeder::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
