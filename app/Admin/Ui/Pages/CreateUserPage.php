@@ -19,32 +19,18 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/users/create', name: 'admin.realms.users.create', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
 final class CreateUserPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
     public function title(): string
     {
         return __('admin.users.create.heading');
     }
 
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('admin.users.create.heading'), route('admin.realms.users.create', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
-        $this->realm = $realm;
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
+            Breadcrumb::make(__('admin.users.create.heading'), route('admin.realms.users.create', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-create-user-page')->gap(Gap::Large)->width(Width::Medium)->schema([

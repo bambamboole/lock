@@ -44,10 +44,6 @@ final class ClientDetailPage extends AdminPage
 {
     private const string SECRET_FLASH_KEY = 'admin.clients.revealed-secret';
 
-    private ?Realm $realm = null;
-
-    private ?Client $client = null;
-
     /**
      * A client secret is readable exactly once, on the page after the request
      * that minted it; the column only holds the hash.
@@ -59,35 +55,18 @@ final class ClientDetailPage extends AdminPage
         }
     }
 
-    public function title(): ?string
-    {
-        return $this->client?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm || ! $this->client instanceof Client) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make($this->client->name, route('admin.realms.clients.show', ['realm' => $this->realm->slug, 'client' => $this->client->id], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, Client $client, Request $request): PageSchema
     {
         abort_unless($client->realm_id === $realm->slug, 404);
 
-        $this->realm = $realm;
-        $this->client = $client;
         $context = ['realm' => $realm->slug, 'client' => $client->id];
         $secret = $request->session()->get(self::SECRET_FLASH_KEY);
+
+        $schema->title($client->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.clients'), route('admin.realms.clients', ['realm' => $realm->slug], false)),
+            Breadcrumb::make($client->name, route('admin.realms.clients.show', ['realm' => $realm->slug, 'client' => $client->id], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-client-detail-page')

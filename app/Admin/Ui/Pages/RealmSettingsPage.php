@@ -45,33 +45,15 @@ final class RealmSettingsPage extends AdminPage
     use OpensRealmDeletion;
     use PresentsRealmDomainStatus;
 
-    private ?Realm $realm = null;
-
-    public function title(): ?string
-    {
-        return $this->realm?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.settings'), route('admin.realms.settings', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, Request $request): PageSchema
     {
-        $this->realm = $realm;
         $user = $request->user();
         $manages = $user instanceof User && $user->can(AdminPermission::ManageRealms);
+
+        $schema->title($realm->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.settings'), route('admin.realms.settings', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-realm-detail-page')

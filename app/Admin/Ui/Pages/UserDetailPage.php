@@ -49,39 +49,19 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
 final class UserDetailPage extends AdminPage
 {
-    private ?User $user = null;
-
-    public function title(): ?string
-    {
-        return $this->user?->name;
-    }
-
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->user instanceof User) {
-            return [];
-        }
-
-        $realm = $this->user->realm;
-
-        return [
-            Breadcrumb::make($realm->name, route('admin.realms.users', ['realm' => $realm->slug], false)),
-            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
-            Breadcrumb::make($this->user->name, route('admin.realms.users.show', ['realm' => $realm->slug, 'user' => $this->user->id], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm, User $user, Request $request): PageSchema
     {
         abort_unless($user->belongsToRealm($realm), 404);
 
-        $this->user = $user;
         $user->setRelation('realm', $realm);
         $currentUser = $request->user();
         $context = ['realm' => $realm->slug, 'user' => $user->id];
+
+        $schema->title($user->name)->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.users'), route('admin.realms.users', ['realm' => $realm->slug], false)),
+            Breadcrumb::make($user->name, route('admin.realms.users.show', ['realm' => $realm->slug, 'user' => $user->id], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-user-detail-page')

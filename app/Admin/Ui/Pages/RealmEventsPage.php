@@ -18,31 +18,17 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/events', name: 'admin.realms.events', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
 final class RealmEventsPage extends AdminPage
 {
-    private ?Realm $realm = null;
-
     public function title(): string
     {
         return __('admin.events.heading');
     }
 
-    /**
-     * @return array<int, Breadcrumb>
-     */
-    public function breadcrumbs(): array
-    {
-        if (! $this->realm instanceof Realm) {
-            return [];
-        }
-
-        return [
-            Breadcrumb::make($this->realm->name, route('admin.realms.users', ['realm' => $this->realm->slug], false)),
-            Breadcrumb::make(__('navigation.events'), route('admin.realms.events', ['realm' => $this->realm->slug], false)),
-        ];
-    }
-
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
-        $this->realm = $realm;
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.events'), route('admin.realms.events', ['realm' => $realm->slug], false)),
+        ));
 
         return $schema->schema([
             Stack::make('admin-realm-events-page')
