@@ -1,61 +1,67 @@
 # Deployment
 
 Lock ships as one Docker image (`ghcr.io/bambamboole/lock`) that runs in three roles — web, queue worker, scheduler —
-next to Postgres and Redis. `compose.yaml` describes that stack and is what Coolify (or plain `docker compose`) runs.
-Staging and production are two separate deployments of the same image with their own database, Redis, and
-environment; they never share state.
+next to Postgres. `compose.yaml` describes that stack and is what Coolify (or plain `docker compose`) runs.
+Staging and production are two separate deployments of the same image with their own database and environment; they
+never share state.
 
 ## The image
 
-- **Base: FrankenPHP (`dunglas/frankenphp:1-php8.5-bookworm`) in classic mode.** One binary serves HTTP and runs PHP,
-  so the container needs no nginx/FPM pairing, no supervisor, and no second process to health-check. It runs PHP
-  exactly like php-fpm would (a fresh request lifecycle per request), which keeps the app free of worker-mode
-  constraints and avoids adding `laravel/octane` as a dependency. Switching to the worker mode later is an
-  image-only change.
+- **Base: `serversideup/php:8.5-frankenphp`** in classic mode. One binary serves HTTP and runs PHP, so the container
+  needs no nginx/FPM pairing, no supervisor, and no second process to health-check. It runs PHP exactly like php-fpm
+  would (a fresh request lifecycle per request), which keeps the app free of worker-mode constraints and avoids adding
+  `laravel/octane` as a dependency. The image brings its own Caddyfile, entrypoint, PHP settings, and healthcheck
+  scripts; the Dockerfile only adds the `bcmath`, `gmp`, and `intl` extensions and sets environment defaults, so the
+  repository carries no Caddyfile, entrypoint, or `php.ini` of its own.
 - Multi-stage: `composer install --no-dev` → Vite build on Node 22 (the version CI uses; nothing in the repo pins
   one) → runtime image. The Vite stage needs `vendor/` because the Lattice Vite plugin discovers component packages
   from `vendor/composer/installed.json`. It runs `npm install` rather than `npm ci` for the same reason CI does: the
   lockfile is generated on macOS and lacks the Linux-only optional packages.
-- Runs as the unprivileged `app` user on port `8080`, plain HTTP. TLS terminates at the platform proxy;
-  `bootstrap/app.php` already trusts every proxy (`trustProxies(at: '*')`), so there is no `TRUSTED_PROXIES` variable
-  to set — narrow that in code if the container is ever reachable without a proxy in front.
-- `docker/entrypoint.sh` selects the role from the container command and always builds the bytecode caches first
-  (`php artisan optimize`: config, events, routes, views, and the Lattice discovery manifest through its `optimize`
-  hook). Route caching works with Lattice's attribute-registered pages.
+- Runs as the unprivileged `www-data` user from `/var/www/html` on port `8080`, plain HTTP. TLS terminates at the
+  platform proxy; `bootstrap/app.php` already trusts every proxy (`trustProxies(at: '*')`), so there is no
+  `TRUSTED_PROXIES` variable to set — narrow that in code if the container is ever reachable without a proxy in front.
+- Every container start runs `php artisan optimize` through the image's Laravel automations (`AUTORUN_ENABLED`):
+  config, events, routes, views, and the Lattice discovery manifest through its `optimize` hook. The automations'
+  migration step is switched off; migrations belong to `app:deploy`, which also runs the data migrations.
+- The image's Caddyfile answers `403` for any path with a dotted segment except a root-level `/.well-known/`. The
+  Dockerfile rewrites `/realms/*/.well-known/*` to `index.php` through `CADDY_SERVER_EXTRA_DIRECTIVES` so every
+  realm's discovery document and JWKS stay reachable.
+- The default command serves HTTP. Any other command runs as-is after the optimize step:
 
-| Command     | Runs                                                    |
-| ----------- | ------------------------------------------------------- |
-| `app`       | `frankenphp run` (default)                              |
-| `queue`     | `php artisan queue:work --tries=3 --max-time=3600`      |
-| `scheduler` | `php artisan schedule:work`                             |
-| `deploy`    | `php artisan app:deploy` (one-off release step)         |
-| anything    | executed as-is, e.g. `php artisan admin:grant me@x.com` |
-
-Build args: `PHP_VERSION` (default `8.5`, matching CI and Herd; `composer.json` allows `^8.4`) and `NODE_VERSION`.
+| Command                                                | Runs                                 |
+| ------------------------------------------------------ | ------------------------------------ |
+| _(default)_                                            | `frankenphp run` (the `app` service) |
+| `php artisan queue:work --tries=3 --max-time=3600`     | the `queue` service                  |
+| `php artisan schedule:work`                            | the `scheduler` service              |
+| `php artisan app:deploy`                               | the one-off release step             |
+| anything else, e.g. `php artisan admin:grant me@x.com` | executed as-is                       |
 
 ## Environment
 
-Everything is passed as environment variables; there is no `.env` inside the image. `compose.yaml` wires the
-service-internal values (database host, Redis, `LOG_CHANNEL=stderr`, `APP_ENV=production`) and exposes the rest as
-`${VAR}` so Coolify can present them as deployment variables.
+Everything is passed as environment variables; there is no `.env` inside the image. The image sets the production
+defaults that are the same for every deployment: `APP_NAME=Lock`, `LOG_CHANNEL=stderr`, `LOG_LEVEL=info`,
+`SESSION_SECURE_COOKIE=true`, and `OIDC_FIRST_PARTY_TRUSTED=true` (the console skips its own consent screen; applied
+to the master realm on every deploy). `APP_ENV` and `APP_DEBUG` are left to the framework defaults, `production` and
+`false`. `compose.yaml` wires the service-internal values (database host, name and user) and exposes only what
+differs per deployment as `${VAR}`, so Coolify can present them as deployment variables. Any other Laravel or app
+setting (`SESSION_LIFETIME`, `ACTIVITYLOG_CLEAN_AFTER_DAYS`, `LOCK_ADMIN_NAME`, …) keeps its default until you add it
+to the `environment` block.
 
-| Variable                                                                                                                        | Notes                                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `APP_KEY`                                                                                                                       | `docker run --rm ghcr.io/bambamboole/lock php artisan key:generate --show`. Rotating it invalidates sessions and every encrypted value.                                                            |
-| `APP_URL`                                                                                                                       | Public HTTPS origin, no trailing slash. It is the OIDC issuer prefix: every realm's issuer is `APP_URL/realms/{slug}`, and it is baked into signed URLs and the first-party client's redirect URI. |
-| `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`                                                                                     | Postgres credentials; the compose file feeds the same values to the `postgres` service.                                                                                                            |
-| `REALM_MASTER_SLUG`                                                                                                             | Slug of the master realm, `admin` by default. Instance administrators live there; it is created by the data migrations. Do not change it after the first deploy.                                   |
-| `OIDC_RP_ISSUER`                                                                                                                | Derived in `compose.yaml` as `APP_URL/realms/REALM_MASTER_SLUG`: the console authenticates against the master realm (see `.ai/rules/realms.md`).                                                   |
-| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_FIRST_PARTY_SECRET`                                                                            | The console's own OIDC client. Pick both values yourself; every deploy provisions or re-provisions exactly that client. Leave either empty and the client is left as it is.                        |
-| `OIDC_FIRST_PARTY_TRUSTED`                                                                                                      | `true` (the compose default): the console skips its own consent screen. Applied to the master realm on every deploy.                                                                               |
-| `OIDC_RP_CLIENT_ID`, `OIDC_RP_CLIENT_SECRET`                                                                                    | Only for signing the console in against another provider. Unset they fall back to the first-party pair above, which is what self-SSO wants.                                                        |
-| `LOCK_ADMIN_EMAIL`, `LOCK_ADMIN_PASSWORD`, `LOCK_ADMIN_NAME`                                                                    | The first administrator, created in the master realm, verified, and holding Super Admin. The password is re-applied on every deploy; leave it empty to manage the password in the console instead. |
-| `SESSION_SECURE_COOKIE`                                                                                                         | `true` (the compose default). Cookies are only ever sent over HTTPS.                                                                                                                               |
-| `SESSION_DOMAIN`                                                                                                                | Leave empty unless the console and the realms are served from different hosts (they are not today).                                                                                                |
-| `SESSION_LIFETIME`                                                                                                              | Minutes of idle time before a console session expires (default 120).                                                                                                                               |
-| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SCHEME`, `MAIL_FROM_ADDRESS`, `MAIL_FROM_NAME` | Verification, password reset, and invitation mails. `MAIL_SCHEME=smtps` for implicit TLS; otherwise leave it empty and use port 587 (STARTTLS).                                                    |
-| `LOG_LEVEL`                                                                                                                     | `info` in production; every line goes to the container's stderr.                                                                                                                                   |
-| `ACTIVITYLOG_CLEAN_AFTER_DAYS`                                                                                                  | Retention of the audit log (default 365); enforced daily by the scheduler.                                                                                                                         |
+| Variable                                             | Notes                                                                                                                                                                                               |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `APP_KEY`                                            | `docker run --rm ghcr.io/bambamboole/lock php artisan key:generate --show`. Rotating it invalidates sessions and every encrypted value.                                                             |
+| `APP_URL`                                            | Public HTTPS origin, no trailing slash. It is the OIDC issuer prefix: every realm's issuer is `APP_URL/realms/{slug}`, and it is baked into signed URLs and the first-party client's redirect URI.  |
+| `DB_PASSWORD`                                        | Postgres password; the compose file feeds the same value to the `postgres` service. Database and user are both `lock`.                                                                              |
+| `MAIL_URL`                                           | The SMTP connection as one URL, e.g. `smtp://user:password@mail.example.com:587` (STARTTLS) or `smtps://…:465` (implicit TLS). URL-encode special characters in the credentials.                    |
+| `MAIL_FROM_ADDRESS`                                  | Sender of verification, password reset, and invitation mails. The sender name is `APP_NAME`.                                                                                                        |
+| `MAIL_MAILER`                                        | `smtp` by default; `log` writes mails to the log stream instead of sending them.                                                                                                                    |
+| `OIDC_FIRST_PARTY_CLIENT`, `OIDC_FIRST_PARTY_SECRET` | The console's own OIDC client. Pick both values yourself; every deploy provisions or re-provisions exactly that client. Leave either empty and the client is left as it is.                         |
+| `LOCK_ADMIN_EMAIL`, `LOCK_ADMIN_PASSWORD`            | The first administrator, created in the master realm, verified, and holding Super Admin. The password is re-applied on every deploy; leave it empty to manage the password in the console instead.  |
+| `LOCK_IMAGE`                                         | Not a container variable: the image tag the stack runs, `ghcr.io/bambamboole/lock:latest` by default. Pin it to a `sha-<commit>` tag (see [Staging versus production](#staging-versus-production)). |
+
+The console signs in against the master realm `admin` with the first-party client's credentials, which is what
+self-SSO wants. Only to sign it in against another provider, add `OIDC_RP_ISSUER`, `OIDC_RP_CLIENT_ID`, and
+`OIDC_RP_CLIENT_SECRET`.
 
 ### Session cookie and the realm path
 
@@ -71,7 +77,7 @@ move the single shared cookie.
 Nothing is provisioned by hand and nothing is written inside the container: the environment carries the console's
 credentials and the first administrator, and `app:deploy` brings the database in line with them.
 
-1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, and the mail settings, plus the four bootstrap variables. Choose the
+1. Provide `APP_KEY`, `APP_URL`, `DB_PASSWORD`, `MAIL_URL`, and `MAIL_FROM_ADDRESS`, plus the four bootstrap variables. Choose the
    client id and secret and the administrator's address and password yourself — the infrastructure code that
    provisions the instance already holds them, and they are what it authenticates with afterwards:
 
@@ -90,10 +96,11 @@ credentials and the first administrator, and `app:deploy` brings the database in
 3. Run the release step against the running stack:
 
     ```bash
-    docker compose run --rm app deploy
+    docker compose run --rm app php artisan app:deploy
     ```
 
-    `app:deploy` runs `migrate --force --isolated`, the data migrations (creates the master realm),
+    `app:deploy` runs `migrate --force --isolated` (unlocked on an empty database, whose `cache_locks` table the
+    first migration only creates), the data migrations (creates the master realm),
     `oidc:rotate-keys --if-missing` for every realm, `permission:sync`, `app:bootstrap`, and
     `lattice:discover-cache`. Every step is idempotent and safe to repeat, so the master realm's signing key exists
     from this point on and no key material goes into the environment (details under [Signing keys](#signing-keys)).
@@ -101,7 +108,7 @@ credentials and the first administrator, and `app:deploy` brings the database in
 4. Sign in at `APP_URL` with `LOCK_ADMIN_EMAIL` and `LOCK_ADMIN_PASSWORD`. The console client is already provisioned,
    trusted, and recorded as the master realm's first-party client, so the login skips the consent screen.
 
-That is the whole first deploy. Every later release is: pull the new image, `docker compose run --rm app deploy`,
+That is the whole first deploy. Every later release is: pull the new image, `docker compose run --rm app php artisan app:deploy`,
 restart the three app services. In Coolify, set `php artisan app:deploy` as the pre-deployment command of the `app`
 service. Because the migrations run `--isolated`, concurrently booting instances do not race each other.
 
@@ -212,15 +219,19 @@ is the issuer, so a realm signs with its own key and publishes only that key at 
 
 Postgres is the only state that matters: users, realms, clients, signing keys, tokens, sessions, consents,
 roles, settings, and the audit log all live there. Back up the `postgres` volume (or run `pg_dump` from the
-`postgres` service) on a schedule. The `storage` volume only holds uploaded files, of which there are none today, and
-Redis holds only the cache and queued jobs. Sessions are rows in Postgres on purpose: the account page lists a
-user's browser sessions and signs single ones out, which the Redis driver cannot serve.
+`postgres` service) on a schedule. The `storage` volume only holds uploaded files, of which there are none today.
+
+Cache, cache locks, sessions, and the queue all use Laravel's `database` drivers, the framework defaults, so the stack
+needs no Redis. Sessions have to be rows anyway: the account page lists a user's browser sessions and signs single
+ones out. On the very first boot the queue worker restarts until `app:deploy` has created its tables.
 
 ## Monitoring
 
-- **Logs** go to stderr as JSON (Caddy access log) and Laravel's `stderr` channel; let the platform collect them.
-- **Health**: `GET /up` on port 8080 (the Docker `HEALTHCHECK` and the compose healthcheck use it). `queue:monitor`
-  fails the `queue` container's healthcheck when the Redis queue backs up past 1000 jobs.
+- **Logs** go to the container output: Caddy's access log on stdout and Laravel's `stderr` channel; let the platform
+  collect them.
+- **Health**: `GET /up` on port 8080 (the image's Docker `HEALTHCHECK`, pointed there by `HEALTHCHECK_PATH`). The
+  `queue` and `scheduler` services override it with the image's `healthcheck-queue` and `healthcheck-schedule`, which
+  check that the worker process is running.
 - **Login failures, token issuance, admin changes**: the OIDC package and the app record them in the activity log
   (`App\Shared\Audit\Models\Activity`, browsable under **Activity** in the console; the package's `oidc: audit …`
   lines also reach the log stream). Alert on spikes of failed logins per realm from that table. Retention is
@@ -232,8 +243,8 @@ user's browser sessions and signs single ones out, which the Redis driver cannot
 
 ## Staging versus production
 
-Run them as two independent stacks — separate Coolify projects (or compose project names), separate Postgres and
-Redis, separate `APP_KEY`, separate `APP_URL`. Signing keys follow the database, so they are separate by
+Run them as two independent stacks — separate Coolify projects (or compose project names), separate Postgres,
+separate `APP_KEY`, separate `APP_URL`. Signing keys follow the database, so they are separate by
 construction. Only the image is shared: pin staging to the
 `sha-<commit>` tag you are about to promote, and production to the same tag once staging is verified. Nothing but
 those values distinguishes the two, so a staging stack can be recreated from scratch at any time.
@@ -241,17 +252,17 @@ those values distinguishes the two, so a staging stack can be recreated from scr
 ## Local trial
 
 ```bash
-docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml up --build -d
-docker compose --env-file docker/local.env -f compose.yaml -f compose.local.yaml run --rm app deploy
+docker compose --env-file compose.local.env -f compose.yaml -f compose.local.yaml up --build -d
+docker compose --env-file compose.local.env -f compose.yaml -f compose.local.yaml run --rm app php artisan app:deploy
 ```
 
 Then open `http://localhost:8080/realms/admin/.well-known/openid-configuration` and its `jwks.json`, which the deploy
 step has already keyed, and sign in at `http://localhost:8080` with the `LOCK_ADMIN_EMAIL` and `LOCK_ADMIN_PASSWORD`
-from `docker/local.env`. The same file's client id and secret get a machine token:
+from `compose.local.env`. The same file's client id and secret get a machine token:
 
 ```bash
 curl -s -X POST http://localhost:8080/realms/admin/oauth/token \
     -d grant_type=client_credentials -d client_id=lock-console -d client_secret=local-console-secret
 ```
 
-Every value in `docker/local.env` is a public throwaway; never reuse it.
+Every value in `compose.local.env` is a public throwaway; never reuse it.

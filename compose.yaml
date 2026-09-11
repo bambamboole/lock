@@ -1,7 +1,5 @@
-# Production-shaped stack: one image, three roles (web, queue, scheduler),
-# Postgres and Redis. Coolify can run this file as-is; every ${VAR} is picked
-# up as an environment variable of the deployment. For a local trial add
-# compose.local.yaml (see docs/deployment.md).
+# Production stack: one image in three roles (web, queue, scheduler) next to Postgres.
+# Coolify runs this file as-is. For a local trial see docs/deployment.md.
 
 x-app: &app
   image: ${LOCK_IMAGE:-ghcr.io/bambamboole/lock:latest}
@@ -9,118 +7,53 @@ x-app: &app
   depends_on:
     postgres:
       condition: service_healthy
-    redis:
-      condition: service_healthy
   volumes:
-    - storage:/app/storage/app
-  environment: &app-environment
-    APP_NAME: ${APP_NAME:-Lock}
-    APP_ENV: production
-    APP_DEBUG: "false"
+    - storage:/var/www/html/storage/app
+  environment:
     APP_KEY: ${APP_KEY:?APP_KEY is required}
     APP_URL: ${APP_URL:?APP_URL is required}
-    APP_LOCALE: ${APP_LOCALE:-en}
-    LOG_CHANNEL: stderr
-    LOG_LEVEL: ${LOG_LEVEL:-info}
 
     DB_CONNECTION: pgsql
     DB_HOST: postgres
-    DB_PORT: "5432"
-    DB_DATABASE: ${DB_DATABASE:-lock}
-    DB_USERNAME: ${DB_USERNAME:-lock}
+    DB_DATABASE: lock
+    DB_USERNAME: lock
     DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
 
-    REDIS_HOST: redis
-    REDIS_PORT: "6379"
-    CACHE_STORE: redis
-    # Sessions live in Postgres, not Redis: the account page lists a user's
-    # browser sessions and signs single ones out, which needs rows to read.
-    SESSION_DRIVER: database
-    QUEUE_CONNECTION: redis
-    BROADCAST_CONNECTION: "null"
-
-    SESSION_LIFETIME: ${SESSION_LIFETIME:-120}
-    SESSION_SECURE_COOKIE: ${SESSION_SECURE_COOKIE:-true}
-    SESSION_DOMAIN: ${SESSION_DOMAIN:-}
-
     MAIL_MAILER: ${MAIL_MAILER:-smtp}
-    MAIL_HOST: ${MAIL_HOST:-}
-    MAIL_PORT: ${MAIL_PORT:-587}
-    MAIL_USERNAME: ${MAIL_USERNAME:-}
-    MAIL_PASSWORD: ${MAIL_PASSWORD:-}
-    MAIL_SCHEME: ${MAIL_SCHEME:-}
-    MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-reply@example.com}
-    MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Lock}
+    MAIL_URL: ${MAIL_URL:-}
+    MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:?MAIL_FROM_ADDRESS is required}
 
-    REALM_MASTER_SLUG: ${REALM_MASTER_SLUG:-admin}
-    OIDC_ISSUER: ${APP_URL}
     OIDC_FIRST_PARTY_CLIENT: ${OIDC_FIRST_PARTY_CLIENT:-}
     OIDC_FIRST_PARTY_SECRET: ${OIDC_FIRST_PARTY_SECRET:-}
-    OIDC_FIRST_PARTY_TRUSTED: ${OIDC_FIRST_PARTY_TRUSTED:-true}
-    OIDC_RP_ENABLED: ${OIDC_RP_ENABLED:-true}
-    OIDC_RP_ISSUER: ${APP_URL}/realms/${REALM_MASTER_SLUG:-admin}
-    OIDC_RP_CLIENT_ID: ${OIDC_RP_CLIENT_ID:-}
-    OIDC_RP_CLIENT_SECRET: ${OIDC_RP_CLIENT_SECRET:-}
-    OIDC_RP_POST_LOGOUT_REDIRECT_URI: ${APP_URL}
-
-    # Reconciled into the master realm by `app:deploy` on every release.
     LOCK_ADMIN_EMAIL: ${LOCK_ADMIN_EMAIL:-}
     LOCK_ADMIN_PASSWORD: ${LOCK_ADMIN_PASSWORD:-}
-    LOCK_ADMIN_NAME: ${LOCK_ADMIN_NAME:-Administrator}
-
-    ACTIVITYLOG_CLEAN_AFTER_DAYS: ${ACTIVITYLOG_CLEAN_AFTER_DAYS:-365}
 
 services:
   app:
     <<: *app
-    command: app
-    expose:
-      - "8080"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/up"]
-      interval: 30s
-      timeout: 5s
-      start_period: 30s
-      retries: 3
 
   queue:
     <<: *app
-    command: queue
+    command: ["php", "artisan", "queue:work", "--tries=3", "--max-time=3600"]
     healthcheck:
-      test: ["CMD", "php", "artisan", "queue:monitor", "redis:default", "--max=1000"]
-      interval: 60s
-      timeout: 10s
-      start_period: 30s
-      retries: 3
+      test: ["CMD", "healthcheck-queue"]
 
   scheduler:
     <<: *app
-    command: scheduler
+    command: ["php", "artisan", "schedule:work"]
+    healthcheck:
+      test: ["CMD", "healthcheck-schedule"]
 
   postgres:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-lock}
-      POSTGRES_USER: ${DB_USERNAME:-lock}
+      POSTGRES_USER: lock
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     volumes:
       - postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-lock} -d ${DB_DATABASE:-lock}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    restart: unless-stopped
-    # Sessions and queued jobs live here, so persist to disk.
-    command: redis-server --appendonly yes
-    volumes:
-      - redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "pg_isready", "-U", "lock"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -128,4 +61,3 @@ services:
 volumes:
   storage:
   postgres:
-  redis:

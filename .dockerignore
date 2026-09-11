@@ -54,6 +54,5 @@ README.md
 LICENSE
 solo.yml
 boost.json
-compose*.yaml
+compose.*
 Dockerfile
-docker/local.env
