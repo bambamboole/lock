@@ -59,6 +59,8 @@
             "@php artisan migrate --force",
             "@php artisan migrate --path=database/data-migrations --force",
             "@php artisan oidc:rotate-keys --if-missing --ansi",
+            "@php artisan permission:sync --ansi",
+            "@php artisan app:bootstrap --ansi",
             "npm install",
             "npm run build"
         ],

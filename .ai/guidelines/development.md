@@ -3,8 +3,9 @@
 - Lock is a full **Laravel 13 + Inertia + React + Lattice** application (Lattice provides server-driven UI). It is
   served locally with **Herd** at `http://lock.test`. PHP `^8.4`.
 - First-time setup: `composer setup` (installs deps, copies `.env`, generates the app key, runs migrations, generates
-  the master realm's OIDC signing key into `oidc_signing_keys` via `oidc:rotate-keys --if-missing`, installs npm deps,
-  builds the frontend). Day-to-day, run
+  the master realm's OIDC signing key into `oidc_signing_keys` via `oidc:rotate-keys --if-missing`, syncs the global
+  roles, provisions the console client and the `test@example.com` administrator from the `LOCK_*` values in `.env`
+  via `app:bootstrap`, installs npm deps, builds the frontend). Day-to-day, run
   everything with `composer dev` (concurrently runs the queue, Pail logs, and Vite — Herd serves the app, so
   `artisan serve` is excluded).
 - Data changes and backfills live in `database/data-migrations/`, not in the schema-only `database/migrations/` (see
