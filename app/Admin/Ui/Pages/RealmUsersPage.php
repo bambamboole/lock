@@ -41,7 +41,7 @@ final class RealmUsersPage extends AdminPage
                         Button::make(__('admin.users.create.submit'))
                             ->effects(Effects::redirect(route('admin.realms.users.create', ['realm' => $realm->slug], false))),
                     ])),
-                    Table::use(AdminUsersTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminUsersTable::class),
                 ]),
         ]);
     }

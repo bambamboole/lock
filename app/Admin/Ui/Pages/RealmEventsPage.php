@@ -35,7 +35,7 @@ final class RealmEventsPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.events.heading'), __('admin.events.description', ['realm' => $realm->name])),
-                    Table::use(RealmAuditEventsTable::class, ['realm' => $realm->slug]),
+                    Table::use(RealmAuditEventsTable::class),
                 ]),
         ]);
     }

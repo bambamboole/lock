@@ -36,7 +36,7 @@ final class CreateClientPage extends AdminPage
             Stack::make('admin-create-client-page')->gap(Gap::Large)->width(Width::Medium)->schema([
                 PageHeader::make(__('admin.clients.create.heading'), __('admin.clients.create.description', ['realm' => $realm->name])),
                 Card::make(__('admin.clients.sections.general'))->schema([
-                    Form::use(CreateClientForm::class, ['realm' => $realm->slug]),
+                    Form::use(CreateClientForm::class),
                 ]),
             ]),
         ]);

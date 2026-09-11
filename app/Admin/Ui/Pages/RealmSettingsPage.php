@@ -99,7 +99,7 @@ final class RealmSettingsPage extends AdminPage
         return Card::make(__('admin.realms.general.heading'), __('admin.realms.general.subtitle'))->schema([
             DescriptionList::make('realm-general')->bleed()->schema([
                 $manages
-                    ? $name->disclosure([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])])
+                    ? $name->disclosure([Form::use(UpdateRealmForm::class)])
                     : $name,
                 $this->domainEntry($realm, $manages),
                 TextEntry::make('slug', __('admin.realms.fields.slug.label'), 'realm-slug')
@@ -136,11 +136,11 @@ final class RealmSettingsPage extends AdminPage
                     ->schema([
                         Text::make($realm->host()),
                         Badge::make(__('admin.realms.domain.status.'.$status->value))->color($this->domainStatusColor($status)),
-                        ...($manages ? [Action::use(CheckRealmDomainAction::class, ['realm' => $realm->slug])] : []),
+                        ...($manages ? [Action::use(CheckRealmDomainAction::class)] : []),
                     ]),
             )
             ->description(trim($outcome.$checkedAt.($realm->domain_check_error === null ? '' : ' ('.$realm->domain_check_error.')')));
 
-        return $manages ? $entry->disclosure([Form::use(UpdateRealmDomainForm::class, ['realm' => $realm->slug])]) : $entry;
+        return $manages ? $entry->disclosure([Form::use(UpdateRealmDomainForm::class)]) : $entry;
     }
 }

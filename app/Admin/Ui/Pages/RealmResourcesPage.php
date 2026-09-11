@@ -37,9 +37,9 @@ final class RealmResourcesPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.resources.heading'), __('admin.resources.description', ['realm' => $realm->name]), ActionBar::make(primary: [
-                        Action::use(CreateResourceAction::class, ['realm' => $realm->slug]),
+                        Action::use(CreateResourceAction::class),
                     ])),
-                    Table::use(AdminResourcesTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminResourcesTable::class),
                 ]),
         ]);
     }

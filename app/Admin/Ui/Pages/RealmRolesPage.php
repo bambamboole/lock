@@ -37,9 +37,9 @@ final class RealmRolesPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.roles.heading'), __('admin.roles.description', ['realm' => $realm->name]), ActionBar::make(primary: [
-                        Action::use(CreateRealmRoleAction::class, ['realm' => $realm->slug]),
+                        Action::use(CreateRealmRoleAction::class),
                     ])),
-                    Table::use(AdminRealmRolesTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminRealmRolesTable::class),
                 ]),
         ]);
     }

@@ -113,7 +113,7 @@ final class AdminClientsTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
-        $context = ['realm' => $this->contextString('realm'), 'client' => $row['id']];
+        $context = ['client' => $row['id']];
         $confidential = $row['token_endpoint_auth_method'] !== TokenEndpointAuthMethod::None->value;
 
         return array_filter([ActionBar::menu('admin.clients.row-actions', [

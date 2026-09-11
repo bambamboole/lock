@@ -36,7 +36,7 @@ final class CreateUserPage extends AdminPage
             Stack::make('admin-create-user-page')->gap(Gap::Large)->width(Width::Medium)->schema([
                 PageHeader::make(__('admin.users.create.heading'), __('admin.users.create.description', ['realm' => $realm->name])),
                 Card::make(__('admin.users.detail.profile.heading'))->schema([
-                    Form::use(CreateUserForm::class, ['realm' => $realm->slug]),
+                    Form::use(CreateUserForm::class),
                 ]),
             ]),
         ]);

@@ -132,7 +132,7 @@ final class AdminUsersTable extends EloquentTableDefinition
      */
     public function actions(array $row): array
     {
-        $context = ['realm' => $this->contextString('realm'), 'user' => $row['id']];
+        $context = ['user' => $row['id']];
         $blocked = (bool) ($row['blocked'] ?? false);
 
         return array_filter([ActionBar::menu('admin.users.row-actions', [

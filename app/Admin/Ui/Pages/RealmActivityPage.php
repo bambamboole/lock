@@ -35,7 +35,7 @@ final class RealmActivityPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.realm-activity.heading'), __('admin.realm-activity.description', ['realm' => $realm->name])),
-                    Table::use(RealmActivityTable::class, ['realm' => $realm->slug]),
+                    Table::use(RealmActivityTable::class),
                 ]),
         ]);
     }

@@ -40,7 +40,7 @@ final class RealmClientsPage extends AdminPage
                         Button::make(__('admin.clients.create.submit'))
                             ->effects(Effects::redirect(route('admin.realms.clients.create', ['realm' => $realm->slug], false))),
                     ])),
-                    Table::use(AdminClientsTable::class, ['realm' => $realm->slug]),
+                    Table::use(AdminClientsTable::class),
                 ]),
         ]);
     }

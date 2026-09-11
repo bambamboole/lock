@@ -33,8 +33,6 @@ final class ResourceDetailPage extends AdminPage
     {
         abort_unless($resource->belongsToRealm($realm), 404);
 
-        $context = ['realm' => $realm->slug, 'resource' => $resource->id];
-
         $schema->title($resource->name)->breadcrumbs($this->realmBreadcrumbs(
             $realm,
             Breadcrumb::make(__('navigation.resources'), route('admin.realms.resources', ['realm' => $realm->slug], false)),
@@ -46,15 +44,15 @@ final class ResourceDetailPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make($resource->name, __('admin.resources.detail.description', ['realm' => $realm->name]), ActionBar::make(
-                        primary: [Action::use(CreateResourceScopeAction::class, $context)],
+                        primary: [Action::use(CreateResourceScopeAction::class)],
                         overflow: [
-                            Action::use(UpdateResourceAction::class, $context),
-                            Action::use(DeleteResourceAction::class, $context),
+                            Action::use(UpdateResourceAction::class),
+                            Action::use(DeleteResourceAction::class),
                         ],
                         key: 'admin-resource',
                     )),
                     $this->settingsCard($realm, $resource, $audiences),
-                    Table::use(AdminResourceScopesTable::class, $context),
+                    Table::use(AdminResourceScopesTable::class),
                 ]),
         ]);
     }

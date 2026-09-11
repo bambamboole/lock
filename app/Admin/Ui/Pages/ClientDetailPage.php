@@ -59,7 +59,6 @@ final class ClientDetailPage extends AdminPage
     {
         abort_unless($client->realm_id === $realm->slug, 404);
 
-        $context = ['realm' => $realm->slug, 'client' => $client->id];
         $secret = $request->session()->get(self::SECRET_FLASH_KEY);
 
         $schema->title($client->name)->breadcrumbs($this->realmBreadcrumbs(
@@ -76,10 +75,10 @@ final class ClientDetailPage extends AdminPage
                     PageHeader::make(
                         $client->name,
                         __('admin.clients.detail.description', ['realm' => $realm->name]),
-                        $this->headerActions($client, $context),
+                        $this->headerActions($client),
                     ),
                     ...(is_string($secret) ? [$this->secretCard($client, $secret)] : []),
-                    $this->settingsCard($client, $context),
+                    $this->settingsCard($client),
                 ]),
         ]);
     }
@@ -88,18 +87,17 @@ final class ClientDetailPage extends AdminPage
      * Rotating the secret is what an operator comes here for; the rest sits
      * behind the menu.
      *
-     * @param  array<string, string>  $context
      * @return array<int, Component>
      */
-    private function headerActions(Client $client, array $context): array
+    private function headerActions(Client $client): array
     {
         return ActionBar::make(
-            primary: $client->confidential() ? [Action::use(RotateClientSecret::class, $context)] : [],
+            primary: $client->confidential() ? [Action::use(RotateClientSecret::class)] : [],
             overflow: [
                 ...($client->revoked
-                    ? [Action::use(RestoreClient::class, $context)]
-                    : [Action::use(RevokeClient::class, $context)]),
-                Action::use(DeleteClient::class, $context),
+                    ? [Action::use(RestoreClient::class)]
+                    : [Action::use(RevokeClient::class)]),
+                Action::use(DeleteClient::class),
             ],
             key: 'admin-client',
         );
@@ -117,41 +115,38 @@ final class ClientDetailPage extends AdminPage
         ]);
     }
 
-    /**
-     * @param  array<string, string>  $context
-     */
-    private function settingsCard(Client $client, array $context): Card
+    private function settingsCard(Client $client): Card
     {
         return Card::make(__('admin.clients.detail.settings.heading'), __('admin.clients.detail.settings.subtitle'))->schema([
             DescriptionList::make('client-settings')->bleed()->schema([
                 TextEntry::make('name', __('admin.clients.fields.name.label'), 'client-name')
                     ->value($client->name)
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'name'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'name'])]),
                 ComponentEntry::make('client_id', __('admin.clients.columns.client-id'), 'client-client-id')
                     ->value(Text::make($client->client_id)->copyable()),
                 TextEntry::make('token_endpoint_auth_method', __('admin.clients.columns.type'), 'client-type')
                     ->value(__('admin.clients.types.'.str_replace('_', '-', $client->token_endpoint_auth_method->value)))
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'token_endpoint_auth_method'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'token_endpoint_auth_method'])]),
                 ComponentEntry::make('grant_types', __('admin.clients.columns.grant-types'), 'client-grant-types')
                     ->value($this->badges(array_map(
                         fn (string $grantType): string => __('admin.clients.grant-types.'.str_replace('_', '-', $grantType)),
                         $client->grant_types,
                     )))
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'grant_types'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'grant_types'])]),
                 ComponentEntry::make('redirect_uris', __('admin.clients.fields.redirect-uris.label'), 'client-redirect-uris')
                     ->value($this->uriLines($client->redirect_uris))
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'redirect_uris'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'redirect_uris'])]),
                 ComponentEntry::make('post_logout_redirect_uris', __('admin.clients.fields.post-logout-redirect-uris.label'), 'client-post-logout-redirect-uris')
                     ->value($this->uriLines($client->post_logout_redirect_uris))
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'post_logout_redirect_uris'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'post_logout_redirect_uris'])]),
                 BadgeEntry::make('consent_required', __('admin.clients.fields.consent-required.label'), 'client-consent-required')
                     ->value($client->consent_required ? __('common.value.yes') : __('common.value.no'))
                     ->color($client->consent_required ? ColorName::Success : ColorName::Muted)
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'consent_required'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'consent_required'])]),
                 TextEntry::make('backchannel_logout_uri', __('admin.clients.fields.backchannel-logout-uri.label'), 'client-backchannel-logout-uri')
                     ->value($client->backchannel_logout_uri)
                     ->placeholder(__('common.value.none'))
-                    ->disclosure([Form::use(UpdateClientForm::class, [...$context, 'field' => 'backchannel_logout_uri'])]),
+                    ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'backchannel_logout_uri'])]),
                 ComponentEntry::make('scopes', __('admin.clients.detail.scopes'), 'client-scopes')
                     ->value($this->badges($client->assignedScopes())),
                 BadgeEntry::make('status', __('admin.clients.columns.status'), 'client-status')
