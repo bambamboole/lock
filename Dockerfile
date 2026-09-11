@@ -34,15 +34,14 @@ RUN VITE_APP_NAME=Lock npm run build
 
 FROM base AS app
 
-# Every container start runs `php artisan optimize`; migrations stay with the explicit
-# `php artisan app:deploy` release step, which also runs the data migrations.
-# The image's Caddyfile answers 403 for every dotted path segment except a root-level
-# /.well-known/, which would block each realm's discovery document and JWKS. Routing them
-# to index.php up front skips that rule; Laravel still sees the original request URI.
+# Every container start runs `php artisan optimize`; migrations stay with `php artisan app:deploy`,
+# which also runs the data migrations and which the hook below runs when AUTORUN_APP_DEPLOY=true.
 ENV AUTORUN_ENABLED=true \
     AUTORUN_LARAVEL_MIGRATION=false \
-    CADDY_SERVER_EXTRA_DIRECTIVES="rewrite /realms/*/.well-known/* /index.php" \
+    AUTORUN_APP_DEPLOY=false \
     HEALTHCHECK_PATH=/up \
+    DB_CONNECTION=pgsql \
+    OCTANE_SERVER=frankenphp \
     PHP_OPCACHE_ENABLE=1 \
     APP_NAME=Lock \
     LOG_CHANNEL=stderr \
@@ -50,7 +49,17 @@ ENV AUTORUN_ENABLED=true \
     SESSION_SECURE_COOKIE=true \
     OIDC_FIRST_PARTY_TRUSTED=true
 
+COPY --chmod=755 <<'EOF' /etc/entrypoint.d/60-app-deploy.sh
+#!/bin/sh
+if [ "$AUTORUN_APP_DEPLOY" = "true" ]; then
+    echo "🚀 Running the release step: \"php artisan app:deploy\"..."
+    php "$APP_BASE_DIR/artisan" app:deploy --no-interaction
+fi
+EOF
+
 COPY --from=vendor --chown=www-data:www-data /var/www/html /var/www/html
 COPY --from=assets --chown=www-data:www-data /app/public/build /var/www/html/public/build
 
 USER www-data
+
+CMD ["php", "artisan", "octane:start", "--host=0.0.0.0", "--port=8080"]

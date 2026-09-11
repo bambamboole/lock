@@ -16,6 +16,7 @@
         "infer-conventions",
         "laravel-best-practices",
         "testing-best-practices",
+        "octane-development",
         "inertia-react-development",
         "tailwindcss-development",
         "lattice-actions",

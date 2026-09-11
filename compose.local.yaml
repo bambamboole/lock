@@ -5,6 +5,8 @@
 x-build: &build
   image: lock:local
   build: .
+  environment:
+    MAIL_MAILER: log
 
 services:
   app:
