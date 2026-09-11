@@ -31,7 +31,6 @@ storage/framework/views/*
 storage/logs/*
 storage/pail
 storage/*.key
-storage/wayfinder-cache
 
 database/*.sqlite
 database/*.sqlite-*

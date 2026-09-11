@@ -48,8 +48,7 @@ environment the login form ships prefilled with them, so signing in is a single 
 ## Testing
 
 ```bash
-composer ci:check        # lint/format/type checks, then Pint + the Pest suite
-vendor/bin/phpstan analyse
+composer ci:check    # lint, format and type checks, PHPStan, Rector, then Pint + the Pest suite
 ```
 
 ## License
