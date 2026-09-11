@@ -5,7 +5,9 @@ namespace App\Realms\Models;
 
 use App\Auth\Models\User;
 use App\Realms\Observers\RealmObserver;
+use App\Resources\Models\Resource;
 use App\Shared\Realms\Support\RealmConfiguration;
+use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
@@ -44,6 +46,8 @@ use Illuminate\Support\Facades\Context;
  * @property-read int|null $users_count
  * @property-read Collection<int, RealmRole> $realmRoles
  * @property-read int|null $realm_roles_count
+ * @property-read Collection<int, \App\Resources\Models\Resource> $realmResources
+ * @property-read int|null $realm_resources_count
  *
  * @method static \Database\Factories\RealmFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newModelQuery()
@@ -137,6 +141,17 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function realmRoles(): HasMany
     {
         return $this->hasMany(RealmRole::class);
+    }
+
+    /**
+     * Not `resources()`: that name belongs to the package's realm contract,
+     * which this model answers with the settings built from these rows.
+     *
+     * @return HasMany<\App\Resources\Models\Resource, $this>
+     */
+    public function realmResources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
     }
 
     /**
@@ -271,7 +286,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public function resources(): ResourceSettings
     {
-        return ResourceSettings::fromConfig();
+        return app(ProvidesRealmResources::class)->for($this);
     }
 
     public function scopes(): ScopeSettings

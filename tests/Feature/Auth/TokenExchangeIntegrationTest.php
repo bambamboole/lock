@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Resources\Models\Resource;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentPrompt;
 use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentView;
@@ -23,7 +24,7 @@ use function Tests\Helpers\loginAccessToken;
 beforeEach(function () {
     $this->withoutMiddleware(PreventRequestForgery::class);
 
-    config(['oidc.resources' => ['orders' => ['scopes' => ['openid']]]]);
+    Resource::factory()->for(Realm::master())->create(['identifier' => 'orders', 'name' => 'Orders']);
     $this->audience = app(IssuerResolver::class)->url().'/orders';
     app()->bind(ConsentView::class, fn () => new class implements ConsentView
     {

@@ -5,6 +5,8 @@ use App\Admin\Models\Role;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Resources\Models\Resource;
+use App\Resources\Models\ResourceScope;
 use App\Shared\Auth\Contracts\PermissionCatalog;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -153,11 +155,11 @@ function architectureDomains(): array
 }
 
 /**
- * The identity models every domain speaks in. Relations, route bindings and
- * policies need the concrete Eloquent class, so these four may be imported
- * across domain lines; every other cross-domain dependency goes through a
- * contract or DTO in App\Shared\{Domain}. pest-arch's ignoring() drops a
- * class on both sides, so the kernel models are also exempt as sources.
+ * The models every domain speaks in. Relations, route bindings and policies
+ * need the concrete Eloquent class, so these may be imported across domain
+ * lines; every other cross-domain dependency goes through a contract or DTO in
+ * App\Shared\{Domain}. pest-arch's ignoring() drops a class on both sides, so
+ * the kernel models are also exempt as sources.
  *
  * @return array<int, class-string>
  */
@@ -168,6 +170,8 @@ function architectureSharedKernel(): array
         Realm::class,
         RealmRole::class,
         Role::class,
+        Resource::class,
+        ResourceScope::class,
     ];
 }
 
