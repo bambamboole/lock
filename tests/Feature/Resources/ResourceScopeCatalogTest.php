@@ -8,6 +8,7 @@ use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
 use Bambamboole\LaravelOidc\Server\Scopes\Scope;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 
+use function Tests\Helpers\clientCredentialsToken;
 use function Tests\Helpers\jwtClaims;
 
 /**
@@ -33,13 +34,6 @@ beforeEach(function () {
     $this->client->forceFill(['allowed_exchange_audiences' => [$this->orders, $this->reports]])->save();
 });
 
-$token = fn (array $payload) => test()->post(route('oidc.token'), [
-    'grant_type' => 'client_credentials',
-    'client_id' => test()->client->client_id,
-    'client_secret' => test()->client->plainSecret,
-    ...$payload,
-]);
-
 test('the catalog serves only the scopes of the requested resource', function () {
     $catalog = $this->realm->runAsCurrent(
         fn (): array => app(ScopeRepository::class)->all([$this->orders])
@@ -52,9 +46,9 @@ test('the catalog serves only the scopes of the requested resource', function ()
         ->and($catalog['orders.write'])->toBe('orders.write');
 });
 
-test('two resources carry the same scope value without borrowing each other\'s meaning', function () use ($token) {
-    $forOrders = $token(['resource' => $this->orders, 'scope' => 'read'])->assertOk();
-    $forReports = $token(['resource' => $this->reports, 'scope' => 'read'])->assertOk();
+test('two resources carry the same scope value without borrowing each other\'s meaning', function () {
+    $forOrders = clientCredentialsToken($this, ['resource' => $this->orders, 'scope' => 'read'])->assertOk();
+    $forReports = clientCredentialsToken($this, ['resource' => $this->reports, 'scope' => 'read'])->assertOk();
 
     expect($forOrders->json('scope'))->toBe('read')
         ->and($forReports->json('scope'))->toBe('read')
@@ -69,22 +63,22 @@ test('two resources carry the same scope value without borrowing each other\'s m
     expect($descriptions)->toBe(['Read orders', 'Read reports']);
 });
 
-test('a scope of a resource the request did not ask for is refused', function () use ($token) {
-    $token(['resource' => $this->reports, 'scope' => 'orders.write'])
+test('a scope of a resource the request did not ask for is refused', function () {
+    clientCredentialsToken($this, ['resource' => $this->reports, 'scope' => 'orders.write'])
         ->assertStatus(400)
         ->assertJson(['error' => 'invalid_scope']);
 });
 
-test('a resource scope is not issuable without naming its resource', function () use ($token) {
-    $token(['scope' => 'orders.write'])
+test('a resource scope is not issuable without naming its resource', function () {
+    clientCredentialsToken($this, ['scope' => 'orders.write'])
         ->assertStatus(400)
         ->assertJson(['error' => 'invalid_scope']);
 
-    expect($token(['scope' => 'openid'])->assertOk()->json('scope'))->toBe('openid');
+    expect(clientCredentialsToken($this, ['scope' => 'openid'])->assertOk()->json('scope'))->toBe('openid');
 });
 
-test('a realm with no resources still issues the standard oidc scopes', function () use ($token) {
+test('a realm with no resources still issues the standard oidc scopes', function () {
     Resource::query()->delete();
 
-    expect($token(['scope' => 'openid profile'])->assertOk()->json('scope'))->toBe('openid profile');
+    expect(clientCredentialsToken($this, ['scope' => 'openid profile'])->assertOk()->json('scope'))->toBe('openid profile');
 });

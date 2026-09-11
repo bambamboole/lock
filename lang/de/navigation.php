@@ -10,6 +10,7 @@ return [
     'all-realms' => 'Alle Realms',
     'events' => 'Ereignisse',
     'realms' => 'Realms',
+    'resources' => 'Resources',
     'roles' => 'Rollen',
     'select-realm' => 'Realm auswählen',
     'settings' => 'Einstellungen',
