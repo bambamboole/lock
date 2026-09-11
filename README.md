@@ -34,21 +34,21 @@ composer setup
 ```
 
 That installs dependencies, writes `.env`, generates the app key, runs the migrations,
-rotates the OIDC signing keys, and builds the frontend. Then start everything (queue, logs, Vite —
+rotates the OIDC signing keys, provisions the console client and the first administrator from
+the `LOCK_*` values in `.env`, and builds the frontend. Then start everything (queue, logs, Vite —
 Herd serves the app):
 
 ```bash
 composer dev
 ```
 
-A demo user is seeded for local development: **test@example.com** / **password**. In the `local`
+The local administrator is **test@example.com** / **password**. In the `local`
 environment the login form ships prefilled with them, so signing in is a single click.
 
 ## Testing
 
 ```bash
-composer ci:check        # lint/format/type checks, then Pint + the Pest suite
-vendor/bin/phpstan analyse
+composer ci:check    # lint, format and type checks, PHPStan, Rector, then Pint + the Pest suite
 ```
 
 ## License

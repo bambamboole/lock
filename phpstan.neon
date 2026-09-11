@@ -14,5 +14,4 @@ parameters:
     stubFiles:
         - stubs/vendor.stub
 
-    # Level 10 is the highest level
     level: 8

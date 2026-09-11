@@ -67,6 +67,15 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
         ->and($table->row($master->id)->actionIds())->toBeEmpty();
 });
 
+test('a realm row counts the realm\'s users', function () {
+    $realm = Realm::factory()->create();
+    User::factory()->for($realm)->count(2)->create();
+
+    $table = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk();
+
+    expect($table->row($realm->id)->value('users_count'))->toBe(2);
+});
+
 test('a support admin cannot create, edit or delete a realm', function () {
     $realm = Realm::factory()->create();
 

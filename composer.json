@@ -59,6 +59,8 @@
             "@php artisan migrate --force",
             "@php artisan migrate --path=database/data-migrations --force",
             "@php artisan oidc:rotate-keys --if-missing --ansi",
+            "@php artisan permission:sync --ansi",
+            "@php artisan app:bootstrap --ansi",
             "npm install",
             "npm run build"
         ],
@@ -119,9 +121,6 @@
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan boost:update --ansi",
             "@hooks:install"
-        ],
-        "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "pre-package-uninstall": [
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"

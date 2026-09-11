@@ -1,5 +1,4 @@
 /.phpunit.cache
-/.worktrees
 /bootstrap/ssr
 /tests/Browser/Screenshots
 /node_modules
@@ -9,9 +8,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/resources/js/actions
-/resources/js/routes
-/resources/js/wayfinder
 /resources/js/lattice/typescript-transformer-manifest.json
 /vendor
 .DS_Store
@@ -20,8 +16,6 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
-Homestead.json
-Homestead.yaml
 npm-debug.log
 yarn-error.log
 /auth.json
@@ -40,7 +34,6 @@ AGENTS.md
 CLAUDE.md
 docs/superpowers
 .superpowers
-storage/wayfinder-cache
 
 **/caddy
 /frankenphp
