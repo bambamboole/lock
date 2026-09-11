@@ -8,8 +8,8 @@ use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
+use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
@@ -19,6 +19,8 @@ use Lattice\Ui\Enums\Variant;
 #[AsAction('admin.users.send-password-reset', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
 final class SendUserPasswordReset extends ActionDefinition
 {
+    public function __construct(private readonly SendPasswordResetLink $sendResetLink) {}
+
     public function definition(Action $action): Action
     {
         return $action
@@ -30,12 +32,7 @@ final class SendUserPasswordReset extends ActionDefinition
         /** @var User $user */
         $user = $this->contextModel('user');
 
-        /*
-         * Credential lookup is realm-local: the broker only finds the user
-         * inside their own realm.
-         */
-        $user->realm->runAsCurrent(fn () => Password::broker(config('auth.defaults.passwords', 'users'))
-            ->sendResetLink(['email' => $user->email]));
+        $user->realm->runAsCurrent(fn (): string => ($this->sendResetLink)($user->email));
 
         Audit::record(AdminAuditEvent::PasswordResetSent, $user);
 

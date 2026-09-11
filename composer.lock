@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "28b57ad71f24a5a949bf0da0d363e63c",
+    "content-hash": "770fc8de2f8318f46f54f81156caea1c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -132,16 +132,16 @@
         },
         {
             "name": "bambamboole/laravel-oidc",
-            "version": "v0.29.0",
+            "version": "v0.30.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bambamboole/laravel-oidc.git",
-                "reference": "813bf01ab6f0760bed29fe7ffe46f607f915427e"
+                "reference": "d2477f7a1430c4abf0efaa94766b066caf37ef6f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/813bf01ab6f0760bed29fe7ffe46f607f915427e",
-                "reference": "813bf01ab6f0760bed29fe7ffe46f607f915427e",
+                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/d2477f7a1430c4abf0efaa94766b066caf37ef6f",
+                "reference": "d2477f7a1430c4abf0efaa94766b066caf37ef6f",
                 "shasum": ""
             },
             "require": {
@@ -205,7 +205,8 @@
                 "psr-4": {
                     "Bambamboole\\LaravelOidc\\Ui\\": "packages/ui/src/",
                     "Bambamboole\\LaravelOidc\\Client\\": "packages/client/src/",
-                    "Bambamboole\\LaravelOidc\\Server\\": "packages/server/src/"
+                    "Bambamboole\\LaravelOidc\\Server\\": "packages/server/src/",
+                    "Bambamboole\\LaravelOidc\\Server\\Database\\Factories\\": "packages/server/database/factories/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -233,7 +234,7 @@
                 "issues": "https://github.com/bambamboole/laravel-oidc/issues",
                 "source": "https://github.com/bambamboole/laravel-oidc"
             },
-            "time": "2026-09-11T12:01:33+00:00"
+            "time": "2026-09-11T17:16:24+00:00"
         },
         {
             "name": "bambamboole/laravel-translation-dumper",

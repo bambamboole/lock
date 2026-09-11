@@ -25,17 +25,10 @@ every one of those.
 
 Admin spans realms; credential lookup and links do not. Anything that resolves a user by address outside the actor's
 own realm, or mails them a link — `SendUserPasswordReset`, `ResendUserVerification` and the invitation in
-`CreateRealmUser` — must run inside `$user->realm->runAsCurrent(…)`. Otherwise the broker does not find them, and the
-link lands on the console's host: laravel-oidc points every absolute URL to a route behind `ResolveRealm` at the
+`CreateRealmUser` — must run inside `$user->realm->runAsCurrent(…)`. Otherwise the user provider does not find them, laravel-oidc's
+reset link (`SendPasswordResetLink`, whose token belongs to the realm that sent it) is minted for the wrong realm, and
+the link lands on the console's host: laravel-oidc points every absolute URL to a route behind `ResolveRealm` at the
 current realm's host.
-
-## Password reset tokens are keyed by realm and email
-
-`App\Auth\Support\RealmTokenRepository` keys `password_reset_tokens` on `(realm_id, email)`; keyed by address alone,
-one realm's reset request deletes another's pending token and its token validates for the wrong user. It is wired
-through `RealmPasswordBrokerManager`, rebound in `AuthServiceProvider::boot()` and **not** `register()`:
-`ProviderRepository` re-adds the deferred services after the eager providers run, so a marker dropped in `register()`
-is put straight back and Laravel's `PasswordResetServiceProvider` wins the rebinding.
 
 ## The realm comes from the request host
 

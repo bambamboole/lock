@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Authentication\PasswordResetTokens;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Testing\TestResponse;
 
 use function Tests\Helpers\realmRoute;
@@ -45,7 +45,7 @@ it('enforces the realms password policy when a password is reset', function () {
     $realm = Realm::factory()->create(['slug' => 'strict']);
     app(UpdateRealmConfiguration::class)->handle($realm, ['password_min_length' => 12]);
     $user = User::factory()->for($realm)->create();
-    $token = $realm->runAsCurrent(fn (): string => Password::broker()->createToken($user));
+    $token = $realm->runAsCurrent(fn (): string => app(PasswordResetTokens::class)->create($user));
 
     $reset = fn (string $password) => $this->post(realmRoute($realm, 'identity.password.update'), [
         'token' => $token,

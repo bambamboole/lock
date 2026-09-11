@@ -208,14 +208,12 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     protected function casts(): array
     {
         return [
-            // The package contract's id() method would otherwise make `id` read as a relation.
-            'id' => 'string',
             'domain_status' => RealmDomainStatus::class,
             'domain_checked_at' => 'datetime',
         ];
     }
 
-    public function id(): string
+    public function identifier(): string
     {
         return $this->slug;
     }
@@ -309,14 +307,10 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
      */
     public function login(): LoginSettings
     {
-        $configured = LoginSettings::fromConfig();
-
         return new LoginSettings(
-            usernameField: $configured->usernameField,
             home: route('account', absolute: false),
-            loginRoute: $configured->loginRoute,
+            loginRoute: 'identity.login',
             logoutRedirect: route('identity.login', absolute: false),
-            acrValues: $configured->acrValues,
         );
     }
 

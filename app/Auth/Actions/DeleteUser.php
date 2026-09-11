@@ -7,6 +7,7 @@ use App\Auth\Models\User;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use Bambamboole\LaravelOidc\Server\Authentication\Models\AuthenticationContext;
+use Bambamboole\LaravelOidc\Server\Authentication\Models\PasswordResetToken;
 use Bambamboole\LaravelOidc\Server\Brokering\Models\SocialAccount;
 use Bambamboole\LaravelOidc\Server\Consents\Models\Consent;
 use Bambamboole\LaravelOidc\Server\Credentials\Models\PasswordHistory;
@@ -49,10 +50,7 @@ final readonly class DeleteUser implements DeletesUser
 
             $user->notifications()->delete();
 
-            DB::table('password_reset_tokens')
-                ->where('realm_id', $user->realm_id)
-                ->where('email', $user->email)
-                ->delete();
+            PasswordResetToken::query()->whereKey($user->id)->delete();
 
             $user->delete();
         });
