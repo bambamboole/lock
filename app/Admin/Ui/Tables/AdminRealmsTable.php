@@ -36,10 +36,10 @@ final class AdminRealmsTable extends EloquentTableDefinition
         // The master realm's host lives in APP_URL, not on its row, and it is
         // the host the console is reached on.
         $builder = Realm::query()
-            ->withCount('users')
             ->select('realms.*')
             ->selectRaw('COALESCE(domain, ?) AS host', [Realm::masterHost()])
-            ->selectRaw('CASE WHEN slug = ? THEN ? ELSE domain_status END AS domain_state', [config('lock.master_realm'), RealmDomainStatus::Verified->value]);
+            ->selectRaw('CASE WHEN slug = ? THEN ? ELSE domain_status END AS domain_state', [config('lock.master_realm'), RealmDomainStatus::Verified->value])
+            ->withCount('users');
 
         if ($query->sorts === []) {
             $builder->orderBy('name');
