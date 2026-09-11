@@ -8,8 +8,6 @@ use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Auth\Contracts\PermissionEnum;
-use App\Shared\Settings\Concerns\HasSettings;
-use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
 use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
 use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
@@ -72,10 +70,10 @@ use Laravel\Passkeys\Passkey;
  */
 #[Fillable(['name', 'email', 'password', 'realm_id', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
-final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser, ProvidesSettings
+final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasSettings, HasUuids, Notifiable;
+    use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasUuids, Notifiable;
 
     /**
      * @return BelongsTo<Realm, $this>

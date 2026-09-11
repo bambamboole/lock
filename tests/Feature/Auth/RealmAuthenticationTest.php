@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
-use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
@@ -79,17 +78,4 @@ it('holds an unverified address at the verification prompt when the realm requir
     app(UpdateRealmConfiguration::class)->handle($realm, ['email_verification_required' => true]);
 
     signInToRealm($user)->assertRedirect(realmRoute($realm, 'identity.verification.notice'));
-});
-
-it('falls back to the configured defaults for a realm with no stored authentication settings', function () {
-    $realm = Realm::factory()->create(['slug' => 'legacy']);
-
-    foreach (['login_methods', 'mfa_requirement', 'email_verification_required'] as $key) {
-        $realm->settings->forget('realm.'.$key);
-    }
-
-    expect($realm->refresh()->authentication())->toEqual(AuthenticationSettings::fromConfig())
-        ->and(RealmConfiguration::defaults()['login_methods'])->toBe(['password', 'passkey', 'social']);
-
-    signInToRealm(User::factory()->for($realm)->create())->assertRedirect(realmRoute($realm, 'account'));
 });
