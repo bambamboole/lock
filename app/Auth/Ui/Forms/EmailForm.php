@@ -34,7 +34,7 @@ final class EmailForm extends ProfileForm
                     ->autoComplete('username')
                     ->placeholder(__('common.field.email-address'))
                     ->required()
-                    ->rules(['string', 'max:255', Rule::unique(User::class)->ignore($user->id)]),
+                    ->rules(['string', 'max:255', Rule::unique(User::class)->where('realm_id', $user->realm_id)->ignore($user->id)]),
                 ...$this->verificationNotice($user, $request),
             ]);
     }
