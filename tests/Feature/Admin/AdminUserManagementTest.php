@@ -43,16 +43,10 @@ beforeEach(function () {
 
 function activeSessionFor(User $user, ?Client $client = null): OidcSession
 {
-    $session = OidcSession::query()->forceCreate([
-        'sid' => fake()->uuid(),
-        'realm_id' => $user->realm->slug,
-        'user_id' => $user->id,
-        'created_at' => now(),
-        'expires_at' => now()->addHour(),
-    ]);
+    $session = OidcSession::factory()->forUser($user)->create(['realm_id' => $user->realm->slug]);
 
     if ($client instanceof Client) {
-        SessionParticipant::query()->forceCreate(['sid' => $session->sid, 'client_id' => $client->id, 'created_at' => now()]);
+        SessionParticipant::factory()->inSession($session)->forClient($client)->create();
     }
 
     return $session;
