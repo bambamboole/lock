@@ -17,6 +17,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Middleware\FrameGuard;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
 
@@ -33,6 +34,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // content. Only safe while the app is exclusively reachable through
         // the proxy — narrow it to the proxy's address otherwise.
         $middleware->trustProxies(at: '*');
+
+        // Octane's Caddyfile sets no security headers, and a login page another
+        // origin can frame is open to clickjacking — global, so the OIDC
+        // package's own routes are covered as well.
+        $middleware->append(FrameGuard::class);
 
         $middleware->encryptCookies(except: ['appearance']);
 
