@@ -60,11 +60,3 @@ properties run `php artisan lattice:typescript` and commit `resources/js/lattice
 reads `extra.lattice.discover` from `composer.json` and fails loudly when discovery is empty. The app currently
 declares none, so the `js` workflow only runs the generator once one exists — adding the first wire type arms that
 check, and the generated file has to be committed with it.
-
-## Lattice closures must not type-hint request-scoped services under Octane
-
-The app serves through Octane worker mode. Lattice's `Evaluator` is a singleton built at boot around the booted
-container, so a type-hinted closure parameter it autowires resolves from that container, not the per-request sandbox:
-a `Request`, a `scoped()` binding (e.g. `RealmResources`) or anything request-derived comes back stale from an earlier
-request. Take request data from Lattice's named parameters (`$state`, `$get`, `$value`, …) or call
-`request()`/`app()` inside the closure body instead.

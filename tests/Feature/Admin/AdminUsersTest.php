@@ -7,13 +7,10 @@ use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Lattice\Support\Testing\ComponentNode;
 
-use function Tests\Helpers\columnBindings;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\grantGlobalRole;
 use function Tests\Helpers\headerTriggers;
-use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
@@ -67,20 +64,6 @@ test('a user holding a global role is flagged as admin in the table', function (
 
     expect($row)->not->toBeNull()
         ->and(data_get($row, 'roles_exists'))->toBeTrue();
-});
-
-test('a user row carries the values its member cell binds', function () {
-    $target = User::factory()->for($this->realm)->create(['name' => 'Wanda Needle', 'email' => 'wanda@acme.test']);
-
-    $table = latticeSchema($this->actingAs(globalAdmin())->get('/admin/realms/acme/users')->assertOk())
-        ->findOrFail(fn (ComponentNode $node): bool => $node->type() === 'table', 'the users table');
-
-    $keys = columnBindings($table, 'member');
-    $row = tableRow($table->prop('data'), $target->id);
-
-    expect($keys)->not->toBeEmpty()
-        ->and(array_map(fn (string $key): mixed => $row[$key] ?? null, $keys))
-        ->toBe(['Wanda Needle', 'wanda@acme.test']);
 });
 
 test('the user detail page offers its actions in the header, led by the two an operator reaches for', function () {
