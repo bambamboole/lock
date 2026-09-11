@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
@@ -11,10 +10,6 @@ use App\Realms\Models\Realm;
 use Illuminate\Support\Facades\Gate;
 
 use function Tests\Helpers\grantGlobalRole;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 test('super admin passes every admin gate', function () {
     $user = User::factory()->for(Realm::master())->create();

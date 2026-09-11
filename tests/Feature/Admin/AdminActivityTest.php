@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
@@ -20,10 +19,6 @@ use Spatie\Attributes\Attributes;
 
 use function Tests\Helpers\assumeNotNull;
 use function Tests\Helpers\globalAdmin;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 test('a role update that changes nothing is not logged', function () {
     $admin = globalAdmin();

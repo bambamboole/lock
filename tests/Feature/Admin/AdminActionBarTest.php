@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Tables\AdminClientsTable;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
@@ -25,7 +24,6 @@ const HARMLESS_ACTIONS = [
 ];
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['slug' => 'acme']);
     $this->target = User::factory()->for($this->realm)->create();
     $this->client = $this->realm->runAsCurrent(fn (): Client => app(ClientRepository::class)

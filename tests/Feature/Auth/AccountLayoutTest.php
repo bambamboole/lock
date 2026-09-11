@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -30,7 +29,6 @@ function accountUserMenuHrefs(User $user): array
 }
 
 it('offers the realm end-session as logout and the console only to admins', function () {
-    (new GlobalRoleSeeder)->run();
 
     $user = User::factory()->for(Realm::master())->create();
     $hrefsBefore = accountUserMenuHrefs($user);

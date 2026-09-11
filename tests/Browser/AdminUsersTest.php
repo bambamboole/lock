@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 
 use function Tests\Helpers\globalAdmin;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->target = User::factory()->for(Realm::factory()->create(['slug' => 'acme']))->create(['name' => 'Wanda Needle', 'email' => 'wanda@acme.test']);
     $this->actingAs(globalAdmin());
 });

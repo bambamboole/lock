@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\CreateResourceAction;
@@ -24,7 +23,6 @@ use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });

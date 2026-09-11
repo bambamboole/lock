@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Auth\Models\User;
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\Event;
 use function Tests\Helpers\globalAdmin;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->realm = Realm::factory()->create(['slug' => 'acme', 'domain' => 'auth.acme.test']);
 });
 

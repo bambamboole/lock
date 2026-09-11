@@ -15,6 +15,7 @@ use Lattice\Core\Discovery\DiscoveryManifest;
 it('runs every deploy step and leaves the app state primed', function () {
     Realm::factory()->create(['slug' => 'partners']);
     SigningKey::query()->delete();
+    Role::query()->delete();
     config([
         'lock.console_client' => ['id' => 'lock-console', 'secret' => 'console-secret'],
         'lock.admin' => ['email' => 'root@lock.test', 'name' => 'Root', 'password' => 'CorrectHorse42'],

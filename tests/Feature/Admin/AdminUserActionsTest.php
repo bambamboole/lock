@@ -1,7 +1,6 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
@@ -18,10 +17,6 @@ use Illuminate\Support\Facades\Notification;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 test('a roles-manage admin can grant a global role to a user, and the grant is recorded', function () {
     $admin = globalAdmin();

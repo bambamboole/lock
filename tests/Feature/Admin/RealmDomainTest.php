@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Actions\CheckRealmDomainAction;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\UpdateRealmDomainForm;
@@ -17,7 +16,6 @@ use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
 });
 

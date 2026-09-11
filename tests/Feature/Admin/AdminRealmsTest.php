@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
@@ -19,10 +18,6 @@ use function Tests\Helpers\renderedTabKeys;
 use function Tests\Helpers\rowClickHref;
 use function Tests\Helpers\rowMenuTriggers;
 use function Tests\Helpers\tableRow;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 test('every admin can list and open realms', function (string $roleName) {
     $realm = Realm::factory()->create();

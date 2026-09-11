@@ -1,17 +1,12 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\Activity;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 test('admin:grant makes a user an admin and records it with a system actor', function () {
     $user = User::factory()->for(Realm::master())->create();

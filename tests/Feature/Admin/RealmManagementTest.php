@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Ui\Forms\CreateRealmForm;
 use App\Admin\Ui\Forms\DeleteRealmForm;
 use App\Admin\Ui\Forms\RealmSettingForm;
@@ -30,7 +29,6 @@ use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\realmSetting;
 
 beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
 });
 

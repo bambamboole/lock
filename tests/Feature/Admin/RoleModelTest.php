@@ -6,7 +6,7 @@ use App\Admin\Models\Permission;
 use App\Admin\Models\Role;
 
 it('shares a permission row across roles instead of duplicating it', function () {
-    $support = Role::factory()->create(['name' => 'Support']);
+    $support = Role::factory()->create(['name' => 'Helpdesk']);
     $auditor = Role::factory()->create(['name' => 'Auditor']);
 
     $support->syncPermissions([AdminPermission::Access]);
@@ -23,5 +23,5 @@ it('prunes permission rows the enum no longer declares', function () {
 
     Role::factory()->create()->syncPermissions([AdminPermission::ViewRealms]);
 
-    expect(Permission::query()->pluck('key')->all())->toBe([AdminPermission::ViewRealms->value]);
+    expect(Permission::query()->where('key', 'ghost:permission')->exists())->toBeFalse();
 });

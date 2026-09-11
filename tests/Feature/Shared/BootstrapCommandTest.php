@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -11,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use function Tests\Helpers\realmRoute;
 
 beforeEach(function () {
-    new GlobalRoleSeeder()->run();
 
     config()->set([
         'lock.console_client.id' => 'lock-console',

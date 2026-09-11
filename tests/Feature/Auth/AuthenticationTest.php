@@ -1,7 +1,6 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -13,7 +12,6 @@ use function Tests\Helpers\identitySessionFor;
 use function Tests\Helpers\realmRoute;
 
 test('the root path sends a master realm user to their account and an admin to the realms console', function () {
-    (new GlobalRoleSeeder)->run();
 
     $this->get('/')->assertRedirect(route('login'));
     $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(realmRoute(Realm::master(), 'account'));

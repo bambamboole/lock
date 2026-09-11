@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
 use App\Realms\Models\Realm;
 use Lattice\Support\Testing\ComponentNode;
@@ -10,10 +9,6 @@ use Lattice\Support\Testing\ComponentNode;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\menuItemHrefs;
-
-beforeEach(function () {
-    (new GlobalRoleSeeder)->run();
-});
 
 it('shows the instance areas while no realm is selected', function () {
     $response = $this->actingAs(globalAdmin())->get(route('admin.realms'))->assertOk();

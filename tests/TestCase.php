@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use Bambamboole\LaravelOidc\Server\Testing\InteractsWithOidc;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -46,14 +47,15 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Once per process, before the per-test transaction opens, so the rows live
-     * in the migrated template database instead of being replayed around every
-     * test.
+     * Once per process, before the per-test transaction opens, so the data
+     * migrations and the protected roles every deploy syncs live in the
+     * migrated template database instead of being replayed around every test.
      */
     protected function migrateDatabases(): void
     {
         $this->baseMigrateDatabases();
 
         $this->artisan('migrate', ['--path' => 'database/data-migrations'])->run();
+        new GlobalRoleSeeder()->run();
     }
 }
