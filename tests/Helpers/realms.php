@@ -32,16 +32,13 @@ function realmUrl(Realm|string $realm, string $path = ''): string
 }
 
 /**
- * A named route of the pages a realm serves, minted with the realm current
- * so it lands on the realm's host.
+ * A named route of the pages a realm serves, on the realm's host.
  *
  * @param  array<string, mixed>  $parameters
  */
 function realmRoute(Realm|string $realm, string $name, array $parameters = []): string
 {
-    $realm = $realm instanceof Realm ? $realm : Realm::query()->where('slug', $realm)->sole();
-
-    return $realm->runAsCurrent(fn (): string => route($name, $parameters));
+    return realmUrl($realm, route($name, $parameters, absolute: false));
 }
 
 /**

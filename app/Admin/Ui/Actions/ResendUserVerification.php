@@ -31,7 +31,8 @@ final class ResendUserVerification extends ActionDefinition
 
         abort_if($user->hasVerifiedEmail(), 422, __('admin.users.already-verified'));
 
-        $user->sendEmailVerificationNotification();
+        // The verification link is minted for the current realm's host.
+        $user->realm->runAsCurrent(fn () => $user->sendEmailVerificationNotification());
 
         Audit::record(AdminAuditEvent::VerificationResent, $user);
 

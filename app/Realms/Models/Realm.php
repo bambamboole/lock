@@ -108,23 +108,6 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
-     * The origin of the current realm, kept beside its key so URL generation
-     * can address the realm's own host without a lookup per generated URL.
-     */
-    public static function currentOrigin(): ?string
-    {
-        $origin = Context::getHidden('realm_origin');
-
-        return is_string($origin) ? $origin : null;
-    }
-
-    public static function forgetCurrent(): void
-    {
-        Context::forget('realm_id');
-        Context::forgetHidden('realm_origin');
-    }
-
-    /**
      * The host the master realm is served from: the one in APP_URL, which is
      * why it is never stored on the row.
      */
@@ -168,7 +151,6 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function makeCurrent(): void
     {
         Context::add('realm_id', $this->id);
-        Context::addHidden('realm_origin', $this->origin());
     }
 
     /**
@@ -179,17 +161,15 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function runAsCurrent(callable $callback): mixed
     {
         $previousRealmId = Context::get('realm_id');
-        $previousOrigin = Context::getHidden('realm_origin');
         $this->makeCurrent();
 
         try {
             return $callback();
         } finally {
             if ($previousRealmId === null) {
-                self::forgetCurrent();
+                Context::forget('realm_id');
             } else {
                 Context::add('realm_id', $previousRealmId);
-                Context::addHidden('realm_origin', $previousOrigin);
             }
         }
     }

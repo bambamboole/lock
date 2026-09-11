@@ -10,7 +10,10 @@ use Bambamboole\LaravelOidc\Server\Credentials\WebAuthnFactorProvider;
 
 return [
     'realm' => env('REALM_MASTER_SLUG', 'admin'),
-    'issuer' => env('OIDC_ISSUER', env('APP_URL')),
+    // Empty, so the package takes the origin from `app.url` at runtime: the
+    // master realm is served from APP_URL, and every realm host shares its
+    // scheme and port.
+    'issuer' => null,
 
     'routes' => [
         // The protocol endpoints outside the web group mint URLs too (the

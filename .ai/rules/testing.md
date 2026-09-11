@@ -60,16 +60,12 @@ bearer token would otherwise still authenticate.
 ## Every realm has a host, and a test addresses it
 
 Realms are served from their own host (see `.ai/rules/realms.md`), so a request to a realm's pages goes to that host:
-`realmUrl($realm, '/auth/login')` for a path, `realmRoute($realm, 'identity.login')` for a named route minted with the
-realm current. A relative path always addresses the application host — `Tests\TestCase::prepareUrlForRequest()`
-pins it there, where the framework would reuse the host of the previous request. A fixture realm lives on
-`{slug}.localhost`, which browsers resolve to the loopback address; in a browser test the pest server rewrites every
-visit to its own address, so `visitAccountAs()` sends the realm host as the Host header instead.
-
-`Tests\TestCase` also replaces the Lattice helper's `refreshLatticeRequestIdentity()`, whose `Request::create('/')`
-would leave every URL minted afterwards on `localhost` — a host the host gate answers with 404. A domain check never
-leaves the process: `domainReachesThisInstance()` fakes every domain answering as this instance, `Http::fake()`
-anything else.
+`realmUrl($realm, '/auth/login')` for a path, `realmRoute($realm, 'identity.login')` for a named route. A relative
+path resolves against the host of the previous request, so a test that has talked to a realm addresses the
+application host through `realmUrl(Realm::master(), …)` as well. A fixture realm lives on `{slug}.localhost`, which
+browsers resolve to the loopback address; in a browser test the pest server rewrites every visit to its own address,
+so `visitAccountAs()` sends the realm host as the Host header instead. A domain check never leaves the process:
+`domainReachesThisInstance()` answers every one as this instance, `Http::fake()` anything else.
 
 ## What a test must earn
 

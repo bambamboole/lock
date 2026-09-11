@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Realms\Support;
 
 use App\Realms\Models\Realm;
-use App\Shared\Realms\Support\RealmRoutes;
+use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
@@ -22,7 +22,9 @@ final class RealmHostGate
 {
     public function guard(Request $request, Route $route): void
     {
-        if ($route->uri() === 'up' || $route->named(...RealmRoutes::SHARED)) {
+        // The health check comes in on whatever host the platform probes, the
+        // domain check on a host before any realm is served from it.
+        if ($route->uri() === 'up' || $route->named('realm.domain-check')) {
             return;
         }
 
@@ -34,7 +36,8 @@ final class RealmHostGate
             'passkeys.allowed_origins' => [$realm->origin()],
         ]);
 
-        if ($realm->isMaster() || $route->named(...RealmRoutes::SERVED)) {
+        // A realm's sign-in pages load their translations from its own host.
+        if ($realm->isMaster() || ResolveRealm::appliesTo($route) || $route->named('i18next.*')) {
             return;
         }
 

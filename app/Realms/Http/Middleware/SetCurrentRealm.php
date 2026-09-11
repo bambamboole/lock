@@ -7,6 +7,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Auth\Support\RequestUser;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -28,7 +29,7 @@ final class SetCurrentRealm
             return $next($request);
         }
 
-        Realm::forgetCurrent();
+        Context::forget('realm_id');
         RequestUser::of($request)?->realm->makeCurrent();
 
         return $next($request);

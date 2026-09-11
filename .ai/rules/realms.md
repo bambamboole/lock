@@ -23,9 +23,11 @@ every one of those.
 
 ## Acting on another realm's user needs runAsCurrent
 
-Admin spans realms; credential lookup does not. Anything that resolves a user by address outside the actor's own
-realm — `Password::sendResetLink()` in `App\Admin\Ui\Actions\SendUserPasswordReset` is the live case — must run
-inside `$user->realm->runAsCurrent(…)`, or the broker will not find them.
+Admin spans realms; credential lookup and links do not. Anything that resolves a user by address outside the actor's
+own realm, or mails them a link — `SendUserPasswordReset`, `ResendUserVerification` and the invitation in
+`CreateRealmUser` — must run inside `$user->realm->runAsCurrent(…)`. Otherwise the broker does not find them, and the
+link lands on the console's host: laravel-oidc points every absolute URL to a route behind `ResolveRealm` at the
+current realm's host.
 
 ## Password reset tokens are keyed by realm and email
 
@@ -42,8 +44,9 @@ host in `APP_URL` (never stored, `Realm::masterHost()`), every other realm from 
 the realms by origin, so there is no per-realm session cookie any more; `SESSION_DOMAIN` has to stay empty, or realms
 on subdomains of one parent would share a cookie. Do not bring back a `/realms/{slug}` path or a cookie-name setting.
 
-On the routes a realm serves — `App\Shared\Realms\Support\RealmRoutes::SERVED`: `oidc.*`, `identity.*`, `account`
-and `realm.lattice.*` — the host decides the realm (`App\Auth\Support\DatabaseRealmResolver`). Everywhere else the
+On the routes a realm serves — every route behind laravel-oidc's `ResolveRealm` middleware (`ResolveRealm::appliesTo()`):
+the package's own, the account page and its Lattice endpoints — the host decides the realm
+(`App\Auth\Support\DatabaseRealmResolver`). Everywhere else the
 current realm comes from `Context` (`Realm::currentId()` / `Realm::fromContext()`): `SetCurrentRealm` fills it from
 the host on those routes and from the signed-in user's own realm everywhere else. It also runs on the protocol
 endpoints outside the `web` group (`oidc.routes.middleware`), so the realm constraint on user lookup holds for
@@ -52,20 +55,9 @@ when no realm is current. An admin page's `{realm}` parameter is data, not the a
 
 `App\Realms\Support\RealmHostGate` runs on `RouteMatched`: a host no realm is served from gets a 404 on everything
 but `/up` and the domain check (which keeps a forged Host header out of every URL the app would mint from it), the
-master realm's host serves everything, and any other realm's host serves only `RealmRoutes::SERVED` plus the
-translations — its root redirects to the account page. The gate also points the WebAuthn relying party at the host,
+master realm's host serves everything, and any other realm's host serves only the routes behind `ResolveRealm` plus
+the translations — its root redirects to the account page. The gate also points the WebAuthn relying party at the host,
 because a passkey is bound to the host it was created on.
-
-## URLs for a realm's pages carry that realm's host
-
-The issuer is `Realm::origin()` wherever a token is minted — `App\Auth\Support\RealmIssuerResolver` replaces the
-package's, which falls back to `APP_URL` outside a request and would stamp the master realm on a logout token the
-scheduler signs for another realm. `Realm::makeCurrent()` keeps the realm's origin in hidden `Context` beside its key,
-and a `URL::formatHostUsing` hook in `RealmsServiceProvider` gives every absolute URL to a served route that origin —
-so a password reset an administrator sends, or a mail a queued job renders, links to the recipient's realm. The hook
-cannot see `url()`/`URL::to()`, which is why `AuthServiceProvider` replaces the package's `ResetPassword` and
-`VerifyEmail` URL builders with named routes minted inside the recipient's realm. Mint realm links through `route()`,
-never `url()`.
 
 ## A realm user's pages live on the realm host, and so do their Lattice endpoints
 
@@ -97,8 +89,9 @@ sessions, consents) carry the realm slug in `realm_id`, so a client only exists 
 provision clients — including the first-party client — with that realm current
 (`Realm::master()->runAsCurrent(...)`, as `DatabaseSeeder` does), or the package will not find them at login.
 
-The master realm is `admin` by default (`REALM_MASTER_SLUG`), and `config('oidc.realm')` follows the same value: the
-app authenticates against `APP_URL` itself, and `OIDC_RP_ISSUER` is `APP_URL`.
+The package names a realm's host through `Realm::host()` and builds the issuer from it with the scheme and port of
+`oidc.issuer`. The master realm is `admin` by default (`REALM_MASTER_SLUG`), and `config('oidc.realm')` follows the
+same value: the app authenticates against `APP_URL` itself, and `OIDC_RP_ISSUER` is `APP_URL`.
 
 ## Global roles only count inside the master realm
 

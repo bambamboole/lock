@@ -341,7 +341,7 @@ test('deleting a client removes its tokens, codes, consents and session particip
         AccessToken::query()->forceCreate(['id' => "{$prefix}-access", 'realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'expires_at' => now()->addHour()]);
         RefreshToken::query()->forceCreate(['id' => "{$prefix}-refresh", 'realm_id' => 'acme', 'access_token_id' => "{$prefix}-access", 'expires_at' => now()->addDay()]);
         AuthorizationCode::query()->forceCreate(['id' => "{$prefix}-code", 'realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'code_challenge' => str_repeat('c', 43), 'code_challenge_method' => 'S256', 'expires_at' => now()->addMinute()]);
-        Consent::query()->forceCreate(['realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'scopes' => ['openid'], 'granted_at' => now()]);
+        Consent::query()->forceCreate(['realm_id' => 'acme', 'user_id' => $user->id, 'client_id' => $client->id, 'resource' => 'http://acme.localhost', 'scopes' => ['openid'], 'granted_at' => now()]);
         SessionParticipant::query()->forceCreate(['sid' => fake()->uuid(), 'client_id' => $client->id]);
     };
     $issue($client, 'doomed');

@@ -17,9 +17,14 @@ return new class extends Migration
         Schema::create('realms', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->string('name');
-            // The slug doubles as the realm's DNS label, so it is bound by the
-            // stricter of the two rules — lowercase, no leading/trailing dash.
+            // laravel-oidc keys every row it stores for the realm by the slug.
             $table->string('slug')->unique();
+            // The host the realm is served from. The master realm is served
+            // from APP_URL's host, so its row carries none.
+            $table->string('domain', 253)->nullable()->unique();
+            $table->string('domain_status', 20)->default('pending');
+            $table->timestamp('domain_checked_at')->nullable();
+            $table->string('domain_check_error', 500)->nullable();
             $table->timestamps();
         });
     }

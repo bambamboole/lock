@@ -14,7 +14,6 @@ use App\Auth\Models\User;
 use App\Auth\Support\DatabaseRealmRepository;
 use App\Auth\Support\DatabaseRealmResolver;
 use App\Auth\Support\PermissionRepository;
-use App\Auth\Support\RealmIssuerResolver;
 use App\Auth\Support\RealmPasswordBrokerManager;
 use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
@@ -30,17 +29,13 @@ use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
 use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
 use Bambamboole\LaravelOidc\Server\Installation\Commands\InstallSelfCommand as PackageInstallSelfCommand;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
 use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 
@@ -56,7 +51,6 @@ final class AuthServiceProvider extends ServiceProvider
         $this->app->alias(PermissionRepository::class, PermissionCatalog::class);
         $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
         $this->app->singleton(RealmResolver::class, DatabaseRealmResolver::class);
-        $this->app->singleton(IssuerResolver::class, RealmIssuerResolver::class);
         $this->app->bind(PackageInstallSelfCommand::class, InstallSelfCommand::class);
         $this->app->bind(CreateUser::class, CreateNewUser::class);
         $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
@@ -117,20 +111,5 @@ final class AuthServiceProvider extends ServiceProvider
         });
 
         RealmRolesTokenClaim::register($this->app->make(AccessTokenPipeline::class));
-
-        /*
-         * The package mints these on whichever host sends the mail — the
-         * console's, when an administrator triggers it. They belong on the
-         * recipient's realm host, which the URL host hook supplies for the
-         * current realm.
-         */
-        ResetPassword::createUrlUsing(fn (User $notifiable, string $token): string => $notifiable->realm->runAsCurrent(
-            fn (): string => route('identity.password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()]),
-        ));
-        VerifyEmail::createUrlUsing(fn (User $notifiable): string => $notifiable->realm->runAsCurrent(fn (): string => URL::temporarySignedRoute(
-            'identity.verification.verify',
-            now()->addMinutes((int) config('auth.verification.expire', 60)),
-            ['id' => $notifiable->getKey(), 'hash' => sha1($notifiable->getEmailForVerification())],
-        )));
     }
 }
