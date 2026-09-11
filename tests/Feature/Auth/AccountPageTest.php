@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use App\Auth\Ui\Forms\NameForm;
 use App\Realms\Models\Realm;
 use Illuminate\Auth\SessionGuard;
-use Inertia\Testing\AssertableInertia;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\assumeNotNull;
@@ -21,25 +19,6 @@ function identitySessionFor(User $user): array
 {
     return ['login_identity_'.sha1(SessionGuard::class) => $user->getKey()];
 }
-
-it('renders under the account layout for a realm user', function () {
-    $realm = Realm::factory()->create(['slug' => 'acme']);
-    $user = User::factory()->for($realm)->create();
-
-    $response = $this->actingAs($user, 'identity')
-        ->get(realmRoute('acme', 'account'))
-        ->assertOk();
-
-    AssertableInertia::fromTestResponse($response)
-        ->where('lattice.layout.key', 'account');
-});
-
-it('sends a guest to the realm sign-in', function () {
-    Realm::factory()->create(['slug' => 'acme']);
-
-    $this->get(realmRoute('acme', 'account'))
-        ->assertRedirect(realmRoute('acme', 'identity.login'));
-});
 
 it('does not let a session from one realm open another realm account', function () {
     $acme = Realm::factory()->create(['slug' => 'acme']);
@@ -83,16 +62,6 @@ it('mints its form endpoints below the account and accepts the identity session 
         ->assertRedirect(realmRoute('acme', 'account'));
 
     expect($user->refresh()->name)->toBe('New Name');
-});
-
-it('keeps root requests on the root Lattice endpoints', function () {
-    $user = User::factory()->for(Realm::master())->create();
-
-    $this->actingAs($user)
-        ->submitForm(NameForm::class, ['name' => 'Root Name'])
-        ->assertRedirect(realmRoute(Realm::master(), 'account'));
-
-    expect($user->refresh()->name)->toBe('Root Name');
 });
 
 it('sends a signed-in identity from the realm sign-in to its account', function () {

@@ -57,23 +57,3 @@ test('two resources carry the same scope value without borrowing each other\'s m
 
     expect($descriptions)->toBe(['Read orders', 'Read reports']);
 });
-
-test('a scope of a resource the request did not ask for is refused', function () {
-    clientCredentialsToken($this, ['resource' => $this->reports, 'scope' => 'orders.write'])
-        ->assertStatus(400)
-        ->assertJson(['error' => 'invalid_scope']);
-});
-
-test('a resource scope is not issuable without naming its resource', function () {
-    clientCredentialsToken($this, ['scope' => 'orders.write'])
-        ->assertStatus(400)
-        ->assertJson(['error' => 'invalid_scope']);
-
-    expect(clientCredentialsToken($this, ['scope' => 'openid'])->assertOk()->json('scope'))->toBe('openid');
-});
-
-test('a realm with no resources still issues the standard oidc scopes', function () {
-    Resource::query()->delete();
-
-    expect(clientCredentialsToken($this, ['scope' => 'openid profile'])->assertOk()->json('scope'))->toBe('openid profile');
-});

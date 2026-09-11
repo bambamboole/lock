@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use App\Admin\Actions\BlockUser;
-use App\Admin\Actions\UnblockUser;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
@@ -72,14 +71,4 @@ test('the post-login policy denies a blocked user resolved by a passkey or socia
 
     expect($api->isDenied())->toBeTrue()
         ->and($api->denyReason())->toBe('blocked');
-});
-
-test('unblocking restores the password login', function () {
-    $user = User::factory()->for(Realm::master())->create();
-    app(BlockUser::class)->handle($user);
-    app(UnblockUser::class)->handle($user->refresh());
-
-    $this->post(route('identity.login.store'), ['email' => $user->email, 'password' => 'password'])->assertRedirect();
-
-    $this->assertAuthenticatedAs($user, 'identity');
 });

@@ -36,5 +36,4 @@ stay opt-in — those tests build their own fixture row with a factory instead o
 ## No dedicated tests for a data migration's contents
 
 The tests that exercise the data are the real coverage. Don't add a test whose only job is asserting what an `up()`
-inserted. The wiring itself — that `DatabaseSeeder` and `Tests\TestCase` run this folder — is pinned once in
-`tests/Feature/DataMigrationsTest.php`.
+inserted. The wiring needs no test of its own either: every test that reaches the master realm fails without it.

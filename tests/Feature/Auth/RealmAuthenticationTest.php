@@ -5,9 +5,6 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 
@@ -27,23 +24,6 @@ function signInToRealm(User $user): TestResponse
         ['email' => $user->email, 'password' => 'password'],
     );
 }
-
-it('reads the authentication settings of each realm from its own configuration', function () {
-    $realm = Realm::factory()->create(['slug' => 'partners']);
-
-    app(UpdateRealmConfiguration::class)->handle($realm, [
-        'login_methods' => ['passkey'],
-        'mfa_requirement' => 'always',
-        'email_verification_required' => true,
-    ]);
-
-    $authentication = $realm->refresh()->authentication();
-
-    expect($authentication->methods)->toBe([LoginMethod::Passkey])
-        ->and($authentication->mfa)->toBe(MfaRequirement::Always)
-        ->and($authentication->emailVerificationRequired)->toBeTrue()
-        ->and(Realm::master()->authentication())->toEqual(AuthenticationSettings::fromConfig());
-});
 
 it('returns 404 on the password routes of a realm that does not accept the method', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);

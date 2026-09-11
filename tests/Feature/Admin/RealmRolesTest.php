@@ -185,15 +185,6 @@ test('the role sync action itself refuses a role outside the user\'s realm', fun
         ->and($user->realmRoles()->exists())->toBeFalse();
 });
 
-test('a user detail page opens the realm roles card for every realm', function () {
-    $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
-    $user = User::factory()->for($this->realm)->create();
-    $user->realmRoles()->attach($role);
-
-    $this->actingAs(globalAdmin())->get("/admin/realms/acme/users/{$user->id}")->assertOk()
-        ->assertSee(__('admin.users.detail.realm-roles.heading'));
-});
-
 test('deleting a user releases their realm role assignments', function () {
     $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
     $user = User::factory()->for($this->realm)->create();

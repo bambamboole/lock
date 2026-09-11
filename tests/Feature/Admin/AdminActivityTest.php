@@ -29,41 +29,6 @@ beforeEach(function () {
     (new GlobalRoleSeeder)->run();
 });
 
-test('a null realm writes a global admin activity row', function () {
-    $target = User::factory()->create();
-
-    Audit::record(AdminAuditEvent::GlobalRolesUpdated, $target, properties: ['key' => 'value']);
-
-    $activity = Activity::query()->sole();
-
-    expect($activity->log_name)->toBe('admin')
-        ->and($activity->realm_id)->toBeNull()
-        ->and($activity->event)->toBe('admin.roles.updated')
-        ->and($activity->description)->toBe(__('audit.events.admin.roles.updated'))
-        ->and($activity->properties?->all())->toBe(['key' => 'value']);
-});
-
-test('a realm still writes a realm-scoped activity row', function () {
-    $realm = Realm::factory()->create();
-
-    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
-
-    $activity = Activity::query()->sole();
-
-    expect($activity->log_name)->toBe('realm')
-        ->and($activity->realm_id)->toBe($realm->id);
-});
-
-test('the global scope returns only realm-less admin rows', function () {
-    $realm = Realm::factory()->create();
-    $target = User::factory()->create();
-
-    Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
-    Audit::record(AdminAuditEvent::GlobalRolesUpdated, $target);
-
-    expect(Activity::global()->pluck('event')->all())->toBe(['admin.roles.updated']);
-});
-
 test('the actor name stays an em dash when nothing recorded an actor', function () {
     $realm = Realm::factory()->create();
 

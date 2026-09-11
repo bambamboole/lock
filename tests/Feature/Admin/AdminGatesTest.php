@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -58,4 +59,15 @@ test('a global role held outside the master realm grants nothing', function () {
     foreach (AdminPermission::cases() as $permission) {
         expect(Gate::forUser($user)->allows($permission))->toBeFalse();
     }
+});
+
+test('a granted :manage permission satisfies its :view counterpart', function () {
+    $user = User::factory()->for(Realm::master())->create();
+    $role = Role::factory()->create(['name' => 'Realm admin']);
+    $role->syncPermissions([AdminPermission::ManageRealms]);
+    $user->roles()->attach($role);
+
+    expect($user->can(AdminPermission::ManageRealms))->toBeTrue()
+        ->and($user->can(AdminPermission::ViewRealms))->toBeTrue()
+        ->and($user->can(AdminPermission::ManageUsers))->toBeFalse();
 });

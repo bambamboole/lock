@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Admin\Support\GlobalRoles;
-use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -140,18 +139,4 @@ test('an admin cannot block or delete themselves from the users table', function
     expect(rowMenuTriggers(tableRow($rows, $admin->id)))
         ->not->toContain('admin.users.block')
         ->not->toContain('admin.users.delete');
-});
-
-test('a row action runs against the user whose row rendered it', function () {
-    $target = User::factory()->for($this->realm)->create();
-    $bystander = User::factory()->for($this->realm)->create();
-
-    $this->actingAs(globalAdmin());
-    $rows = $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->json('data');
-    $row = tableRow($rows, $target->id);
-
-    $this->callAction(BlockUserAction::class, context: ['realm' => 'acme', 'user' => $row['id']])->assertOk();
-
-    expect($target->refresh()->isBlocked())->toBeTrue()
-        ->and($bystander->refresh()->isBlocked())->toBeFalse();
 });

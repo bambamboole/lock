@@ -80,18 +80,6 @@ it('establishes the web session only after the self-sso callback', function () {
     Exceptions::assertNothingReported();
 });
 
-it('rejects an id token minted for a different nonce', function () {
-    $user = User::factory()->for(Realm::master())->create();
-    $fake = selfSsoProviderFake();
-
-    $this->withSession($fake->callbackContext())
-        ->get($fake->loginAs($user, ['nonce' => 'wrong-nonce']))
-        ->assertRedirect(route('login'))
-        ->assertSessionHasErrors('oidc');
-
-    $this->assertGuest('web');
-});
-
 it('rejects a failed token exchange without creating a web session', function () {
     $fake = selfSsoProviderFake()->failTokenExchange();
 

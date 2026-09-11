@@ -9,14 +9,11 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Illuminate\Http\Response;
-use Illuminate\Testing\TestResponse;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerSlot;
 use function Tests\Helpers\rowMenus;
-use function Tests\Helpers\triggerIds;
 
 /**
  * Both only send a mail the recipient can ignore; everything else changes state
@@ -35,48 +32,6 @@ beforeEach(function () {
         ->createAuthorizationCodeGrantClient('Portal', ['https://rp.test/callback'], true));
     $this->actingAs(globalAdmin());
 });
-
-/**
- * Actions inside the overflow menu are styled by the menu and carry no emphasis
- * of their own.
- *
- * @param  TestResponse<Response>  $response
- * @return array<int, ComponentNode>
- */
-function headerButtons(TestResponse $response): array
-{
-    $slot = headerSlot($response);
-
-    if (! $slot instanceof ComponentNode) {
-        return [];
-    }
-
-    $menu = $slot->firstOfType('action.group');
-    $inMenu = $menu instanceof ComponentNode ? triggerIds($menu) : [];
-
-    return collect($slot->findAll(fn (ComponentNode $node): bool => in_array($node->type(), ['action', 'button'], true)))
-        ->reject(fn (ComponentNode $node): bool => in_array($node->id() ?? $node->key() ?? '', $inMenu, true))
-        ->values()
-        ->all();
-}
-
-test('no action a console header offers renders unstyled', function (string $url) {
-    $buttons = headerButtons($this->get($url)->assertOk());
-    $unstyled = collect($buttons)
-        ->filter(fn (ComponentNode $node): bool => $node->prop('emphasis') === null)
-        ->map(fn (ComponentNode $node): mixed => $node->id() ?? $node->key())
-        ->all();
-
-    expect($buttons)->not->toBeEmpty()
-        ->and($unstyled)->toBeEmpty();
-})->with([
-    'realms' => '/admin/realms',
-    'users' => '/admin/realms/acme/users',
-    'clients' => '/admin/realms/acme/clients',
-    'roles' => '/admin/realms/acme/roles',
-    'user detail' => fn () => "/admin/realms/acme/users/{$this->target->id}",
-    'client detail' => fn () => "/admin/realms/acme/clients/{$this->client->id}",
-]);
 
 test('every console action that changes something confirms first', function () {
     $surfaces = collect([

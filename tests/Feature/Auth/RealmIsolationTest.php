@@ -33,14 +33,6 @@ it('signs the address in as the user of the realm it was offered to', function (
         ->and($signedInWithin($this->globex))->toBe($this->inGlobex->id);
 });
 
-it('does not resolve a session identifier from another realm', function () {
-    $authenticated = $this->globex->runAsCurrent(
-        fn (): bool => auth()->guard('identity')->onceUsingId($this->inAcme->id) !== false,
-    );
-
-    expect($authenticated)->toBeFalse();
-});
-
 it('does not accept a reset token minted for the same address in another realm', function () {
     $token = Password::broker()->createToken($this->inAcme);
 

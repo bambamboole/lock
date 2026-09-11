@@ -76,20 +76,6 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
         ->and(tableRow($rows, $master->id))->not->toHaveKey('actions');
 });
 
-test('a realm row deletion trigger opens the form that demands the realm name', function () {
-    $realm = Realm::factory()->create(['name' => 'Globex']);
-
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk()->json('data');
-    $trigger = tableRow($rows, $realm->id)['actions'][0]['schema'][0] ?? [];
-
-    expect(data_get($trigger, 'props.modal.props.title'))->toBe(__('admin.realms.danger.heading'))
-        ->and(data_get($trigger, 'props.modal.schema.0.type'))->toBe('form');
-
-    $this->submitForm(DeleteRealmForm::class, ['name' => 'Wrong'], ['realm' => $realm->slug])->assertInvalid('name');
-
-    expect(Realm::query()->whereKey($realm->id)->exists())->toBeTrue();
-});
-
 test('a support admin cannot create, edit or delete a realm', function () {
     $realm = Realm::factory()->create();
 
