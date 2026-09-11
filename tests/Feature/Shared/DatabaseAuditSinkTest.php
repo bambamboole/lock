@@ -9,7 +9,6 @@ use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
 use Bambamboole\LaravelOidc\Server\Authentication\Events\LoginFailed;
 use Bambamboole\LaravelOidc\Server\Authentication\Events\LoginSucceeded;
-use Bambamboole\LaravelOidc\Server\SigningKeys\Events\KeysRotated;
 
 test('a security event raised inside a realm is recorded against that realm', function () {
     $realm = Realm::factory()->create();
@@ -42,10 +41,4 @@ test('a failed sign-in is recorded with the address that was tried and no user',
         ->and($event->user_id)->toBeNull()
         ->and($event->actor_name)->toBe('ghost@example.com')
         ->and($event->context['reason'] ?? null)->toBe('invalid_credentials');
-});
-
-test('an event raised outside any realm stays instance-wide', function () {
-    event(new KeysRotated('RS256'));
-
-    expect(AuditEvent::query()->sole()->realm_id)->toBeNull();
 });

@@ -12,7 +12,9 @@ use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Bambamboole\LaravelOidc\Server\Realms\CurrentRealm;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
@@ -36,7 +38,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Context;
+use LogicException;
 
 /**
  * @property string $id
@@ -90,22 +92,15 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         return $this->slug === config('lock.master_realm');
     }
 
-    public static function fromContext(): ?self
-    {
-        $realmId = self::currentId();
-
-        return $realmId === null ? null : self::find($realmId);
-    }
-
     /**
-     * For callers that only scope a query and would otherwise pay a lookup per
-     * call.
+     * The realm laravel-oidc serves: the request host's, or the one
+     * runAsCurrent(), a queued job or the console fallback names.
      */
-    public static function currentId(): ?string
+    public static function current(): self
     {
-        $realmId = Context::get('realm_id');
+        $realm = app(RealmResolver::class)->current();
 
-        return is_string($realmId) || is_int($realmId) ? (string) $realmId : null;
+        return $realm instanceof self ? $realm : throw new LogicException('The realm resolver returned a realm that is not a '.self::class.'.');
     }
 
     /**
@@ -149,30 +144,9 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         return (parse_url($appUrl, PHP_URL_SCHEME) ?: 'https').'://'.$this->host().($port !== null ? ':'.$port : '');
     }
 
-    /**
-     * Context travels into queued jobs, so work dispatched while this realm is
-     * current runs in it too.
-     */
-    public function makeCurrent(): void
-    {
-        Context::add('realm_id', $this->id);
-    }
-
-    /** Restores the previous realm afterwards, so runs nest. */
     public function runAsCurrent(callable $callback): mixed
     {
-        $previousRealmId = Context::get('realm_id');
-        $this->makeCurrent();
-
-        try {
-            return $callback();
-        } finally {
-            if ($previousRealmId === null) {
-                Context::forget('realm_id');
-            } else {
-                Context::add('realm_id', $previousRealmId);
-            }
-        }
+        return CurrentRealm::runAs($this->slug, $callback);
     }
 
     /**
@@ -208,14 +182,12 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     protected function casts(): array
     {
         return [
-            // The package contract's id() method would otherwise make `id` read as a relation.
-            'id' => 'string',
             'domain_status' => RealmDomainStatus::class,
             'domain_checked_at' => 'datetime',
         ];
     }
 
-    public function id(): string
+    public function identifier(): string
     {
         return $this->slug;
     }
@@ -309,14 +281,10 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
      */
     public function login(): LoginSettings
     {
-        $configured = LoginSettings::fromConfig();
-
         return new LoginSettings(
-            usernameField: $configured->usernameField,
             home: route('account', absolute: false),
-            loginRoute: $configured->loginRoute,
+            loginRoute: 'identity.login',
             logoutRedirect: route('identity.login', absolute: false),
-            acrValues: $configured->acrValues,
         );
     }
 

@@ -26,8 +26,7 @@ final class ResendUserVerification extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
 
         abort_if($user->hasVerifiedEmail(), 422, __('admin.users.already-verified'));
 

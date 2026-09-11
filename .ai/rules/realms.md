@@ -13,10 +13,9 @@ paths:
 `users` is unique on `(realm_id, email)`, so one address can be two unrelated people. `config/auth.php` therefore
 runs the `realm-eloquent` driver, not `eloquent`: `App\Auth\Support\RealmUserProvider` overrides `newModelQuery()` —
 the one seam `retrieveById`, `retrieveByToken` and `retrieveByCredentials` all build on — and scopes it to
-`Realm::currentId()`.
+`Realm::current()`.
 
-The constraint is inert while no realm is current. On every route a realm serves `SetCurrentRealm` derives the realm
-from the request host, so it protects every login, session and token lookup there. Do not
+There is always a current realm, so the constraint protects every login, session and token lookup. Do not
 "simplify" the driver back to `eloquent`: without it a password valid in one realm authenticates in all of them, and
 a session cookie minted in one resolves a user in another. `tests/Feature/Auth/RealmIsolationTest.php` fails on
 every one of those.
@@ -25,17 +24,10 @@ every one of those.
 
 Admin spans realms; credential lookup and links do not. Anything that resolves a user by address outside the actor's
 own realm, or mails them a link — `SendUserPasswordReset`, `ResendUserVerification` and the invitation in
-`CreateRealmUser` — must run inside `$user->realm->runAsCurrent(…)`. Otherwise the broker does not find them, and the
-link lands on the console's host: laravel-oidc points every absolute URL to a route behind `ResolveRealm` at the
+`CreateRealmUser` — must run inside `$user->realm->runAsCurrent(…)`. Otherwise the user provider does not find them, laravel-oidc's
+reset link (`SendPasswordResetLink`, whose token belongs to the realm that sent it) is minted for the wrong realm, and
+the link lands on the console's host: laravel-oidc points every absolute URL to a route behind `ResolveRealm` at the
 current realm's host.
-
-## Password reset tokens are keyed by realm and email
-
-`App\Auth\Support\RealmTokenRepository` keys `password_reset_tokens` on `(realm_id, email)`; keyed by address alone,
-one realm's reset request deletes another's pending token and its token validates for the wrong user. It is wired
-through `RealmPasswordBrokerManager`, rebound in `AuthServiceProvider::boot()` and **not** `register()`:
-`ProviderRepository` re-adds the deferred services after the eager providers run, so a marker dropped in `register()`
-is put straight back and Laravel's `PasswordResetServiceProvider` wins the rebinding.
 
 ## The realm comes from the request host
 
@@ -44,14 +36,12 @@ host in `APP_URL` (never stored, `Realm::masterHost()`), every other realm from 
 the realms by origin, so there is no per-realm session cookie any more; `SESSION_DOMAIN` has to stay empty, or realms
 on subdomains of one parent would share a cookie. Do not bring back a `/realms/{slug}` path or a cookie-name setting.
 
-On the routes a realm serves — every route behind laravel-oidc's `ResolveRealm` middleware (`ResolveRealm::appliesTo()`):
-the package's own, the account page and its Lattice endpoints — the host decides the realm
-(`App\Auth\Support\DatabaseRealmResolver`). Everywhere else the
-current realm comes from `Context` (`Realm::currentId()` / `Realm::fromContext()`): `SetCurrentRealm` fills it from
-the host on those routes and from the signed-in user's own realm everywhere else. It also runs on the protocol
-endpoints outside the `web` group (`oidc.routes.middleware`), so the realm constraint on user lookup holds for
-`userinfo` too. There is no fallback realm for writes: `App\Auth\Actions\CreateNewUser` throws `MissingRealmContext`
-when no realm is current. An admin page's `{realm}` parameter is data, not the acting realm.
+The current realm is laravel-oidc's: its `DomainRealmResolver` reads it from the request host on every request, and
+`Realm::current()` hands the app the `realms` row. `$realm->runAsCurrent()` (the package's `CurrentRealm::runAs()`)
+overrides it for a callback, and the jobs dispatched inside carry it to the worker; a console command that names no
+realm runs in the master realm (`oidc.realm`). Do not bring back a realm of the app's own in `Context` or a middleware
+that sets one from the signed-in user: two answers to "which realm" is how a lookup ends up in the wrong one. An admin
+page's `{realm}` parameter is data, not the acting realm.
 
 `App\Realms\Support\RealmHostGate` runs on `RouteMatched`: a host no realm is served from gets a 404 on everything
 but `/up` and the domain check (which keeps a forged Host header out of every URL the app would mint from it), the
@@ -65,9 +55,10 @@ because a passkey is bound to the host it was created on.
 then `web`, then `AuthenticateIdentity:identity` — and `bootstrap/app.php` pins `ResolveRealm` before `StartSession`
 in the middleware priority so a page may list them in any order. The root Lattice endpoints (`/lattice/forms/…`)
 authenticate with the console's `web` guard, which on the master realm's host shares the session with the identity
-guard, so `routes/web.php` registers the same endpoints once more below `/account/lattice/…` behind the identity guard,
-and `App\Realms\Support\RealmScopedLatticeEndpoints` (a `URL::formatPathUsing` hook) moves every Lattice URL minted
-during a realm request there. `Realm::login()` sends a realm login home to that account page and a realm logout back
+guard, so `AuthServiceProvider` registers Lattice's `account` endpoint area (`/account/lattice/…`, behind the same
+middleware as the page) and the account page names it (`#[AsPage(endpoints: 'account')]`). laravel-oidc renders its
+two-factor setup page from its own controller, so Lock binds `App\Auth\Ui\Pages\SetupTwoFactorPage`, a subclass that
+names the area, as the package's `FactorSetupView`. `Realm::login()` sends a realm login home to that account page and a realm logout back
 to the realm's own sign-in — never to `/` on the master host, which is its relying-party entry.
 
 ## A realm's domain is checked, never trusted
@@ -81,8 +72,8 @@ lowercase host names — no IP literals, ports or paths.
 
 ## laravel-oidc reads realms from the database
 
-`App\Auth\Support\DatabaseRealmResolver` and `DatabaseRealmRepository` (bound in `AuthServiceProvider::register()`)
-hand the package the `realms` row for the request host (`findByDomain()`), and `App\Realms\Models\Realm` implements
+`App\Auth\Support\DatabaseRealmRepository` (bound in `AuthServiceProvider::register()`) hands the package's resolver
+the `realms` row for the request host (`findByDomain()`), and `App\Realms\Models\Realm` implements
 the package's `Realm` contract by reading its settings (`realm.*` keys, seeded from
 `App\Shared\Realms\Support\RealmConfiguration::defaults()` when the realm is created). Package rows (clients, tokens,
 sessions, consents) carry the realm slug in `realm_id`, so a client only exists inside the realm it was created in:

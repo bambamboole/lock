@@ -27,16 +27,14 @@ final class CheckRealmDomainAction extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $realm = $this->contextModelOrNull('realm');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
 
         return $realm instanceof Realm && ! $realm->isMaster();
     }
 
     public function handle(Request $request): ActionResult
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
+        $realm = $this->contextModel('realm', Realm::class);
 
         $status = $this->checkDomain->handle($realm);
 

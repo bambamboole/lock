@@ -7,10 +7,6 @@ namespace App\Auth\Support;
 use Carbon\CarbonImmutable;
 use stdClass;
 
-/**
- * The OIDC session id is read out of the payload so ending a browser session
- * also revokes the provider session behind it.
- */
 final readonly class BrowserSession
 {
     public function __construct(
@@ -18,7 +14,6 @@ final readonly class BrowserSession
         public ?string $ipAddress,
         public ?string $userAgent,
         public CarbonImmutable $lastActivity,
-        private string $payload,
     ) {}
 
     public static function fromRow(stdClass $row): self
@@ -28,7 +23,6 @@ final readonly class BrowserSession
             ipAddress: is_string($row->ip_address) ? $row->ip_address : null,
             userAgent: is_string($row->user_agent) ? $row->user_agent : null,
             lastActivity: CarbonImmutable::createFromTimestamp((int) $row->last_activity),
-            payload: (string) $row->payload,
         );
     }
 
@@ -70,25 +64,5 @@ final readonly class BrowserSession
         }
 
         return null;
-    }
-
-    public function oidcSessionId(): ?string
-    {
-        if (config('session.encrypt')) {
-            return null;
-        }
-
-        $decoded = base64_decode($this->payload, true);
-
-        if ($decoded === false) {
-            return null;
-        }
-
-        $data = config('session.serialization') === 'json'
-            ? json_decode($decoded, true)
-            : @unserialize($decoded, ['allowed_classes' => false]);
-        $sid = is_array($data) ? ($data['oidc']['sid'] ?? null) : null;
-
-        return is_string($sid) && $sid !== '' ? $sid : null;
     }
 }

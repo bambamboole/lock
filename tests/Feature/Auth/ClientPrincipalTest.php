@@ -33,15 +33,3 @@ test('a machine caller passes the token guard but is not mistaken for a person',
         ->assertOk()
         ->assertJson(['principal' => $user->id, 'person' => $user->id]);
 });
-
-test('the realm middleware derives the realm from a person and leaves it empty for a client principal', function () {
-    Route::middleware('web')->get('/test/realm-context', fn () => response()->json(['realm' => Realm::currentId()]));
-    $user = User::factory()->for(Realm::master())->create();
-
-    $this->actingAs($user)->getJson('/test/realm-context')->assertOk()->assertJson(['realm' => $user->realm_id]);
-
-    auth()->forgetGuards();
-    $this->actingAsOidcClient($this->createOidcMachineClient());
-
-    $this->getJson('/test/realm-context')->assertOk()->assertJson(['realm' => null]);
-});

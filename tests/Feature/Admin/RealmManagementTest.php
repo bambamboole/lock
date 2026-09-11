@@ -208,7 +208,7 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
     $resource = Resource::factory()->for($realm)->create();
     $scope = ResourceScope::factory()->for($resource)->create();
     $client = realmClient($realm, 'Partner app');
-    OidcSession::query()->forceCreate(['sid' => fake()->uuid(), 'realm_id' => 'partners', 'user_id' => $user->id, 'expires_at' => now()->addHour()]);
+    OidcSession::factory()->forUser($user)->create(['realm_id' => 'partners']);
     $masterClient = realmClient(Realm::master(), 'Admin app');
 
     $this->submitForm(DeleteRealmForm::class, ['name' => 'Partners'], ['realm' => $realm->slug])

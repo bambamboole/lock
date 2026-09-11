@@ -7,6 +7,7 @@ use App\Auth\Ui\Forms\EmailForm;
 use App\Auth\Ui\Forms\NameForm;
 use App\Auth\Ui\Forms\PasswordForm;
 use App\Realms\Actions\UpdateRealmConfiguration;
+use App\Realms\Models\Realm;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use function Tests\Helpers\realmRoute;
 
 test('users can update their name', function () {
-    $user = User::factory()->create(['name' => 'Old Name']);
+    $user = User::factory()->for(Realm::master())->create(['name' => 'Old Name']);
 
     $this->actingAs($user)
         ->submitForm(NameForm::class, ['name' => 'New Name'])
@@ -24,7 +25,7 @@ test('users can update their name', function () {
 });
 
 test('changing the email saves it and resets the verification status', function () {
-    $user = User::factory()->create(['email' => 'old@example.com', 'email_verified_at' => now()]);
+    $user = User::factory()->for(Realm::master())->create(['email' => 'old@example.com', 'email_verified_at' => now()]);
 
     $this->actingAs($user)
         ->submitForm(EmailForm::class, ['email' => 'new@example.com'])
@@ -35,7 +36,7 @@ test('changing the email saves it and resets the verification status', function 
 });
 
 test('an address is only taken within the user own realm', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     User::factory()->for($user->realm)->create(['email' => 'taken@example.com']);
     User::factory()->create(['email' => 'elsewhere@example.com']);
 
@@ -51,7 +52,7 @@ test('an address is only taken within the user own realm', function () {
 });
 
 test('users can update their password', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
 
     $this->actingAs($user)
         ->submitForm(PasswordForm::class, [
@@ -66,7 +67,7 @@ test('users can update their password', function () {
 });
 
 test('a password change enforces the current password, the policy, and the confirmation', function (array $overrides, string $errorField) {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     $originalHash = $user->password;
 
     $this->actingAs($user)
@@ -86,7 +87,7 @@ test('a password change enforces the current password, the policy, and the confi
 ]);
 
 test('updating with an unchanged email keeps the verification status', function () {
-    $user = User::factory()->create([
+    $user = User::factory()->for(Realm::master())->create([
         'email' => 'same@example.com',
         'email_verified_at' => now(),
     ]);
@@ -99,7 +100,7 @@ test('updating with an unchanged email keeps the verification status', function 
 });
 
 test('a changed password honours the realm password history and is recorded', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->for(Realm::master())->create();
     app(UpdateRealmConfiguration::class)->handle($user->realm, ['password_history' => 2]);
     $change = fn (string $password) => $this->actingAs($user)->submitForm(PasswordForm::class, [
         'current_password' => 'password',

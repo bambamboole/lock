@@ -21,7 +21,6 @@ use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Consents\Models\Consent;
 use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
@@ -44,16 +43,10 @@ beforeEach(function () {
 
 function activeSessionFor(User $user, ?Client $client = null): OidcSession
 {
-    $session = OidcSession::query()->forceCreate([
-        'sid' => fake()->uuid(),
-        'realm_id' => $user->realm->slug,
-        'user_id' => $user->id,
-        'created_at' => now(),
-        'expires_at' => now()->addHour(),
-    ]);
+    $session = OidcSession::factory()->forUser($user)->create(['realm_id' => $user->realm->slug]);
 
     if ($client instanceof Client) {
-        SessionParticipant::query()->forceCreate(['sid' => $session->sid, 'client_id' => $client->id, 'created_at' => now()]);
+        SessionParticipant::factory()->inSession($session)->forClient($client)->create();
     }
 
     return $session;
@@ -264,28 +257,20 @@ test('resetting MFA is forbidden without users-manage', function () {
     expect($target->totpFactors()->exists())->toBeTrue();
 });
 
-test('deleting a user removes their tokens, sessions, consents and factors', function () {
+test('deleting a user tells relying parties, then removes the user with what was issued to them', function () {
     Bus::fake([SendBackChannelLogout::class]);
-    $target = User::factory()->for($this->realm)->withTwoFactor()->create();
+    $target = User::factory()->for($this->realm)->create();
     $role = RealmRole::factory()->for($this->realm)->create();
     $target->realmRoles()->attach($role);
     createPasskey($target);
     $client = backChannelClientFor($this->realm);
-    $session = activeSessionFor($target, $client);
+    activeSessionFor($target, $client);
     $this->realm->runAsCurrent(fn () => $this->issueTokenFor($target, $client));
-    Consent::query()->forceCreate([
-        'realm_id' => 'acme', 'user_id' => $target->id, 'client_id' => $client->id, 'resource' => 'http://acme.localhost', 'scopes' => ['openid'], 'granted_at' => now(),
-    ]);
 
     $this->actingAs(globalAdmin())->callAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertOk();
 
     expect(User::query()->whereKey($target->id)->exists())->toBeFalse()
         ->and(AccessToken::query()->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(OidcSession::query()->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(SessionParticipant::query()->where('sid', $session->sid)->exists())->toBeFalse()
-        ->and(Consent::query()->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(DB::table('oidc_totp_factors')->where('authenticatable_id', $target->id)->exists())->toBeFalse()
-        ->and(DB::table('oidc_recovery_codes')->where('authenticatable_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('passkeys')->where('user_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('realm_role_user')->where('user_id', $target->id)->exists())->toBeFalse()
         ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeTrue()

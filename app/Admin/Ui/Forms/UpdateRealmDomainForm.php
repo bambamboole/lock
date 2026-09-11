@@ -31,7 +31,7 @@ final class UpdateRealmDomainForm extends FormDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        $realm = $this->contextModelOrNull('realm');
+        $realm = $this->contextModelOrNull('realm', Realm::class);
 
         return $realm instanceof Realm && ! $realm->isMaster();
     }
@@ -73,10 +73,6 @@ final class UpdateRealmDomainForm extends FormDefinition
 
     private function realm(): Realm
     {
-        $realm = $this->contextModel('realm');
-
-        abort_unless($realm instanceof Realm, 404);
-
-        return $realm;
+        return $this->contextModel('realm', Realm::class);
     }
 }

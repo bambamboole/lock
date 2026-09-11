@@ -33,8 +33,7 @@ final class EndUserSessionAction extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
         $sid = $this->contextString('sid');
 
         $ended = $this->endSessions->handle($user, $sid);

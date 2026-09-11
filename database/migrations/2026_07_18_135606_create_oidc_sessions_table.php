@@ -14,6 +14,7 @@ return new class extends Migration
             $table->uuid('sid')->primary();
             $table->string('realm_id')->default((string) config('oidc.realm', 'default'))->index();
             $table->uuid('user_id')->index();
+            $table->string('session_id')->nullable()->index();
             $table->timestamp('created_at')->nullable();
             $table->timestamp('expires_at')->index();
             $table->timestamp('revoked_at')->nullable();

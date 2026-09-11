@@ -15,9 +15,6 @@ use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
 use function Tests\Helpers\realmSetting;
 use function Tests\Helpers\renderedTabKeys;
-use function Tests\Helpers\rowClickHref;
-use function Tests\Helpers\rowMenuTriggers;
-use function Tests\Helpers\tableRow;
 
 test('every admin can list and open realms', function (string $roleName) {
     $realm = Realm::factory()->create();
@@ -63,11 +60,11 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
     $realm = Realm::factory()->create();
     $master = Realm::master();
 
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk()->json('data');
+    $table = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk();
 
-    expect(rowClickHref(tableRow($rows, $realm->id)))->toBe("/admin/realms/{$realm->slug}/settings")
-        ->and(rowMenuTriggers(tableRow($rows, $realm->id)))->toBe(["delete-realm-{$realm->slug}"])
-        ->and(rowMenuTriggers(tableRow($rows, $master->id)))->toBeEmpty();
+    expect($table->row($realm->id)->clickHref())->toBe("/admin/realms/{$realm->slug}/settings")
+        ->and($table->row($realm->id)->actionIds())->toBe(["delete-realm-{$realm->slug}"])
+        ->and($table->row($master->id)->actionIds())->toBeEmpty();
 });
 
 test('a support admin cannot create, edit or delete a realm', function () {

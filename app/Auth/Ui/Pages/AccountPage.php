@@ -58,6 +58,7 @@ use Lattice\Ui\PageSchema;
     name: 'account',
     layout: 'account',
     middleware: [ResolveRealm::class, 'web', AuthenticateIdentity::class.':identity'],
+    endpoints: 'account',
 )]
 final class AccountPage extends Page
 {

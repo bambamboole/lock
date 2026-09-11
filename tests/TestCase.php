@@ -7,7 +7,6 @@ use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use Bambamboole\LaravelOidc\Server\Testing\InteractsWithOidc;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Http\Request;
 use Lattice\Support\Testing\InteractsWithLatticeComponents;
 
 abstract class TestCase extends BaseTestCase
@@ -34,16 +33,6 @@ abstract class TestCase extends BaseTestCase
         if ($this->stubsVite) {
             $this->withoutVite();
         }
-    }
-
-    /**
-     * The installed Lattice helper builds this request on `localhost`, a host
-     * the host gate answers with 404. lattice-php/lattice#604 builds it on
-     * `app.url`; delete this override with the release that ships it.
-     */
-    protected function refreshLatticeRequestIdentity(): void
-    {
-        app()->instance('request', Request::create((string) config('app.url')));
     }
 
     /**

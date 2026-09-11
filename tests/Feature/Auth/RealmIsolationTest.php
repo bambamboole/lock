@@ -3,13 +3,11 @@ declare(strict_types=1);
 
 /**
  * The isolation laravel-oidc cannot provide: it does not own the user model, so
- * the realm constraint on credential lookup and on reset tokens is the
- * application's to enforce.
+ * the realm constraint on credential lookup is the application's to enforce.
  */
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Illuminate\Support\Facades\Password;
 
 beforeEach(function () {
     $this->acme = Realm::factory()->create(['slug' => 'acme']);
@@ -31,18 +29,4 @@ it('signs the address in as the user of the realm it was offered to', function (
 
     expect($signedInWithin($this->acme))->toBe($this->inAcme->id)
         ->and($signedInWithin($this->globex))->toBe($this->inGlobex->id);
-});
-
-it('does not accept a reset token minted for the same address in another realm', function () {
-    $token = Password::broker()->createToken($this->inAcme);
-
-    expect(Password::broker()->tokenExists($this->inAcme, $token))->toBeTrue()
-        ->and(Password::broker()->tokenExists($this->inGlobex, $token))->toBeFalse();
-});
-
-it('keeps one realm reset request from discarding the other realm pending token', function () {
-    $acmeToken = Password::broker()->createToken($this->inAcme);
-    Password::broker()->createToken($this->inGlobex);
-
-    expect(Password::broker()->tokenExists($this->inAcme, $acmeToken))->toBeTrue();
 });

@@ -7,13 +7,15 @@ use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
+use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use SensitiveParameter;
 
-final class CreateRealmUser
+final readonly class CreateRealmUser
 {
+    public function __construct(private SendPasswordResetLink $sendResetLink) {}
+
     /**
      * Without a password the account starts with one nobody knows, and the
      * invitation is the reset link that lets the user choose their own.
@@ -50,8 +52,7 @@ final class CreateRealmUser
         });
 
         if ($invited) {
-            $realm->runAsCurrent(fn () => Password::broker(config('auth.defaults.passwords', 'users'))
-                ->sendResetLink(['email' => $user->email]));
+            $realm->runAsCurrent(fn (): string => ($this->sendResetLink)($user->email));
         }
 
         return $user;

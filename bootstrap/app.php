@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 use App\Admin\Console\Commands\GrantAdminCommand;
 use App\Admin\Console\Commands\SyncPermissionsCommand;
-use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
@@ -52,14 +51,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            SetCurrentRealm::class,
         ]);
 
         // A realm's page may list the web group before the realm middleware;
         // the realm still has to be resolved before the session starts, so
         // priority pins it there whatever the order.
         $middleware->prependToPriorityList(before: StartSession::class, prepend: ResolveRealm::class);
-        $middleware->appendToPriorityList(after: StartSession::class, append: SetCurrentRealm::class);
 
         $middleware->alias([
             // The framework default redirects to verification.notice, which no

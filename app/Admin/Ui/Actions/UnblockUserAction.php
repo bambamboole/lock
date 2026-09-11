@@ -27,8 +27,7 @@ final class UnblockUserAction extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
-        /** @var User $user */
-        $user = $this->contextModel('user');
+        $user = $this->contextModel('user', User::class);
 
         abort_unless($user->isBlocked(), 422, __('admin.users.not-blocked'));
 

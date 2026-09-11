@@ -29,11 +29,7 @@ abstract class RealmUserForm extends FormDefinition
 
     protected function user(): User
     {
-        $user = $this->contextModel('user');
-
-        abort_unless($user instanceof User, 404);
-
-        return $user;
+        return $this->contextModel('user', User::class);
     }
 
     protected function save(?string $name = null, ?string $email = null, ?bool $verified = null): LatticeResponse

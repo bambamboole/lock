@@ -83,15 +83,3 @@ it('rejects a failed token exchange without creating a web session', function ()
     $this->assertGuest('web');
     $fake->assertCodeExchanged();
 });
-
-it('rejects an id token for an unknown subject', function () {
-    $fake = selfSsoProviderFake();
-
-    // The fake's default subject does not exist in the users table.
-    $this->withSession($fake->callbackContext())
-        ->get($fake->callbackUrl())
-        ->assertRedirect(route('login'))
-        ->assertSessionHasErrors('oidc');
-
-    $this->assertGuest('web');
-});

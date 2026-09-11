@@ -5,7 +5,6 @@ namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Exceptions\MissingRealmContext;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -20,7 +19,7 @@ final class CreateNewUser implements CreateUser
     {
         // Uniqueness follows the realm: the same address may exist in another
         // one.
-        $realm = Realm::fromContext() ?? throw new MissingRealmContext;
+        $realm = Realm::current();
 
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
