@@ -8,6 +8,7 @@ use App\Admin\Ui\Pages\ActivityPage;
 use App\Admin\Ui\Pages\RealmActivityPage;
 use App\Admin\Ui\Pages\RealmClientsPage;
 use App\Admin\Ui\Pages\RealmEventsPage;
+use App\Admin\Ui\Pages\RealmResourcesPage;
 use App\Admin\Ui\Pages\RealmRolesPage;
 use App\Admin\Ui\Pages\RealmSettingsPage;
 use App\Admin\Ui\Pages\RealmsPage;
@@ -165,6 +166,7 @@ final class AdminLayout extends LayoutDefinition
             ] : []),
             ...($user->can(AdminPermission::ManageRealms) ? [MenuItem::fromPage(RealmClientsPage::class, ['realm' => $realm->slug])->label(__('navigation.clients'))->prefix(Affix::icon('key-round'))] : []),
             ...($user->can(AdminPermission::ManageUsers) ? [MenuItem::fromPage(RealmRolesPage::class, ['realm' => $realm->slug])->label(__('navigation.roles'))->prefix(Affix::icon('shield-check'))] : []),
+            ...($user->can(AdminPermission::ViewResources) ? [MenuItem::fromPage(RealmResourcesPage::class, ['realm' => $realm->slug])->label(__('navigation.resources'))->prefix(Affix::icon('layers'))] : []),
             MenuItem::fromPage(RealmEventsPage::class, ['realm' => $realm->slug])->label(__('navigation.events'))->prefix(Affix::icon('shield-alert')),
             MenuItem::fromPage(RealmActivityPage::class, ['realm' => $realm->slug])->label(__('navigation.activity'))->prefix(Icon::Clock),
             MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])->label(__('navigation.settings'))->prefix(Icon::Settings),

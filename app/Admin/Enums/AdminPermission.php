@@ -20,5 +20,9 @@ enum AdminPermission: string implements PermissionEnum
 
     case ManageRealms = 'admin:realms:manage';
 
+    case ViewResources = 'admin:resources:view';
+
+    case ManageResources = 'admin:resources:manage';
+
     case ManageAdminRoles = 'admin:roles:manage';
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "662ea664cbeda6a2522b64a0799a0064",
+    "content-hash": "ef348faf38b53c25540616760ea54f63",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -132,16 +132,16 @@
         },
         {
             "name": "bambamboole/laravel-oidc",
-            "version": "v0.24.0",
+            "version": "v0.27.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bambamboole/laravel-oidc.git",
-                "reference": "d72e700fd8e408d0804ea0b2fef650e076c50c52"
+                "reference": "09bd82dc76e8722518e6734da58e4af3c93fb51f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/d72e700fd8e408d0804ea0b2fef650e076c50c52",
-                "reference": "d72e700fd8e408d0804ea0b2fef650e076c50c52",
+                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/09bd82dc76e8722518e6734da58e4af3c93fb51f",
+                "reference": "09bd82dc76e8722518e6734da58e4af3c93fb51f",
                 "shasum": ""
             },
             "require": {
@@ -233,7 +233,7 @@
                 "issues": "https://github.com/bambamboole/laravel-oidc/issues",
                 "source": "https://github.com/bambamboole/laravel-oidc"
             },
-            "time": "2026-09-10T17:23:09+00:00"
+            "time": "2026-09-11T08:13:10+00:00"
         },
         {
             "name": "bambamboole/laravel-translation-dumper",

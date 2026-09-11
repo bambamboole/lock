@@ -43,6 +43,7 @@ it('turns the sidebar into the selected realm console', function () {
             '/admin/realms/acme/users',
             '/admin/realms/acme/clients',
             '/admin/realms/acme/roles',
+            '/admin/realms/acme/resources',
             '/admin/realms/acme/events',
             '/admin/realms/acme/activity',
             '/admin/realms/acme/settings',

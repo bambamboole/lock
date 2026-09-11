@@ -72,6 +72,13 @@ trait BuildsRealmSettingRows
                     fn (string $factor): string => __('admin.realms.factors.'.$factor),
                     $this->settingList($value),
                 ))),
+            RealmSettingType::LoginMethods => ComponentEntry::make($setting->name, $label, $key)
+                ->value($this->settingBadges(array_map(
+                    fn (string $method): string => __('admin.realms.login-methods.'.$method),
+                    $this->settingList($value),
+                ))),
+            RealmSettingType::MfaRequirement => TextEntry::make($setting->name, $label, $key)
+                ->value(__('admin.realms.mfa-requirements.'.str_replace('_', '-', (string) $value))),
             RealmSettingType::StringList => ComponentEntry::make($setting->name, $label, $key)
                 ->value($this->settingBadges($this->settingList($value))),
         };

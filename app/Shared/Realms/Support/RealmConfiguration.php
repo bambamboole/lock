@@ -9,8 +9,11 @@ use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Enums\RealmSettingType;
 use App\Shared\Settings\SettingsRegistry;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
@@ -24,6 +27,7 @@ final class RealmConfiguration
     {
         $tokens = new TokenSettings;
         $sessions = new SessionSettings;
+        $authentication = AuthenticationSettings::fromConfig();
         $credentials = new CredentialSettings;
         $clients = new ClientSettings;
         $password = PasswordPolicy::fromConfig();
@@ -37,6 +41,9 @@ final class RealmConfiguration
             'session_absolute_lifetime' => $sessions->absoluteLifetime,
             'session_token_ttl' => $sessions->tokenTtl,
             'session_token_refresh_skew' => $sessions->tokenRefreshSkew,
+            'login_methods' => array_map(fn (LoginMethod $method): string => $method->value, $authentication->methods),
+            'email_verification_required' => $authentication->emailVerificationRequired,
+            'mfa_requirement' => $authentication->mfa->value,
             'challenge_providers' => $credentials->challengeProviders,
             'totp_secret_length' => $credentials->totpSecretLength,
             'totp_window' => $credentials->totpWindow,
@@ -144,6 +151,10 @@ final class RealmConfiguration
             'session_absolute_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'session_token_ttl' => ['required', 'integer', 'min:1', 'max:31536000', 'lte:session_absolute_lifetime'],
             'session_token_refresh_skew' => ['required', 'integer', 'min:0', 'lt:session_token_ttl'],
+            'login_methods' => ['required', 'array', 'list', 'min:1', 'max:3'],
+            'login_methods.*' => ['required', 'string', 'distinct', Rule::in(array_column(LoginMethod::cases(), 'value'))],
+            'email_verification_required' => ['required', 'boolean'],
+            'mfa_requirement' => ['required', 'string', Rule::in(array_column(MfaRequirement::cases(), 'value'))],
             'challenge_providers' => ['required', 'array', 'list', 'min:1', 'max:2'],
             'challenge_providers.*' => ['required', 'string', 'distinct', Rule::in(['totp', 'webauthn'])],
             'totp_secret_length' => ['required', 'integer', 'min:16', 'max:64', 'multiple_of:8'],
@@ -190,7 +201,12 @@ final class RealmConfiguration
                 'session_token_ttl' => RealmSettingType::Duration,
                 'session_token_refresh_skew' => RealmSettingType::Duration,
             ],
+            'login' => [
+                'login_methods' => RealmSettingType::LoginMethods,
+                'email_verification_required' => RealmSettingType::Flag,
+            ],
             'mfa' => [
+                'mfa_requirement' => RealmSettingType::MfaRequirement,
                 'challenge_providers' => RealmSettingType::Factors,
                 'totp_secret_length' => RealmSettingType::Count,
                 'totp_window' => RealmSettingType::Count,

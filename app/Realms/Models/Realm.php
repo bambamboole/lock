@@ -5,15 +5,20 @@ namespace App\Realms\Models;
 
 use App\Auth\Models\User;
 use App\Realms\Observers\RealmObserver;
+use App\Resources\Models\Resource;
 use App\Shared\Realms\Support\RealmConfiguration;
+use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\KeySettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ResourceSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ScopeSettings;
@@ -41,6 +46,8 @@ use Illuminate\Support\Facades\Context;
  * @property-read int|null $users_count
  * @property-read Collection<int, RealmRole> $realmRoles
  * @property-read int|null $realm_roles_count
+ * @property-read Collection<int, \App\Resources\Models\Resource> $realmResources
+ * @property-read int|null $realm_resources_count
  *
  * @method static \Database\Factories\RealmFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Realm newModelQuery()
@@ -134,6 +141,17 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function realmRoles(): HasMany
     {
         return $this->hasMany(RealmRole::class);
+    }
+
+    /**
+     * Not `resources()`: that name belongs to the package's realm contract,
+     * which this model answers with the settings built from these rows.
+     *
+     * @return HasMany<\App\Resources\Models\Resource, $this>
+     */
+    public function realmResources(): HasMany
+    {
+        return $this->hasMany(Resource::class);
     }
 
     /**
@@ -250,6 +268,17 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         );
     }
 
+    public function authentication(): AuthenticationSettings
+    {
+        $settings = $this->settings;
+
+        return new AuthenticationSettings(
+            methods: LoginMethod::listFromConfig($this->stringList('login_methods')),
+            mfa: MfaRequirement::fromConfig($settings->string('realm.mfa_requirement')),
+            emailVerificationRequired: $settings->boolean('realm.email_verification_required'),
+        );
+    }
+
     public function brokering(): BrokeringSettings
     {
         return BrokeringSettings::fromConfig();
@@ -257,7 +286,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public function resources(): ResourceSettings
     {
-        return ResourceSettings::fromConfig();
+        return app(ProvidesRealmResources::class)->for($this);
     }
 
     public function scopes(): ScopeSettings

@@ -10,7 +10,9 @@ use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Assert;
+use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
 /**
@@ -72,6 +74,23 @@ function loginAccessToken(TestCase $test): string
         'code' => $params['code'],
         'code_verifier' => $verifier,
     ])->json('access_token');
+}
+
+/**
+ * A `client_credentials` token request from $test->client, with the RFC 8707
+ * `resource` and the `scope` the caller wants to try.
+ *
+ * @param  array<string, string>  $payload
+ * @return TestResponse<Response>
+ */
+function clientCredentialsToken(TestCase $test, array $payload): TestResponse
+{
+    return $test->post(route('oidc.token'), [
+        'grant_type' => 'client_credentials',
+        'client_id' => $test->client->client_id,
+        'client_secret' => $test->client->plainSecret,
+        ...$payload,
+    ]);
 }
 
 /**

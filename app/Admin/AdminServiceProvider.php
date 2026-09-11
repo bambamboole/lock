@@ -8,6 +8,8 @@ use App\Admin\Actions\EnsureAdministrator;
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Resources\Models\Resource;
+use App\Resources\Models\ResourceScope;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\ServiceProvider;
@@ -37,6 +39,8 @@ final class AdminServiceProvider extends ServiceProvider
 
         Lattice::context('client', fn (string $value): Client => Client::query()->findOrFail($value));
         Lattice::context('realmRole', fn (string $value): RealmRole => RealmRole::query()->findOrFail($value));
+        Lattice::context('resource', fn (string $value): Resource => Resource::query()->findOrFail($value));
+        Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
 
         Lattice::extend('app.user-menu', static fn (): MenuItem => MenuItem::make(__('navigation.admin'))
             ->href(route('admin.realms', absolute: false))

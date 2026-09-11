@@ -50,6 +50,10 @@ return [
                 'view' => 'View realms',
                 'manage' => 'View and manage realms',
             ],
+            'resources' => [
+                'view' => 'View resources',
+                'manage' => 'View and manage resources and their scopes',
+            ],
             'roles' => [
                 'manage' => 'Manage which users are admins',
             ],
@@ -341,6 +345,88 @@ return [
             ],
         ],
     ],
+    'resources' => [
+        'heading' => 'Resources',
+        'description' => 'Resource servers of :realm and the scopes they own.',
+        'created' => 'Resource created.',
+        'updated' => 'Resource updated.',
+        'deleted' => 'Resource deleted.',
+        'columns' => [
+            'name' => 'Name',
+            'identifier' => 'Identifier',
+            'scopes' => 'Scopes',
+        ],
+        'create' => [
+            'label' => 'Add resource',
+        ],
+        'edit' => [
+            'label' => 'Edit resource',
+        ],
+        'delete' => [
+            'label' => 'Delete resource',
+            'confirm' => [
+                'title' => 'Delete this resource?',
+                'description' => 'Deletes the resource and every scope it owns. Tokens can no longer be requested for it.',
+            ],
+        ],
+        'fields' => [
+            'identifier' => [
+                'label' => 'Identifier',
+                'help-text' => 'A path below the realm issuer (api) is published as protected resource metadata; an absolute URI names a resource server hosted elsewhere.',
+            ],
+            'name' => [
+                'label' => 'Name',
+            ],
+        ],
+        'validation' => [
+            'identifier-format' => 'The identifier must be a path segment such as api or v1/orders, or an absolute URI.',
+            'identifier-uri' => 'The identifier must be an absolute URI with a host and no fragment.',
+        ],
+        'detail' => [
+            'description' => 'Resource of :realm.',
+            'audience' => 'Audience',
+            'settings' => [
+                'heading' => 'Resource',
+                'subtitle' => 'The audience a client asks for with the resource parameter.',
+            ],
+        ],
+        'scopes' => [
+            'heading' => 'Scopes',
+            'created' => 'Scope created.',
+            'updated' => 'Scope updated.',
+            'deleted' => 'Scope deleted.',
+            'columns' => [
+                'value' => 'Scope',
+                'description' => 'Description',
+            ],
+            'create' => [
+                'label' => 'Add scope',
+            ],
+            'edit' => [
+                'label' => 'Edit scope',
+            ],
+            'delete' => [
+                'label' => 'Delete scope',
+                'confirm' => [
+                    'title' => 'Delete this scope?',
+                    'description' => 'Tokens can no longer be issued with it. Existing tokens keep it until they expire.',
+                ],
+            ],
+            'fields' => [
+                'value' => [
+                    'label' => 'Scope',
+                    'help-text' => 'The value a client requests. Unique within this resource; another resource may use the same one.',
+                ],
+                'description' => [
+                    'label' => 'Description',
+                    'help-text' => 'Shown on the consent screen. Without one the scope speaks for itself.',
+                ],
+            ],
+            'validation' => [
+                'value-format' => 'A scope may not contain spaces. Use letters, digits, dots, colons, slashes, dashes or underscores.',
+            ],
+        ],
+    ],
     'realms' => [
         'heading' => 'Realms',
         'description' => 'Every realm is an isolated identity boundary with its own users, clients and authentication settings.',
@@ -388,6 +474,7 @@ return [
         ],
         'sections' => [
             'general' => 'General',
+            'login' => 'Sign-in',
             'tokens' => 'Token lifetimes',
             'sessions' => 'Sessions',
             'mfa' => 'Multi-factor authentication',
@@ -397,6 +484,16 @@ return [
         'factors' => [
             'totp' => 'Authenticator app (TOTP)',
             'webauthn' => 'Security key or passkey (WebAuthn)',
+        ],
+        'login-methods' => [
+            'password' => 'Email address and password',
+            'passkey' => 'Passkey',
+            'social' => 'Social provider',
+        ],
+        'mfa-requirements' => [
+            'never' => 'Never',
+            'if-enrolled' => 'When the user has a factor',
+            'always' => 'Always',
         ],
         'fields' => [
             'name' => [
@@ -437,6 +534,18 @@ return [
             'session-token-refresh-skew' => [
                 'label' => 'Session token renewal window',
                 'help-text' => 'How many seconds before expiry a session token is renewed.',
+            ],
+            'login-methods' => [
+                'label' => 'Accepted sign-in methods',
+                'help-text' => 'Methods this realm offers. A method left out is closed rather than hidden, and registration as well as password reset hang off the password method.',
+            ],
+            'email-verification-required' => [
+                'label' => 'Require a verified email address',
+                'help-text' => 'Users with an unconfirmed address have to verify it before their sign-in completes.',
+            ],
+            'mfa-requirement' => [
+                'label' => 'Second factor',
+                'help-text' => 'When the realm challenges for a second factor. Always sends a user without one to enrollment before the sign-in completes.',
             ],
             'challenge-providers' => [
                 'label' => 'Available second factors',

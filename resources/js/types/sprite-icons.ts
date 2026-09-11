@@ -48,6 +48,7 @@ export const iconNames = [
   "info",
   "italic",
   "key-round",
+  "layers",
   "layout-dashboard",
   "layout-template",
   "link",
@@ -138,6 +139,7 @@ declare module "@lattice-php/ui" {
     info: true;
     italic: true;
     "key-round": true;
+    layers: true;
     "layout-dashboard": true;
     "layout-template": true;
     link: true;

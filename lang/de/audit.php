@@ -72,6 +72,16 @@ return [
                 'roles-updated' => 'Realm-Rollen aktualisiert',
             ],
         ],
+        'resource' => [
+            'created' => 'Resource angelegt',
+            'updated' => 'Resource geändert',
+            'deleted' => 'Resource gelöscht',
+            'scope' => [
+                'created' => 'Resource-Scope angelegt',
+                'updated' => 'Resource-Scope geändert',
+                'deleted' => 'Resource-Scope gelöscht',
+            ],
+        ],
         'admin' => [
             'roles' => [
                 'updated' => 'Globale Rollen aktualisiert',

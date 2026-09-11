@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Http\Middleware;
 
 use App\Realms\Models\Realm;
+use App\Shared\Auth\Support\RequestUser;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -12,7 +13,8 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Puts the request's realm into the context every scoped query reads. The
  * package's realm routes name it in the path; everywhere else the realm is
- * the signed-in user's own, and a guest has none.
+ * the signed-in user's own, and a request with no person behind it — a guest,
+ * or a client acting for itself on the token guard — has none.
  */
 final class SetCurrentRealm
 {
@@ -28,7 +30,7 @@ final class SetCurrentRealm
         }
 
         Context::forget('realm_id');
-        $request->user()?->realm->makeCurrent();
+        RequestUser::of($request)?->realm->makeCurrent();
 
         return $next($request);
     }

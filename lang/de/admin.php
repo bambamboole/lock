@@ -50,6 +50,10 @@ return [
                 'view' => 'Realms ansehen',
                 'manage' => 'Realms einsehen und verwalten',
             ],
+            'resources' => [
+                'view' => 'Resources ansehen',
+                'manage' => 'Resources und ihre Scopes ansehen und verwalten',
+            ],
             'roles' => [
                 'manage' => 'Festlegen, welche Benutzer Admins sind',
             ],
@@ -341,6 +345,88 @@ return [
             ],
         ],
     ],
+    'resources' => [
+        'heading' => 'Resources',
+        'description' => 'Resource-Server von :realm und die Scopes, die sie besitzen.',
+        'created' => 'Resource angelegt.',
+        'updated' => 'Resource geändert.',
+        'deleted' => 'Resource gelöscht.',
+        'columns' => [
+            'name' => 'Name',
+            'identifier' => 'Identifier',
+            'scopes' => 'Scopes',
+        ],
+        'create' => [
+            'label' => 'Resource hinzufügen',
+        ],
+        'edit' => [
+            'label' => 'Resource bearbeiten',
+        ],
+        'delete' => [
+            'label' => 'Resource löschen',
+            'confirm' => [
+                'title' => 'Diese Resource löschen?',
+                'description' => 'Löscht die Resource samt allen Scopes. Tokens können dafür nicht mehr angefordert werden.',
+            ],
+        ],
+        'fields' => [
+            'identifier' => [
+                'label' => 'Identifier',
+                'help-text' => 'Ein Pfad unterhalb des Realm-Issuers (api) wird als Protected-Resource-Metadata veröffentlicht; eine absolute URI benennt einen extern betriebenen Resource-Server.',
+            ],
+            'name' => [
+                'label' => 'Name',
+            ],
+        ],
+        'validation' => [
+            'identifier-format' => 'Der Identifier muss ein Pfadsegment wie api oder v1/orders sein oder eine absolute URI.',
+            'identifier-uri' => 'Der Identifier muss eine absolute URI mit Host und ohne Fragment sein.',
+        ],
+        'detail' => [
+            'description' => 'Resource von :realm.',
+            'audience' => 'Audience',
+            'settings' => [
+                'heading' => 'Resource',
+                'subtitle' => 'Die Audience, die ein Client über den resource-Parameter anfordert.',
+            ],
+        ],
+        'scopes' => [
+            'heading' => 'Scopes',
+            'created' => 'Scope angelegt.',
+            'updated' => 'Scope geändert.',
+            'deleted' => 'Scope gelöscht.',
+            'columns' => [
+                'value' => 'Scope',
+                'description' => 'Beschreibung',
+            ],
+            'create' => [
+                'label' => 'Scope hinzufügen',
+            ],
+            'edit' => [
+                'label' => 'Scope bearbeiten',
+            ],
+            'delete' => [
+                'label' => 'Scope löschen',
+                'confirm' => [
+                    'title' => 'Diesen Scope löschen?',
+                    'description' => 'Tokens können damit nicht mehr ausgestellt werden. Bestehende Tokens behalten ihn bis zum Ablauf.',
+                ],
+            ],
+            'fields' => [
+                'value' => [
+                    'label' => 'Scope',
+                    'help-text' => 'Der Wert, den ein Client anfordert. Eindeutig innerhalb dieser Resource; eine andere Resource darf denselben tragen.',
+                ],
+                'description' => [
+                    'label' => 'Beschreibung',
+                    'help-text' => 'Wird auf dem Consent-Screen gezeigt. Ohne Beschreibung spricht der Scope für sich.',
+                ],
+            ],
+            'validation' => [
+                'value-format' => 'Ein Scope darf keine Leerzeichen enthalten. Erlaubt sind Buchstaben, Ziffern, Punkte, Doppelpunkte, Schrägstriche, Binde- und Unterstriche.',
+            ],
+        ],
+    ],
     'realms' => [
         'heading' => 'Realms',
         'description' => 'Jeder Realm ist eine eigene Identitätsgrenze mit eigenen Benutzern, Clients und Authentifizierungseinstellungen.',
@@ -388,6 +474,7 @@ return [
         ],
         'sections' => [
             'general' => 'Allgemein',
+            'login' => 'Anmeldung',
             'tokens' => 'Token-Laufzeiten',
             'sessions' => 'Sitzungen',
             'mfa' => 'Mehrfaktor-Authentifizierung',
@@ -397,6 +484,16 @@ return [
         'factors' => [
             'totp' => 'Authenticator-App (TOTP)',
             'webauthn' => 'Sicherheitsschlüssel oder Passkey (WebAuthn)',
+        ],
+        'login-methods' => [
+            'password' => 'E-Mail-Adresse und Passwort',
+            'passkey' => 'Passkey',
+            'social' => 'Social-Login-Anbieter',
+        ],
+        'mfa-requirements' => [
+            'never' => 'Nie',
+            'if-enrolled' => 'Wenn der Benutzer einen Faktor hat',
+            'always' => 'Immer',
         ],
         'fields' => [
             'name' => [
@@ -437,6 +534,18 @@ return [
             'session-token-refresh-skew' => [
                 'label' => 'Erneuerungsfenster für Sitzungstokens',
                 'help-text' => 'Anzahl der Sekunden vor Ablauf, ab der ein Sitzungstoken erneuert wird.',
+            ],
+            'login-methods' => [
+                'label' => 'Erlaubte Anmeldemethoden',
+                'help-text' => 'Methoden, die dieser Realm anbietet. Eine weggelassene Methode ist gesperrt und nicht nur ausgeblendet; Registrierung und Passwort-Reset hängen an der Passwortmethode.',
+            ],
+            'email-verification-required' => [
+                'label' => 'Bestätigte E-Mail-Adresse verlangen',
+                'help-text' => 'Benutzer mit unbestätigter Adresse müssen sie bestätigen, bevor ihre Anmeldung abgeschlossen wird.',
+            ],
+            'mfa-requirement' => [
+                'label' => 'Zweiter Faktor',
+                'help-text' => 'Wann der Realm einen zweiten Faktor verlangt. „Immer“ führt Benutzer ohne Faktor vor Abschluss der Anmeldung durch die Einrichtung.',
             ],
             'challenge-providers' => [
                 'label' => 'Verfügbare zweite Faktoren',

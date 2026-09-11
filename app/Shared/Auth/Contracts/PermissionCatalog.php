@@ -33,13 +33,6 @@ interface PermissionCatalog
     public function values(): array;
 
     /**
-     * API scope value => translated description, realm-scoped `#[AsScope]`-tagged cases only.
-     *
-     * @return array<string, string>
-     */
-    public function apiScopes(): array;
-
-    /**
      * Drops the cached catalog, rediscovers the enums and re-primes the cache.
      * Returns the number of permissions in the rebuilt catalog.
      */
