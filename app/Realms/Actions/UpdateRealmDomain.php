@@ -40,7 +40,7 @@ final class UpdateRealmDomain implements UpdatesRealmDomain
                 'domain_check_error' => null,
             ])->save();
 
-            Audit::record(RealmAuditEvent::RealmUpdated, $realm, properties: ['changes' => ['domain' => ['old' => $before, 'new' => $domain]]]);
+            Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => ['domain' => ['old' => $before, 'new' => $domain]]]);
         });
     }
 }

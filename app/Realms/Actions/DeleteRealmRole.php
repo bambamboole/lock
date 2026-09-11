@@ -18,7 +18,7 @@ final class DeleteRealmRole implements DeletesRealmRole
 
             $role->delete();
 
-            Audit::record(RealmAuditEvent::RoleDeleted, $role, properties: [
+            Audit::record(RealmAuditEvent::RoleDeleted, $role, $role->realm, [
                 'realm' => $role->realm->slug,
                 'name' => $role->name,
                 'users-detached' => $detached,

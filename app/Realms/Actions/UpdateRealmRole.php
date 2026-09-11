@@ -27,7 +27,7 @@ final class UpdateRealmRole implements UpdatesRealmRole
             }
 
             if ($changes !== []) {
-                Audit::record(RealmAuditEvent::RoleUpdated, $role, properties: [
+                Audit::record(RealmAuditEvent::RoleUpdated, $role, $role->realm, [
                     'realm' => $role->realm->slug,
                     'name' => $role->name,
                     'changes' => $changes,

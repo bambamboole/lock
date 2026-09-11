@@ -18,7 +18,7 @@ final class DeleteResourceScope implements DeletesResourceScope
 
             $scope->delete();
 
-            Audit::record(ResourceAuditEvent::ScopeDeleted, $scope, properties: [
+            Audit::record(ResourceAuditEvent::ScopeDeleted, $scope, $resource->realm, [
                 'realm' => $resource->realm->slug,
                 'resource' => $resource->identifier,
                 'value' => $scope->value,

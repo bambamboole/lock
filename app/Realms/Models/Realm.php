@@ -11,6 +11,7 @@ use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
 use App\Shared\Settings\Contracts\ProvidesSettings;
+use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
@@ -114,6 +115,11 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public static function masterHost(): string
     {
         return strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+    }
+
+    public static function ofClient(Client $client): self
+    {
+        return self::query()->where('slug', $client->realm_id)->sole();
     }
 
     public static function findByHost(string $host): ?self

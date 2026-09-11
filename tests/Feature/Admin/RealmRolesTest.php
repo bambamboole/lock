@@ -38,7 +38,7 @@ test('a users-manage admin creates a realm role and it is recorded', function ()
         ->and($role->description)->toBe('Standard access')
         ->and($role->realm_id)->toBe($this->realm->id);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RoleCreated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::RoleCreated->eventName())->sole();
 
     expect($activity->subject_id)->toBe($role->id)
         ->and($activity->getProperty('realm'))->toBe('acme')
@@ -79,7 +79,7 @@ test('renaming a realm role records the change and follows through to the claim'
 
     expect($user->refresh()->realmRoleNames())->toBe(['staff']);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RoleUpdated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::RoleUpdated->eventName())->sole();
 
     expect($activity->getProperty('changes'))->toBe([
         'name' => ['old' => 'member', 'new' => 'staff'],
@@ -100,7 +100,7 @@ test('deleting a realm role detaches every user that holds it', function () {
     expect(RealmRole::query()->whereKey($role->id)->exists())->toBeFalse()
         ->and($user->refresh()->realmRoleNames())->toBe(['admin']);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RoleDeleted->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::RoleDeleted->eventName())->sole();
 
     expect($activity->getProperty('name'))->toBe('member')
         ->and($activity->getProperty('users-detached'))->toBe(1);
@@ -158,7 +158,7 @@ test('assigning realm roles to a user replaces the set and records what changed'
 
     expect($user->refresh()->realmRoleNames())->toBe(['admin']);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::UserRolesUpdated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::UserRolesUpdated->eventName())->sole();
 
     expect($activity->subject_id)->toBe($user->id)
         ->and($activity->getProperty('added'))->toBe(['admin'])

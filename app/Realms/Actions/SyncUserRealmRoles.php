@@ -31,7 +31,7 @@ final class SyncUserRealmRoles implements SyncsUserRealmRoles
             $user->realmRoles()->sync($after->modelKeys());
 
             if ($added !== [] || $removed !== []) {
-                Audit::record(RealmAuditEvent::UserRolesUpdated, $user, properties: [
+                Audit::record(RealmAuditEvent::UserRolesUpdated, $user, $user->realm, [
                     'realm' => $user->realm->slug,
                     'added' => $added,
                     'removed' => $removed,

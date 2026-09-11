@@ -49,7 +49,7 @@ test('a resources-manage admin adds a resource and it is recorded', function () 
         ->and($resource->name)->toBe('Orders API')
         ->and($resource->realm_id)->toBe($this->realm->id);
 
-    $activity = Activity::global()->where('event', ResourceAuditEvent::ResourceCreated->eventName())->sole();
+    $activity = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceCreated->eventName())->sole();
 
     expect($activity->subject_id)->toBe($resource->id)
         ->and($activity->getProperty('realm'))->toBe('acme')

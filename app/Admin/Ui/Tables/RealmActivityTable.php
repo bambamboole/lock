@@ -9,6 +9,7 @@ use App\Admin\Ui\Fragments\RealmActivityChangesFragment;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Resources\Enums\ResourceAuditEvent;
 use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
@@ -38,7 +39,7 @@ final class RealmActivityTable extends ActivityTable
     {
         $options = [];
 
-        foreach (RealmAuditEvent::cases() as $event) {
+        foreach ([...RealmAuditEvent::cases(), ...ResourceAuditEvent::cases()] as $event) {
             $options[$event->value] = __($event->translationKey());
         }
 

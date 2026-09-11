@@ -27,7 +27,7 @@ final class UpdateResource implements UpdatesResource
             }
 
             if ($changes !== []) {
-                Audit::record(ResourceAuditEvent::ResourceUpdated, $resource, properties: [
+                Audit::record(ResourceAuditEvent::ResourceUpdated, $resource, $resource->realm, [
                     'realm' => $resource->realm->slug,
                     'identifier' => $resource->identifier,
                     'changes' => $changes,

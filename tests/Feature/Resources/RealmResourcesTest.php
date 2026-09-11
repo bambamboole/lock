@@ -39,7 +39,7 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
 
     expect($resource->refresh()->identifier)->toBe('orders');
 
-    $updated = Activity::global()->where('event', ResourceAuditEvent::ResourceUpdated->eventName())->sole();
+    $updated = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceUpdated->eventName())->sole();
 
     expect($updated->getProperty('changes'))->toBe([
         'identifier' => ['old' => 'api', 'new' => 'orders'],
@@ -52,7 +52,7 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
     expect(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
         ->and(ResourceScope::query()->where('resource_id', $resource->id)->exists())->toBeFalse();
 
-    $deleted = Activity::global()->where('event', ResourceAuditEvent::ResourceDeleted->eventName())->sole();
+    $deleted = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceDeleted->eventName())->sole();
 
     expect($deleted->getProperty('identifier'))->toBe('orders')
         ->and($deleted->getProperty('scopes-deleted'))->toBe(1);
@@ -66,7 +66,7 @@ test('changing and dropping a scope is recorded against its resource', function 
 
     expect($scope->refresh()->label())->toBe('Read orders');
 
-    $updated = Activity::global()->where('event', ResourceAuditEvent::ScopeUpdated->eventName())->sole();
+    $updated = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ScopeUpdated->eventName())->sole();
 
     expect($updated->getProperty('resource'))->toBe('api')
         ->and($updated->getProperty('changes'))->toBe([

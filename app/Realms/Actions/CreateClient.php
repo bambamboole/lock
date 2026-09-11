@@ -29,7 +29,7 @@ final readonly class CreateClient implements CreatesClient
 
             $client->forceFill($attributes->toArray())->save();
 
-            Audit::record(RealmAuditEvent::ClientCreated, $client, properties: [
+            Audit::record(RealmAuditEvent::ClientCreated, $client, $realm, [
                 'realm' => $realm->slug,
                 'client_id' => $client->client_id,
                 'name' => $client->name,

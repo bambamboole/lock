@@ -20,7 +20,7 @@ final class CreateResource implements CreatesResource
                 'name' => $name,
             ]);
 
-            Audit::record(ResourceAuditEvent::ResourceCreated, $resource, properties: [
+            Audit::record(ResourceAuditEvent::ResourceCreated, $resource, $realm, [
                 'realm' => $realm->slug,
                 'identifier' => $resource->identifier,
                 'name' => $resource->name,

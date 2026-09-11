@@ -64,7 +64,7 @@ it('renames a realm without touching its identifier or configuration', function 
     expect($realm->refresh()->name)->toBe('External partners')
         ->and($realm->slug)->toBe('partners')
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
+        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
 });
 
 it('saves one setting at a time for the signed realm and leaves every other realm alone', function (string $slug) {
@@ -99,7 +99,7 @@ it('saves one setting at a time for the signed realm and leaves every other real
         ->and($realm->clients()->defaultScopes)->toBe(['openid', 'profile'])
         ->and($other->refresh()->tokens()->accessTokenLifetime)->toBe(900);
 
-    $activity = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
+    $activity = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
 
     expect($activity?->subject_id)->toBe($realm->id)
         ->and($activity?->getProperty('changes.access_token_lifetime'))->toBe(['old' => 900, 'new' => 300]);
@@ -137,7 +137,7 @@ it('saves the password policy of the signed realm and audits the change', functi
         ->and($other->credentials()->password->minLength)->toBe(8)
         ->and($other->credentials()->password->maxAgeDays)->toBeNull();
 
-    $changes = Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
+    $changes = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
         ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
 
     expect($changes['password_min_length'])->toBe(['old' => 8, 'new' => 12])
@@ -164,7 +164,7 @@ it('reports a conflict with a setting the form does not show on the field being 
         ->assertInvalid(['session_token_ttl' => __('admin.realms.fields.session-token-refresh-skew.label')]);
 
     expect($realm->refresh()->sessions()->tokenTtl)->toBe(3600)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
+        ->and(Activity::query()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
 });
 
 it('reports invalid list entries on the matching configuration field', function (string $field, string $value) {

@@ -139,7 +139,8 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
             Audit::record(
                 $created ? RealmAuditEvent::ClientCreated : RealmAuditEvent::ClientUpdated,
                 $client,
-                properties: [
+                $realm,
+                [
                     'actor' => 'console:app:bootstrap',
                     'realm' => $realm->slug,
                     'client_id' => $client->client_id,

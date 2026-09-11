@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Actions;
 
+use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Data\ClientAttributes;
@@ -45,7 +46,7 @@ final readonly class UpdateClient implements UpdatesClient
             }
 
             if ($changes !== []) {
-                Audit::record(RealmAuditEvent::ClientUpdated, $client, properties: [
+                Audit::record(RealmAuditEvent::ClientUpdated, $client, Realm::ofClient($client), [
                     'realm' => $client->realm_id,
                     'client_id' => $client->client_id,
                     'changes' => $changes,

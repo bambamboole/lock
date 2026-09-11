@@ -82,7 +82,7 @@ it('moves a realm to another domain, which starts over and is checked right away
 
     expect($realm->refresh()->domain)->toBe('new.partners.test')
         ->and($realm->domain_status)->toBe(RealmDomainStatus::Unreachable)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.domain'))
+        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.domain'))
         ->toBe(['old' => 'old.partners.test', 'new' => 'new.partners.test']);
 });
 
