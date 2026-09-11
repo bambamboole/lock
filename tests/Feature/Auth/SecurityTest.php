@@ -9,6 +9,7 @@ use Bambamboole\LaravelOidc\Ui\Actions\RevokeFactorAction;
 
 use function Tests\Helpers\assumeNotNull;
 use function Tests\Helpers\createPasskey;
+use function Tests\Helpers\realmRoute;
 
 /**
  * How this app composes the security card. Enrolling a factor is covered by
@@ -20,7 +21,7 @@ test('security settings stay hidden until the password is confirmed', function (
     $user = User::factory()->withTwoFactor()->create();
 
     $this->actingAs($user, 'identity')
-        ->get(route('account', ['realm' => $user->realm->slug]))
+        ->get(realmRoute($user->realm, 'account'))
         ->assertOk()
         ->assertSee(__('user.security.confirm.action'))
         ->assertDontSee(__('user.security.two-factor.add-method'));
@@ -31,7 +32,7 @@ test('confirming the password reveals the two-factor section', function () {
 
     $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('account', ['realm' => $user->realm->slug]))
+        ->get(realmRoute($user->realm, 'account'))
         ->assertOk()
         ->assertSee(__('user.security.two-factor.add-method'))
         ->assertSee(__('user.security.two-factor.status.enabled'));
@@ -43,7 +44,7 @@ test('recovery codes never reach the account page', function () {
 
     $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('account', ['realm' => $user->realm->slug]))
+        ->get(realmRoute($user->realm, 'account'))
         ->assertOk()
         ->assertDontSee($code);
 });
@@ -56,7 +57,7 @@ test('a passkey alone counts as a second factor', function () {
 
     $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])
-        ->get(route('account', ['realm' => $user->realm->slug]))
+        ->get(realmRoute($user->realm, 'account'))
         ->assertOk()
         ->assertSee(__('user.security.two-factor.status.enabled'));
 });

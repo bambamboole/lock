@@ -10,7 +10,7 @@ declare(strict_types=1);
 return [
     'enabled' => (bool) env('OIDC_RP_ENABLED', true),
 
-    'issuer' => env('OIDC_RP_ISSUER', rtrim((string) env('APP_URL'), '/').'/realms/admin'),
+    'issuer' => env('OIDC_RP_ISSUER', rtrim((string) env('APP_URL'), '/')),
 
     // The console is its own relying party against its own first-party client,
     // so one pair of credentials configures both sides. Set the OIDC_RP_*

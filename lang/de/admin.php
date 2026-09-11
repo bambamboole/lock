@@ -433,10 +433,33 @@ return [
         'columns' => [
             'name' => 'Name',
             'slug' => 'Slug',
+            'domain' => 'Domain',
+            'domain-status' => 'Domain-Status',
             'users' => 'Benutzer',
             'created-at' => 'Erstellt',
         ],
         'created' => 'Realm angelegt.',
+        'created-unverified' => 'Realm angelegt. :outcome',
+        'domain' => [
+            'master' => 'Aus APP_URL übernommen.',
+            'status' => [
+                'pending' => 'Nicht geprüft',
+                'verified' => 'Verifiziert',
+                'unreachable' => 'Nicht erreichbar',
+                'misrouted' => 'Falscher Server',
+            ],
+            'outcome' => [
+                'pending' => 'Noch nicht geprüft.',
+                'verified' => ':domain erreicht diese Instanz.',
+                'unreachable' => ':domain antwortet nicht. Prüfe den DNS-Eintrag, den Proxy-Eintrag und das TLS-Zertifikat.',
+                'misrouted' => ':domain antwortet, aber nicht als diese Lock-Instanz.',
+            ],
+            'checked-at' => 'Geprüft :time.',
+            'change-warning' => 'Die Domain ist der Issuer des Realms. Eine Änderung meldet alle Benutzer ab, und alle Clients, Redirect-URIs und Passkeys des Realms müssen nachziehen.',
+            'submit' => 'Domain speichern',
+            'updated' => 'Domain geändert.',
+            'check' => 'Erneut prüfen',
+        ],
         'updated' => 'Realm aktualisiert.',
         'configuration-saved' => 'Realm-Konfiguration gespeichert.',
         'deleted' => 'Realm gelöscht.',
@@ -501,7 +524,11 @@ return [
             ],
             'slug' => [
                 'label' => 'Realm-Kennung',
-                'help-text' => 'Wird in den Realm-URLs verwendet. Nur Kleinbuchstaben, Zahlen und einzelne Bindestriche. Später nicht mehr änderbar.',
+                'help-text' => 'Kennzeichnet den Realm in der Konsole. Nur Kleinbuchstaben, Zahlen und einzelne Bindestriche. Später nicht mehr änderbar.',
+            ],
+            'domain' => [
+                'label' => 'Domain',
+                'help-text' => 'Der Host, unter dem der Realm erreichbar ist, z. B. auth.example.com. Richte den DNS-Eintrag auf diesen Server und trage die Domain im Proxy der Plattform ein; angelegt wird der Realm in jedem Fall.',
             ],
             'access-token-lifetime' => [
                 'label' => 'Laufzeit von Access-Tokens',
@@ -518,10 +545,6 @@ return [
             'refresh-token-lifetime' => [
                 'label' => 'Laufzeit von Refresh-Tokens',
                 'help-text' => 'Laufzeit neu ausgestellter Refresh-Tokens in Sekunden.',
-            ],
-            'session-cookie-name' => [
-                'label' => 'Name des Session-Cookies',
-                'help-text' => 'Leer lassen, um einen eigenen Cookie-Namen für diesen Realm zu erzeugen. Nach einer Änderung ist eine erneute Anmeldung erforderlich.',
             ],
             'session-absolute-lifetime' => [
                 'label' => 'Maximale Sitzungsdauer',

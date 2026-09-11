@@ -12,6 +12,7 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Http\Response;
 use Illuminate\Testing\TestResponse;
 
+use function Tests\Helpers\realmRoute;
 use function Tests\Helpers\runningTestCase;
 
 /**
@@ -23,7 +24,7 @@ function signInToRealm(User $user): TestResponse
     runningTestCase()->flushSession();
 
     return runningTestCase()->post(
-        route('identity.login.store', ['realm' => $user->realm->slug]),
+        realmRoute($user->realm, 'identity.login.store'),
         ['email' => $user->email, 'password' => 'password'],
     );
 }
@@ -51,33 +52,33 @@ it('returns 404 on the password routes of a realm that does not accept the metho
     app(UpdateRealmConfiguration::class)->handle($realm, ['login_methods' => ['passkey']]);
 
     signInToRealm($user)->assertNotFound();
-    $this->get(route('identity.register', ['realm' => $realm->slug]))->assertNotFound();
+    $this->get(realmRoute($realm, 'identity.register'))->assertNotFound();
 
     $this->assertGuest('identity');
 
-    signInToRealm(User::factory()->for(Realm::master())->create())->assertRedirect(route('account', ['realm' => 'admin']));
+    signInToRealm(User::factory()->for(Realm::master())->create())->assertRedirect(realmRoute('admin', 'account'));
 });
 
 it('sends a user without a second factor to enrollment when the realm always requires one', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
     $user = User::factory()->for($realm)->create();
 
-    signInToRealm($user)->assertRedirect(route('account', ['realm' => $realm->slug]));
+    signInToRealm($user)->assertRedirect(realmRoute($realm, 'account'));
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['mfa_requirement' => 'always']);
 
-    signInToRealm($user)->assertRedirect(route('identity.two-factor.setup', ['realm' => $realm->slug]));
+    signInToRealm($user)->assertRedirect(realmRoute($realm, 'identity.two-factor.setup'));
 });
 
 it('holds an unverified address at the verification prompt when the realm requires verification', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
     $user = User::factory()->for($realm)->unverified()->create();
 
-    signInToRealm($user)->assertRedirect(route('account', ['realm' => $realm->slug]));
+    signInToRealm($user)->assertRedirect(realmRoute($realm, 'account'));
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['email_verification_required' => true]);
 
-    signInToRealm($user)->assertRedirect(route('identity.verification.notice', ['realm' => $realm->slug]));
+    signInToRealm($user)->assertRedirect(realmRoute($realm, 'identity.verification.notice'));
 });
 
 it('falls back to the configured defaults for a realm with no stored authentication settings', function () {
@@ -90,5 +91,5 @@ it('falls back to the configured defaults for a realm with no stored authenticat
     expect($realm->refresh()->authentication())->toEqual(AuthenticationSettings::fromConfig())
         ->and(RealmConfiguration::defaults()['login_methods'])->toBe(['password', 'passkey', 'social']);
 
-    signInToRealm(User::factory()->for($realm)->create())->assertRedirect(route('account', ['realm' => $realm->slug]));
+    signInToRealm(User::factory()->for($realm)->create())->assertRedirect(realmRoute($realm, 'account'));
 });

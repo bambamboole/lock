@@ -48,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(function (Request $request): string {
             $identity = RequestUser::of($request, 'identity');
 
-            return $identity === null ? '/' : route('account', ['realm' => $identity->realm->slug]);
+            return $identity === null ? '/' : route('account');
         });
 
         $middleware->web(append: [
@@ -58,9 +58,9 @@ return Application::configure(basePath: dirname(__DIR__))
             SetCurrentRealm::class,
         ]);
 
-        // A page below /realms/{realm} may list the web group before the realm
-        // middleware; the realm still has to swap the session cookie in before
-        // the session starts, so priority pins it there whatever the order.
+        // A realm's page may list the web group before the realm middleware;
+        // the realm still has to be resolved before the session starts, so
+        // priority pins it there whatever the order.
         $middleware->prependToPriorityList(before: StartSession::class, prepend: ResolveRealm::class);
         $middleware->appendToPriorityList(after: StartSession::class, append: SetCurrentRealm::class);
 

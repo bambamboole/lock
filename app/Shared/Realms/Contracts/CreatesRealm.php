@@ -7,5 +7,5 @@ use App\Realms\Models\Realm;
 
 interface CreatesRealm
 {
-    public function handle(string $name, ?string $slug = null): Realm;
+    public function handle(string $name, string $domain, ?string $slug = null): Realm;
 }

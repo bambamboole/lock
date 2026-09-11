@@ -49,7 +49,7 @@ it('re-provisions the self-SSO client when the configured one is gone from the d
     expect($environment['OIDC_FIRST_PARTY_CLIENT'])->toBe($client->client_id)
         ->and($environment['OIDC_RP_CLIENT_ID'])->toBe($client->client_id)
         ->and($environment['OIDC_RP_CLIENT_SECRET'])->not->toBe('stale-secret')
-        ->and($environment['OIDC_RP_ISSUER'])->toBe(config('app.url').'/realms/'.Realm::master()->slug)
+        ->and($environment['OIDC_RP_ISSUER'])->toBe(config('app.url'))
         ->and(Realm::master()->clients()->firstPartyClientId)->toBe($client->client_id);
 });
 

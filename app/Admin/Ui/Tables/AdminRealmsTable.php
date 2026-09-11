@@ -6,10 +6,13 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\OpensRealmDeletion;
+use App\Admin\Ui\Concerns\PresentsRealmDomainStatus;
 use App\Realms\Models\Realm;
+use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Table\Attributes\AsTable;
+use Lattice\Table\Columns\BadgeColumn;
 use Lattice\Table\Columns\NumberColumn;
 use Lattice\Table\Columns\TextColumn;
 use Lattice\Table\Components\RowClick;
@@ -23,13 +26,20 @@ use Lattice\Table\TableQuery;
 final class AdminRealmsTable extends EloquentTableDefinition
 {
     use OpensRealmDeletion;
+    use PresentsRealmDomainStatus;
 
     /**
      * @return Builder<Realm>
      */
     public function builder(TableQuery $query): Builder
     {
-        $builder = Realm::query()->withCount('users');
+        // The master realm's host lives in APP_URL, not on its row, and being
+        // the host the console is reached on, it needs no check.
+        $builder = Realm::query()
+            ->withCount('users')
+            ->select('realms.*')
+            ->selectRaw('COALESCE(domain, ?) AS host', [Realm::masterHost()])
+            ->selectRaw('CASE WHEN slug = ? THEN ? ELSE domain_status END AS domain_state', [config('realm.master_slug'), RealmDomainStatus::Verified->value]);
 
         if ($query->sorts === []) {
             $builder->orderBy('name');
@@ -43,6 +53,17 @@ final class AdminRealmsTable extends EloquentTableDefinition
         return [
             TextColumn::make('name')->label(__('admin.realms.columns.name'))->searchable()->sortable(),
             TextColumn::make('slug')->label(__('admin.realms.columns.slug'))->searchable(),
+            TextColumn::make('host')->label(__('admin.realms.columns.domain')),
+            BadgeColumn::make('domain_state')
+                ->label(__('admin.realms.columns.domain-status'))
+                ->options(array_combine(
+                    array_column(RealmDomainStatus::cases(), 'value'),
+                    array_map(fn (RealmDomainStatus $status): string => __('admin.realms.domain.status.'.$status->value), RealmDomainStatus::cases()),
+                ))
+                ->colors(array_combine(
+                    array_column(RealmDomainStatus::cases(), 'value'),
+                    array_map($this->domainStatusColor(...), RealmDomainStatus::cases()),
+                )),
             NumberColumn::make('users_count')->label(__('admin.realms.columns.users')),
             TextColumn::make('created_at')->label(__('admin.realms.columns.created-at'))->dateTime()->sortable(),
         ];

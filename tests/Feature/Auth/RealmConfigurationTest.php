@@ -8,15 +8,19 @@ use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 
+use function Tests\Helpers\realmUrl;
+
 it('serves only persisted realms and keeps their issuer URLs separate', function () {
-    $this->getJson('/realms/partners/.well-known/openid-configuration')->assertNotFound();
+    $this->getJson('http://partners.lock.test/.well-known/openid-configuration')->assertNotFound();
 
-    app(CreateRealm::class)->handle('Partners', 'partners');
+    app(CreateRealm::class)->handle('Partners', 'partners.lock.test', 'partners');
 
-    $this->getJson('/realms/partners/.well-known/openid-configuration')
-        ->assertOk()->assertJsonPath('issuer', config('app.url').'/realms/partners');
-    $this->getJson('/realms/admin/.well-known/openid-configuration')
-        ->assertOk()->assertJsonPath('issuer', config('app.url').'/realms/admin');
+    $this->getJson('http://partners.lock.test/.well-known/openid-configuration')
+        ->assertOk()
+        ->assertJsonPath('issuer', 'http://partners.lock.test')
+        ->assertJsonPath('token_endpoint', 'http://partners.lock.test/oauth/token');
+    $this->getJson('/.well-known/openid-configuration')
+        ->assertOk()->assertJsonPath('issuer', config('app.url'));
 });
 
 it('applies database registration rules only to the configured realm', function () {
@@ -28,18 +32,18 @@ it('applies database registration rules only to the configured realm', function 
         'optional_scopes' => [],
     ]);
 
-    $this->postJson('/realms/admin/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
-    $this->postJson('/realms/partners/oauth/register', ['redirect_uris' => ['https://other.test/callback']])
+    $this->postJson('/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
+    $this->postJson(realmUrl($realm, '/oauth/register'), ['redirect_uris' => ['https://other.test/callback']])
         ->assertBadRequest()->assertJsonPath('error', 'invalid_redirect_uri');
 
-    $response = $this->postJson('/realms/partners/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])
+    $response = $this->postJson(realmUrl($realm, '/oauth/register'), ['redirect_uris' => ['https://partner.test/callback']])
         ->assertCreated()->assertJsonPath('scope', 'openid profile');
 
     expect(Client::query()->where('client_id', $response->json('client_id'))->sole()->realm_id)->toBe('partners');
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['dynamic_registration' => false]);
 
-    $this->postJson('/realms/partners/oauth/register', ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
+    $this->postJson(realmUrl($realm, '/oauth/register'), ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
 });
 
 it('uses each realms persisted token lifetime and rejects clients from another realm', function () {
@@ -55,10 +59,10 @@ it('uses each realms persisted token lifetime and rejects clients from another r
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['client_credentials_lifetime' => 120]);
 
-    $this->postJson('/realms/partners/oauth/token', $credentials)->assertOk()->assertJsonPath('expires_in', 120);
-    $this->postJson('/realms/admin/oauth/token', $credentials)->assertUnauthorized()->assertJsonPath('error', 'invalid_client');
+    $this->postJson(realmUrl($realm, '/oauth/token'), $credentials)->assertOk()->assertJsonPath('expires_in', 120);
+    $this->postJson('/oauth/token', $credentials)->assertUnauthorized()->assertJsonPath('error', 'invalid_client');
 
     app(UpdateRealmConfiguration::class)->handle($realm, ['client_credentials_lifetime' => 240]);
 
-    $this->postJson('/realms/partners/oauth/token', $credentials)->assertOk()->assertJsonPath('expires_in', 240);
+    $this->postJson(realmUrl($realm, '/oauth/token'), $credentials)->assertOk()->assertJsonPath('expires_in', 240);
 });

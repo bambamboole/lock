@@ -52,10 +52,24 @@ it, and the provider argument is what binds the client to the guard's user provi
 `Tests\TestCase` carries the package's `InteractsWithOidc` trait: `$this->withToken($this->issueTokenFor($user,
 scopes: [...]))` mints and persists a real signed token, `$this->actingAsOidcUser($user, $scopes)` sets the guard's
 user without a token row — code that reads the token row has to tolerate that. Users have to live in the master
-realm (`User::factory()->for(Realm::master())`) for any flow that goes through the identity login, since the
-package authenticates against `/realms/admin`. Between two differently-authenticated requests in one test, call
+realm (`User::factory()->for(Realm::master())`) for any flow that goes through the identity login or reads a token
+on the application host: that host is the master realm, and the realm constraint on user lookup holds there. Between two differently-authenticated requests in one test, call
 `auth()->forgetGuards()`: the oidc guard caches its resolved user and only gets a refreshed request, so the previous
 bearer token would otherwise still authenticate.
+
+## Every realm has a host, and a test addresses it
+
+Realms are served from their own host (see `.ai/rules/realms.md`), so a request to a realm's pages goes to that host:
+`realmUrl($realm, '/auth/login')` for a path, `realmRoute($realm, 'identity.login')` for a named route minted with the
+realm current. A relative path always addresses the application host — `Tests\TestCase::prepareUrlForRequest()`
+pins it there, where the framework would reuse the host of the previous request. A fixture realm lives on
+`{slug}.localhost`, which browsers resolve to the loopback address; in a browser test the pest server rewrites every
+visit to its own address, so `visitAccountAs()` sends the realm host as the Host header instead.
+
+`Tests\TestCase` also replaces the Lattice helper's `refreshLatticeRequestIdentity()`, whose `Request::create('/')`
+would leave every URL minted afterwards on `localhost` — a host the host gate answers with 404. A domain check never
+leaves the process: `domainReachesThisInstance()` fakes every domain answering as this instance, `Http::fake()`
+anything else.
 
 ## What a test must earn
 

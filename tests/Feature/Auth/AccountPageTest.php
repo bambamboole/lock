@@ -11,6 +11,8 @@ use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\assumeNotNull;
 use function Tests\Helpers\latticeSchema;
+use function Tests\Helpers\realmRoute;
+use function Tests\Helpers\realmUrl;
 
 /**
  * The account page is the one place a realm user lands. It lives below the
@@ -30,7 +32,7 @@ it('renders under the account layout for a realm user', function () {
     $user = User::factory()->for($realm)->create();
 
     $response = $this->actingAs($user, 'identity')
-        ->get(route('account', ['realm' => 'acme']))
+        ->get(realmRoute('acme', 'account'))
         ->assertOk();
 
     AssertableInertia::fromTestResponse($response)
@@ -40,8 +42,8 @@ it('renders under the account layout for a realm user', function () {
 it('sends a guest to the realm sign-in', function () {
     Realm::factory()->create(['slug' => 'acme']);
 
-    $this->get(route('account', ['realm' => 'acme']))
-        ->assertRedirect(route('identity.login', ['realm' => 'acme']));
+    $this->get(realmRoute('acme', 'account'))
+        ->assertRedirect(realmRoute('acme', 'identity.login'));
 });
 
 it('does not let a session from one realm open another realm account', function () {
@@ -50,40 +52,40 @@ it('does not let a session from one realm open another realm account', function 
     $user = User::factory()->for($acme)->create();
 
     $this->withSession(identitySessionFor($user))
-        ->get(route('account', ['realm' => 'globex']))
-        ->assertRedirect(route('identity.login', ['realm' => 'globex']));
+        ->get(realmRoute('globex', 'account'))
+        ->assertRedirect(realmRoute('globex', 'identity.login'));
 
     auth()->forgetGuards();
 
     $this->withSession(identitySessionFor($user))
-        ->get(route('account', ['realm' => 'acme']))
+        ->get(realmRoute('acme', 'account'))
         ->assertOk();
 });
 
-it('mints its form endpoints below the realm and accepts the identity session there', function () {
+it('mints its form endpoints below the account and accepts the identity session there', function () {
     $realm = Realm::factory()->create(['slug' => 'acme']);
     $user = User::factory()->for($realm)->create(['name' => 'Old Name']);
 
-    $page = $this->actingAs($user, 'identity')->get(route('account', ['realm' => 'acme']))->assertOk();
+    $page = $this->actingAs($user, 'identity')->get(realmRoute('acme', 'account'))->assertOk();
 
     $nameForm = latticeSchema($page)->find(fn (ComponentNode $node): bool => $node->type() === 'form'
         && $node->find(fn (ComponentNode $field): bool => $field->prop('name') === 'name') instanceof ComponentNode);
     assumeNotNull($nameForm, 'The account page renders the name form.');
 
     $action = $nameForm->prop('action');
-    $sessionCookie = config('session.cookie').'-oidc-acme';
+    $sessionCookie = (string) config('session.cookie');
     $sessionId = $page->getCookie($sessionCookie)?->getValue();
     assumeNotNull($sessionId, 'The account page starts the realm session.');
 
-    expect($action)->toBeString()->toStartWith('/realms/acme/lattice/forms/');
+    expect($action)->toBeString()->toStartWith('/account/lattice/forms/');
 
     $this->actingAs($user, 'identity')
         ->withCookie($sessionCookie, $sessionId)
-        ->patch((string) $action, ['name' => 'New Name'], [
+        ->patch(realmUrl($realm, (string) $action), ['name' => 'New Name'], [
             'X-Inertia' => 'true',
             'X-Lattice-Ref' => (string) $nameForm->prop('ref'),
         ])
-        ->assertRedirect(route('account', ['realm' => 'acme']));
+        ->assertRedirect(realmRoute('acme', 'account'));
 
     expect($user->refresh()->name)->toBe('New Name');
 });
@@ -93,7 +95,7 @@ it('keeps root requests on the root Lattice endpoints', function () {
 
     $this->actingAs($user)
         ->submitForm(NameForm::class, ['name' => 'Root Name'])
-        ->assertRedirect(route('account', ['realm' => Realm::master()->slug]));
+        ->assertRedirect(realmRoute(Realm::master(), 'account'));
 
     expect($user->refresh()->name)->toBe('Root Name');
 });
@@ -103,6 +105,6 @@ it('sends a signed-in identity from the realm sign-in to its account', function 
     $user = User::factory()->for($realm)->create();
 
     $this->actingAs($user, 'identity')
-        ->get(route('identity.login', ['realm' => 'acme']))
-        ->assertRedirect(route('account', ['realm' => 'acme']));
+        ->get(realmRoute('acme', 'identity.login'))
+        ->assertRedirect(realmRoute('acme', 'account'));
 });

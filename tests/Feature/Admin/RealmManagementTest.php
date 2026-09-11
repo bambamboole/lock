@@ -19,6 +19,7 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\realmSetting;
 
@@ -30,7 +31,9 @@ beforeEach(function () {
 it('creates an independent realm with default configuration through the admin form', function () {
     Realm::master()->settings->set('realm.access_token_lifetime', 120);
 
-    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners'])
+    domainReachesThisInstance();
+
+    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners', 'slug' => 'partners', 'domain' => 'partners.example.com'])
         ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners', 'tabs' => 'tokens']));
 
     $realm = Realm::query()->where('slug', 'partners')->sole();
@@ -40,13 +43,13 @@ it('creates an independent realm with default configuration through the admin fo
         ->and($realm->clients()->dynamicRegistration)->toBeFalse()
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmCreated->eventName())->sole()->subject_id)->toBe($realm->id);
 
-    $this->getJson('/realms/partners/.well-known/openid-configuration')->assertOk();
+    $this->getJson('http://partners.example.com/.well-known/openid-configuration')->assertOk();
 });
 
 it('rejects duplicate and unsafe realm identifiers', function (string $slug) {
     $before = Realm::query()->count();
 
-    $this->submitForm(CreateRealmForm::class, ['name' => 'Invalid realm', 'slug' => $slug])->assertInvalid(['slug']);
+    $this->submitForm(CreateRealmForm::class, ['name' => 'Invalid realm', 'slug' => $slug, 'domain' => 'invalid.example.com'])->assertInvalid(['slug']);
 
     expect(Realm::query()->count())->toBe($before);
 })->with(['admin', '../admin', 'Uppercase', 'space name', 'trailing-']);
@@ -71,8 +74,6 @@ it('saves one setting at a time for the signed realm and leaves every other real
 
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'access_token_lifetime', 300))
         ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'tokens']));
-    $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'session_cookie_name', 'custom-identity'))
-        ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'sessions']));
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'login_methods', ['password', 'passkey']))
         ->assertRedirect(route('admin.realms.settings', ['realm' => $slug, 'tabs' => 'login']));
     $this->submitForm(RealmSettingForm::class, ...realmSetting($realm, 'mfa_requirement', 'always'))
@@ -89,8 +90,6 @@ it('saves one setting at a time for the signed realm and leaves every other real
     expect($realm->name)->toBe($slug === 'admin' ? 'Admin' : 'Partners')
         ->and($realm->slug)->toBe($slug)
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
-        ->and($realm->sessions()->cookieName)->toBe('custom-identity')
-        ->and($other->sessions()->cookieName)->toBeNull()
         ->and($realm->authentication()->methods)->toBe([LoginMethod::Password, LoginMethod::Passkey])
         ->and($realm->authentication()->mfa)->toBe(MfaRequirement::Always)
         ->and($other->authentication()->mfa)->toBe(MfaRequirement::IfEnrolled)
@@ -176,7 +175,6 @@ it('reports invalid list entries on the matching configuration field', function 
 
     expect($realm->refresh()->configuration())->toBe($before);
 })->with([
-    'invalid cookie name' => ['session_cookie_name', 'invalid cookie'],
     'unknown scope' => ['default_scopes', 'admin:realms:manage'],
     'wildcard is not a default scope' => ['default_scopes', '*'],
     'unsafe scheme' => ['allowed_redirect_schemes', 'javascript'],
@@ -214,8 +212,10 @@ it('deletes a realm with its users, clients and sessions and frees the identifie
         ->and(OidcSession::query()->where('realm_id', 'partners')->exists())->toBeFalse()
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmDeleted->eventName())->sole()->getProperty('slug'))->toBe('partners');
 
-    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners again', 'slug' => 'partners'])->assertRedirect();
-    $this->getJson('/realms/partners/.well-known/openid-configuration')->assertOk();
+    domainReachesThisInstance();
+
+    $this->submitForm(CreateRealmForm::class, ['name' => 'Partners again', 'slug' => 'partners', 'domain' => 'partners.example.com'])->assertRedirect();
+    $this->getJson('http://partners.example.com/.well-known/openid-configuration')->assertOk();
 });
 
 it('requires the realm name to confirm a deletion', function () {

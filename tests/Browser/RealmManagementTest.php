@@ -5,16 +5,19 @@ declare(strict_types=1);
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Realms\Models\Realm;
 
+use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\globalAdmin;
 
 it('creates a realm and saves its settings one disclosure row at a time', function () {
     (new GlobalRoleSeeder)->run();
     $this->actingAs(globalAdmin());
+    domainReachesThisInstance();
 
     visit('/admin/realms')
         ->click('Create realm')
         ->fill('input[name="name"]', 'Partner realm')
         ->fill('input[name="slug"]', 'partners')
+        ->fill('input[name="domain"]', 'auth.partners.test')
         ->click('[data-lattice-form="admin.realms.create"]')
         ->assertSee('Realm created.')
         ->assertPathIs('/admin/realms/partners/settings')

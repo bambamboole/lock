@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminPermission;
+use App\Realms\Http\Controllers\DomainCheckController;
 use App\Shared\Auth\Support\RequestUser;
 use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
@@ -24,21 +25,21 @@ Route::get('/', function (Request $request) {
 
     return $user->can(AdminPermission::Access)
         ? to_route('admin.realms')
-        : to_route('account', ['realm' => $user->realm->slug]);
+        : to_route('account');
 })
     ->middleware(['auth', 'verified'])
     ->name('home');
 
 /*
- * The realm session cookie is scoped to /realms/{realm}, so a page rendered
- * there cannot reach the root Lattice endpoints. These are the same endpoints
- * once more below the realm, authenticated by the identity guard the way the
- * package's own account routes are; App\Realms\Support\RealmScopedLatticeEndpoints
- * points every Lattice URL minted during a realm request at them.
+ * The account page authenticates with the identity guard, the root Lattice
+ * endpoints with the console's web guard — and on the master realm's host both
+ * share one session. These are the same endpoints once more for the account
+ * area, behind the identity guard the way the package's own account routes
+ * are; App\Realms\Support\RealmScopedLatticeEndpoints points every Lattice
+ * URL minted during a realm request at them.
  */
 Route::middleware([ResolveRealm::class])
-    ->prefix('realms/{realm}/lattice')
-    ->where(['realm' => '[A-Za-z0-9._-]+'])
+    ->prefix('account/lattice')
     ->name('realm.lattice.')
     ->group(function (): void {
         Route::middleware('web')->post('refs/refresh', RefRefreshController::class)->name('refs.refresh');
@@ -52,3 +53,5 @@ Route::middleware([ResolveRealm::class])
             Route::post('remote-sources/{source}/token', RemoteSourceTokenController::class)->where('source', '.*')->name('remote-sources.token');
         });
     });
+
+Route::get('.well-known/lock/domain-check', DomainCheckController::class)->name('realm.domain-check');

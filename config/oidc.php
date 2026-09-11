@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Realms\Http\Middleware\SetCurrentRealm;
 use App\Resources\Support\ResourceScopeCatalog;
 use App\Shared\Audit\Support\DatabaseAuditSink;
 use Bambamboole\LaravelOidc\Server\Credentials\RecoveryCodeProvider;
@@ -12,8 +13,11 @@ return [
     'issuer' => env('OIDC_ISSUER', env('APP_URL')),
 
     'routes' => [
-        'middleware' => [],
-        'realms' => 'path',
+        // The protocol endpoints outside the web group mint URLs too (the
+        // discovery document), and those have to name the realm's own host.
+        'middleware' => [SetCurrentRealm::class],
+        // Every realm is served from its own host; the master realm from APP_URL's.
+        'realms' => 'domain',
     ],
 
     // mergeConfigFrom replaces the auth array, so retain its defaults when overriding home.

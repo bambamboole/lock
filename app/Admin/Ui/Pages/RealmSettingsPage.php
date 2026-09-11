@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Admin\Enums\AdminPermission;
+use App\Admin\Ui\Actions\CheckRealmDomainAction;
 use App\Admin\Ui\Concerns\BuildsRealmSettingRows;
 use App\Admin\Ui\Concerns\OpensRealmDeletion;
+use App\Admin\Ui\Concerns\PresentsRealmDomainStatus;
+use App\Admin\Ui\Forms\UpdateRealmDomainForm;
 use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -14,16 +17,21 @@ use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use Illuminate\Http\Request;
+use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
+use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\DescriptionList;
+use Lattice\Ui\Components\Entries\ComponentEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Tab;
 use Lattice\Ui\Components\Tabs;
+use Lattice\Ui\Components\Text;
+use Lattice\Ui\Enums\Align;
 use Lattice\Ui\Enums\DateTimeStyle;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Orientation;
@@ -35,6 +43,7 @@ final class RealmSettingsPage extends AdminPage
 {
     use BuildsRealmSettingRows;
     use OpensRealmDeletion;
+    use PresentsRealmDomainStatus;
 
     private ?Realm $realm = null;
 
@@ -110,6 +119,7 @@ final class RealmSettingsPage extends AdminPage
                 $manages
                     ? $name->disclosure([Form::use(UpdateRealmForm::class, ['realm' => $realm->slug])])
                     : $name,
+                $this->domainEntry($realm, $manages),
                 TextEntry::make('slug', __('admin.realms.fields.slug.label'), 'realm-slug')
                     ->value($realm->slug)
                     ->description(__('admin.realms.fields.slug.help-text')),
@@ -120,5 +130,35 @@ final class RealmSettingsPage extends AdminPage
                     ->style(DateTimeStyle::Long),
             ]),
         ]);
+    }
+
+    private function domainEntry(Realm $realm, bool $manages): ComponentEntry
+    {
+        $entry = ComponentEntry::make('domain', __('admin.realms.fields.domain.label'), 'realm-domain');
+
+        if ($realm->isMaster()) {
+            return $entry->value(Text::make($realm->host()))->description(__('admin.realms.domain.master'));
+        }
+
+        $status = $realm->domain_status;
+        $outcome = __('admin.realms.domain.outcome.'.$status->value, ['domain' => $realm->host()]);
+        $checkedAt = $realm->domain_checked_at === null ? '' : ' '.__('admin.realms.domain.checked-at', ['time' => $realm->domain_checked_at->diffForHumans()]);
+
+        $entry
+            ->value(
+                Stack::make('realm-domain-value')
+                    ->direction(Orientation::Horizontal)
+                    ->width(Width::Auto)
+                    ->align(Align::Center)
+                    ->gap(Gap::Small)
+                    ->schema([
+                        Text::make($realm->host()),
+                        Badge::make(__('admin.realms.domain.status.'.$status->value))->color($this->domainStatusColor($status)),
+                        ...($manages ? [Action::use(CheckRealmDomainAction::class, ['realm' => $realm->slug])] : []),
+                    ]),
+            )
+            ->description(trim($outcome.$checkedAt.($realm->domain_check_error === null ? '' : ' ('.$realm->domain_check_error.')')));
+
+        return $manages ? $entry->disclosure([Form::use(UpdateRealmDomainForm::class, ['realm' => $realm->slug])]) : $entry;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Realms\Models;
 use App\Auth\Models\User;
 use App\Realms\Observers\RealmObserver;
 use App\Resources\Models\Resource;
+use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Settings\Concerns\HasSettings;
@@ -40,6 +41,10 @@ use Illuminate\Support\Facades\Context;
  * @property string $id
  * @property string $name
  * @property string $slug
+ * @property string|null $domain
+ * @property RealmDomainStatus $domain_status
+ * @property CarbonImmutable|null $domain_checked_at
+ * @property string|null $domain_check_error
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, User> $users
@@ -61,13 +66,18 @@ use Illuminate\Support\Facades\Context;
  *
  * @mixin \Eloquent
  */
-#[Fillable(['name', 'slug'])]
+#[Fillable(['name', 'slug', 'domain'])]
 #[ObservedBy(RealmObserver::class)]
 #[RouteKey('slug')]
 final class Realm extends Model implements ProvidesSettings, RealmContract
 {
     /** @use HasFactory<RealmFactory> */
     use HasFactory, HasSettings, HasUuids;
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'domain_status' => 'pending',
+    ];
 
     public static function master(): self
     {
@@ -98,12 +108,67 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     }
 
     /**
+     * The origin of the current realm, kept beside its key so URL generation
+     * can address the realm's own host without a lookup per generated URL.
+     */
+    public static function currentOrigin(): ?string
+    {
+        $origin = Context::getHidden('realm_origin');
+
+        return is_string($origin) ? $origin : null;
+    }
+
+    public static function forgetCurrent(): void
+    {
+        Context::forget('realm_id');
+        Context::forgetHidden('realm_origin');
+    }
+
+    /**
+     * The host the master realm is served from: the one in APP_URL, which is
+     * why it is never stored on the row.
+     */
+    public static function masterHost(): string
+    {
+        return strtolower((string) parse_url((string) config('app.url'), PHP_URL_HOST));
+    }
+
+    public static function findByHost(string $host): ?self
+    {
+        $host = strtolower($host);
+        $query = self::query()->with('storedSettings');
+
+        return $host === self::masterHost()
+            ? $query->where('slug', config('realm.master_slug'))->first()
+            : $query->where('domain', $host)->first();
+    }
+
+    public function host(): string
+    {
+        return $this->isMaster() ? self::masterHost() : (string) $this->domain;
+    }
+
+    /**
+     * Where the realm is reachable, and so its issuer. Every realm host shares
+     * the scheme and port of APP_URL — a port only ever appears locally, where
+     * `acme.localhost:8000` sits next to `localhost:8000`.
+     */
+    public function origin(): string
+    {
+        $appUrl = (string) config('app.url');
+        $port = parse_url($appUrl, PHP_URL_PORT);
+
+        return (parse_url($appUrl, PHP_URL_SCHEME) ?: 'https').'://'.$this->host().($port !== null ? ':'.$port : '');
+    }
+
+    /**
      * Context is dehydrated into queued jobs, so anything dispatched while this
      * realm is current can resolve it later via Realm::fromContext().
      */
     public function makeCurrent(): void
     {
         Context::add('realm_id', $this->id);
+        Context::addHidden('realm_origin', $this->origin());
     }
 
     /**
@@ -114,15 +179,17 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function runAsCurrent(callable $callback): mixed
     {
         $previousRealmId = Context::get('realm_id');
+        $previousOrigin = Context::getHidden('realm_origin');
         $this->makeCurrent();
 
         try {
             return $callback();
         } finally {
             if ($previousRealmId === null) {
-                Context::forget('realm_id');
+                self::forgetCurrent();
             } else {
                 Context::add('realm_id', $previousRealmId);
+                Context::addHidden('realm_origin', $previousOrigin);
             }
         }
     }
@@ -159,7 +226,11 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
      */
     protected function casts(): array
     {
-        return ['id' => 'string'];
+        return [
+            'id' => 'string',
+            'domain_status' => RealmDomainStatus::class,
+            'domain_checked_at' => 'datetime',
+        ];
     }
 
     public function id(): string
@@ -200,7 +271,6 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
             absoluteLifetime: $settings->integer('realm.session_absolute_lifetime'),
             tokenTtl: $settings->integer('realm.session_token_ttl'),
             tokenRefreshSkew: $settings->integer('realm.session_token_refresh_skew'),
-            cookieName: $settings->string('realm.session_cookie_name') ?: null,
         );
     }
 
@@ -261,9 +331,9 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
         return new LoginSettings(
             usernameField: $configured->usernameField,
-            home: route('account', ['realm' => $this->slug], absolute: false),
+            home: route('account', absolute: false),
             loginRoute: $configured->loginRoute,
-            logoutRedirect: route('identity.login', ['realm' => $this->slug], absolute: false),
+            logoutRedirect: route('identity.login', absolute: false),
             acrValues: $configured->acrValues,
         );
     }

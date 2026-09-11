@@ -37,7 +37,6 @@ final class RealmConfiguration
             'id_token_lifetime' => $tokens->idTokenLifetime,
             'client_credentials_lifetime' => $tokens->clientCredentialsLifetime,
             'refresh_token_lifetime' => $tokens->refreshTokenLifetime,
-            'session_cookie_name' => '',
             'session_absolute_lifetime' => $sessions->absoluteLifetime,
             'session_token_ttl' => $sessions->tokenTtl,
             'session_token_refresh_skew' => $sessions->tokenRefreshSkew,
@@ -147,7 +146,6 @@ final class RealmConfiguration
             'id_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'client_credentials_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'refresh_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
-            'session_cookie_name' => ['nullable', 'string', 'max:128', 'regex:/\A[A-Za-z0-9_-]+\z/', 'not_in:'.config('session.cookie')],
             'session_absolute_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'session_token_ttl' => ['required', 'integer', 'min:1', 'max:31536000', 'lte:session_absolute_lifetime'],
             'session_token_refresh_skew' => ['required', 'integer', 'min:0', 'lt:session_token_ttl'],
@@ -196,7 +194,6 @@ final class RealmConfiguration
                 'refresh_token_lifetime' => RealmSettingType::Duration,
             ],
             'sessions' => [
-                'session_cookie_name' => RealmSettingType::Text,
                 'session_absolute_lifetime' => RealmSettingType::Duration,
                 'session_token_ttl' => RealmSettingType::Duration,
                 'session_token_refresh_skew' => RealmSettingType::Duration,
