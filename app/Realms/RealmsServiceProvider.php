@@ -16,7 +16,7 @@ use App\Realms\Actions\RotateClientSecret;
 use App\Realms\Actions\SetClientRevocation;
 use App\Realms\Actions\SyncUserRealmRoles;
 use App\Realms\Actions\UpdateClient;
-use App\Realms\Actions\UpdateRealmConfiguration;
+use App\Realms\Actions\UpdateRealm;
 use App\Realms\Actions\UpdateRealmDomain;
 use App\Realms\Actions\UpdateRealmRole;
 use App\Realms\Support\RealmHostGate;
@@ -32,7 +32,7 @@ use App\Shared\Realms\Contracts\RotatesClientSecret;
 use App\Shared\Realms\Contracts\SetsClientRevocation;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
 use App\Shared\Realms\Contracts\UpdatesClient;
-use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
+use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use App\Shared\Realms\Contracts\UpdatesRealmRole;
 use Illuminate\Routing\Events\RouteMatched;
@@ -44,7 +44,7 @@ final class RealmsServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(CreatesRealm::class, CreateRealm::class);
-        $this->app->bind(UpdatesRealmConfiguration::class, UpdateRealmConfiguration::class);
+        $this->app->bind(UpdatesRealm::class, UpdateRealm::class);
         $this->app->bind(UpdatesRealmDomain::class, UpdateRealmDomain::class);
         $this->app->bind(ChecksRealmDomain::class, CheckRealmDomain::class);
         $this->app->bind(DeletesRealm::class, DeleteRealm::class);

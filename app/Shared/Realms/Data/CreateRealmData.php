@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Realms\Data;
 
+use App\Realms\Models\Realm;
 use App\Shared\Data\ApiData;
 use App\Shared\Realms\Support\RealmDomain;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
@@ -20,7 +21,7 @@ final class CreateRealmData extends ApiData
 {
     public function __construct(
         #[SpecProperty('Human readable name shown to the realm’s users.')]
-        #[Max(255)]
+        #[Max(Realm::NAME_MAX_LENGTH)]
         public string $name,
         #[SpecProperty('Stable identifier, lowercase and dash separated. It cannot be changed later.')]
         #[Max(63), Regex('/\A[a-z0-9]+(?:-[a-z0-9]+)*\z/'), Unique('realms', 'slug')]
@@ -31,4 +32,20 @@ final class CreateRealmData extends ApiData
         #[SpecProperty('The realm’s policy. Settings left out follow the instance defaults.')]
         public Optional|RealmSettingsPatch $settings,
     ) {}
+
+    /**
+     * A host is case-insensitive, so the payload is normalised before the
+     * pattern is checked — `Acme.Test` names the same realm as `acme.test`.
+     *
+     * @param  array<array-key, mixed>  $properties
+     * @return array<array-key, mixed>
+     */
+    public static function prepareForPipeline(array $properties): array
+    {
+        if (is_string($properties['domain'] ?? null)) {
+            $properties['domain'] = RealmDomain::normalize($properties['domain']);
+        }
+
+        return $properties;
+    }
 }

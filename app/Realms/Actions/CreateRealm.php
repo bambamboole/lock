@@ -33,22 +33,24 @@ final readonly class CreateRealm implements CreatesRealm
      */
     public function handle(CreateRealmData $data): Realm
     {
-        Validator::make(['domain' => $data->domain], ['domain' => RealmDomain::rules()])->validate();
+        $domain = RealmDomain::normalize($data->domain);
+
+        Validator::make(['domain' => $domain], ['domain' => RealmDomain::rules()])->validate();
 
         $settings = $this->resolveSettings($data);
         $deviations = $settings->deviations();
 
-        return DB::transaction(function () use ($data, $settings, $deviations): Realm {
+        return DB::transaction(function () use ($data, $domain, $settings, $deviations): Realm {
             $realm = Realm::create([
                 'name' => $data->name,
                 'slug' => $data->slug,
-                'domain' => $data->domain,
+                'domain' => $domain,
                 'settings' => $settings,
             ]);
 
             $realm->runAsCurrent(fn () => $this->store->rotate($this->keys->generate()));
 
-            Audit::record(RealmAuditEvent::RealmCreated, $realm, properties: $deviations === [] ? [] : ['configuration' => $deviations]);
+            Audit::record(RealmAuditEvent::RealmCreated, $realm, properties: $deviations === [] ? [] : ['settings' => $deviations]);
 
             return $realm;
         });
@@ -69,9 +71,8 @@ final readonly class CreateRealm implements CreatesRealm
             return RealmSettings::defaults();
         }
 
-        $defaults = RealmConfiguration::defaults();
-        $validated = RealmConfiguration::validate(['name' => $data->name, ...$defaults, ...$submitted], $data->slug);
+        $validated = RealmConfiguration::validate([...RealmConfiguration::defaults(), ...$submitted], $data->slug);
 
-        return RealmSettings::defaults()->merge(array_intersect_key($validated, $submitted));
+        return RealmSettings::defaults()->merge($validated);
     }
 }

@@ -66,7 +66,7 @@ final class RealmConfiguration
      */
     public static function attributeNames(): array
     {
-        $names = ['name' => __('admin.realms.fields.name.label')];
+        $names = [];
 
         foreach (self::settings() as $setting) {
             $names[$setting->name] = __('admin.realms.fields.'.$setting->translationKey().'.label');
@@ -79,7 +79,6 @@ final class RealmConfiguration
     public static function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
             'access_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'id_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'client_credentials_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Forms;
 
 use App\Admin\Enums\AdminPermission;
+use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
@@ -33,7 +34,7 @@ final class CreateRealmForm extends FormDefinition
     {
         return $form->schema([
             TextInput::make('name', __('admin.realms.fields.name.label'))
-                ->required()->rules(['string', 'max:255']),
+                ->required()->rules(['string', 'max:'.Realm::NAME_MAX_LENGTH]),
             TextInput::make('slug', __('admin.realms.fields.slug.label'))
                 ->helperText(__('admin.realms.fields.slug.help-text'))
                 ->required()->rules(['string', 'max:63', 'regex:/\A[a-z0-9]+(?:-[a-z0-9]+)*\z/', Rule::unique('realms', 'slug')]),

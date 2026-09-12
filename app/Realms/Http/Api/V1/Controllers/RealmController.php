@@ -8,8 +8,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\DeletesRealm;
-use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
-use App\Shared\Realms\Contracts\UpdatesRealmDomain;
+use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
 use App\Shared\Realms\Data\UpdateRealmData;
 use Bambamboole\Spectacular\QueryBuilder;
@@ -24,8 +23,7 @@ final readonly class RealmController
 {
     public function __construct(
         private CreatesRealm $createRealm,
-        private UpdatesRealmConfiguration $updateRealm,
-        private UpdatesRealmDomain $updateDomain,
+        private UpdatesRealm $updateRealm,
         private ChecksRealmDomain $checkDomain,
         private DeletesRealm $deleteRealm,
     ) {}
@@ -87,10 +85,9 @@ final readonly class RealmController
      */
     public function update(UpdateRealmData $data, Realm $realm): RealmResource
     {
-        $this->reportingSettingErrors(fn () => $this->updateRealm->handle($realm, $data));
+        $realm = $this->reportingSettingErrors(fn (): Realm => $this->updateRealm->handle($realm, $data));
 
         if (! $data->domain instanceof Optional) {
-            $this->updateDomain->handle($realm, $data->domain);
             $this->checkDomain->handle($realm);
         }
 

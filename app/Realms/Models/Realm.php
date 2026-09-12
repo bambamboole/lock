@@ -76,6 +76,8 @@ final class Realm extends Model implements RealmContract
     /** @use HasFactory<RealmFactory> */
     use HasFactory, HasUuids;
 
+    public const int NAME_MAX_LENGTH = 255;
+
     /** @var array<string, mixed> */
     protected $attributes = [
         'domain_status' => 'pending',

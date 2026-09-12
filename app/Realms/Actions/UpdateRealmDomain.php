@@ -22,7 +22,7 @@ final class UpdateRealmDomain implements UpdatesRealmDomain
             throw ValidationException::withMessages(['domain' => [__('admin.realms.domain.master-fixed')]]);
         }
 
-        $domain = strtolower(trim($domain));
+        $domain = RealmDomain::normalize($domain);
 
         Validator::make(['domain' => $domain], ['domain' => RealmDomain::rules($realm)])->validate();
 

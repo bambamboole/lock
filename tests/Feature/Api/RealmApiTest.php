@@ -299,7 +299,7 @@ it('rejects a setting it does not know on create', function () {
         ->assertJsonValidationErrors('settings.make_me_admin');
 });
 
-it('records the configuration a realm was created with', function () {
+it('records the settings a realm was created with', function () {
     $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
         ->postJson(realmsUrl(), [
             'name' => 'Globex',
@@ -311,5 +311,47 @@ it('records the configuration a realm was created with', function () {
 
     $activity = Activity::where('event', RealmAuditEvent::RealmCreated->eventName())->sole();
 
-    expect($activity->getProperty('configuration'))->toBe(['recovery_codes' => 12]);
+    expect($activity->getProperty('settings'))->toBe(['recovery_codes' => 12]);
+});
+
+it('applies a name, settings and a new domain in one request', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), [
+            'name' => 'Acme Inc',
+            'domain' => 'acme.example',
+            'settings' => ['recovery_codes' => 12],
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Acme Inc')
+        ->assertJsonPath('data.domain', 'acme.example')
+        ->assertJsonPath('data.domain_status', RealmDomainStatus::Verified->value)
+        ->assertJsonPath('data.settings.recovery_codes', 12);
+});
+
+it('stores a domain lowercased on both paths', function () {
+    $token = managementApiToken($this, ApiScope::RealmsWrite);
+
+    $this->withToken($token)
+        ->postJson(realmsUrl(), ['name' => 'Globex', 'slug' => 'globex', 'domain' => 'Globex.Test'])
+        ->assertCreated()
+        ->assertJsonPath('data.domain', 'globex.test');
+
+    auth()->forgetGuards();
+
+    $this->withToken($token)
+        ->patchJson(realmsUrl('/acme'), ['domain' => 'Acme2.Test'])
+        ->assertOk()
+        ->assertJsonPath('data.domain', 'acme2.test');
+});
+
+it('refuses the whole request when one of its parts is rejected', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), [
+            'name' => 'Acme Inc',
+            'settings' => ['mfa_requirement' => 'whenever'],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('settings.mfa_requirement');
+
+    expect($this->acme->refresh()->name)->toBe('Acme');
 });
