@@ -9,6 +9,7 @@ use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
+use App\Shared\Resources\Data\UpdateResourceScopeData;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -48,8 +49,10 @@ final class UpdateResourceScopeAction extends ActionDefinition
 
         $this->updateScope->handle(
             $this->resourceScope(),
-            (string) $data->string('value'),
-            $description === '' ? null : $description,
+            new UpdateResourceScopeData(
+                (string) $data->string('value'),
+                $description === '' ? null : $description,
+            ),
         );
 
         return ActionResult::success()

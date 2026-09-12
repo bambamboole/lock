@@ -8,6 +8,7 @@ use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\CreatesResource;
+use App\Shared\Resources\Data\CreateResourceData;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
@@ -34,8 +35,10 @@ final class CreateResourceAction extends ActionDefinition
     {
         $this->createResource->handle(
             $this->realm(),
-            trim((string) $data->string('identifier')),
-            (string) $data->string('name'),
+            new CreateResourceData(
+                identifier: trim((string) $data->string('identifier')),
+                name: (string) $data->string('name'),
+            ),
         );
 
         return ActionResult::success()

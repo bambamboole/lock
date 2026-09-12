@@ -7,22 +7,37 @@ use App\Resources\Models\Resource;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\UpdatesResource;
+use App\Shared\Resources\Data\UpdateResourceData;
 use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use LogicException;
+use Spatie\LaravelData\Optional;
 
 final readonly class UpdateResource implements UpdatesResource
 {
     public function __construct(private ManagementApi $api) {}
 
-    public function handle(Resource $resource, string $identifier, string $name): void
+    public function handle(Resource $resource, UpdateResourceData $data): void
     {
         $this->guardManagementApi($resource);
 
-        DB::transaction(function () use ($resource, $identifier, $name): void {
+        $attributes = $data->toAttributes();
+
+        if (! $data->identifier instanceof Optional) {
+            $attributes['identifier'] = trim($data->identifier);
+        }
+
+        UpdateResourceData::validate($attributes);
+        Validator::make($attributes, [
+            'identifier' => [Rule::unique(Resource::class, 'identifier')->where('realm_id', $resource->realm_id)->ignore($resource)],
+        ])->validate();
+
+        DB::transaction(function () use ($resource, $attributes): void {
             $before = $resource->only(['identifier', 'name']);
 
-            $resource->fill(['identifier' => $identifier, 'name' => $name])->save();
+            $resource->fill($attributes)->save();
 
             $changes = [];
 

@@ -9,6 +9,7 @@ use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\UpdatesResource;
+use App\Shared\Resources\Data\UpdateResourceData;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -46,8 +47,10 @@ final class UpdateResourceAction extends ActionDefinition
     {
         $this->updateResource->handle(
             $this->resource(),
-            trim((string) $data->string('identifier')),
-            (string) $data->string('name'),
+            new UpdateResourceData(
+                identifier: trim((string) $data->string('identifier')),
+                name: (string) $data->string('name'),
+            ),
         );
 
         return ActionResult::success()
