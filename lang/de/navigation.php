@@ -13,7 +13,6 @@ return [
     'realms' => 'Realms',
     'resources' => 'Resources',
     'roles' => 'Rollen',
-    'select-realm' => 'Realm auswählen',
     'settings' => 'Einstellungen',
     'toggle-sidebar' => 'Seitenleiste umschalten',
     'users' => 'Benutzer',

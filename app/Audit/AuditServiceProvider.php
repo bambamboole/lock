@@ -48,7 +48,7 @@ final class AuditServiceProvider extends ServiceProvider
                 ->label(__('navigation.admin-events'))
                 ->prefix(Icon::Clock)
                 ->can(Scope::AdminEventsRead),
-            priority: 30,
+            priority: 20,
         );
     }
 }

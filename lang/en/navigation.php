@@ -13,7 +13,6 @@ return [
     'realms' => 'Realms',
     'resources' => 'Resources',
     'roles' => 'Roles',
-    'select-realm' => 'Select realm',
     'settings' => 'Settings',
     'toggle-sidebar' => 'Toggle sidebar',
     'users' => 'Users',

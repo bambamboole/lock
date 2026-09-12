@@ -16,6 +16,7 @@ use Lattice\Layouts\Components\Outlet;
 use Lattice\Layouts\LayoutDefinition;
 use Lattice\Ui\Components\Breadcrumbs;
 use Lattice\Ui\Components\Button;
+use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\Dropdown;
 use Lattice\Ui\Components\Icon as IconComponent;
 use Lattice\Ui\Components\Menu;
@@ -43,6 +44,12 @@ final class AdminLayout extends LayoutDefinition
 {
     use RendersUserMenu;
 
+    /**
+     * A page outside a realm still shows that realm's console, so the sidebar
+     * does not change shape between `/admin/realms` and the realm's own pages.
+     */
+    private const string RealmSessionKey = 'admin.realm';
+
     public function schema(PageSchema $schema, Request $request): PageSchema
     {
         $user = $request->user();
@@ -50,6 +57,7 @@ final class AdminLayout extends LayoutDefinition
         abort_unless($user instanceof User && $user->managementScopes()->isNotEmpty(), 403);
 
         $realm = $this->currentRealm($request);
+        $instance = Slot::make('admin.sidebar.instance');
 
         return $schema->schema([
             Stack::make('admin-shell')
@@ -61,10 +69,9 @@ final class AdminLayout extends LayoutDefinition
                         BrandMark::wordmark('admin-sidebar-logo'),
                         ...($user->can(Scope::RealmsRead) ? [$this->realmSwitcher($realm)] : []),
                         Menu::make('admin-sidebar-menu')->items([
-                            $realm instanceof Realm
-                                ? Slot::make('admin.sidebar.realm')->context(['realm' => $realm])
-                                : Slot::make('admin.sidebar.instance'),
+                            Slot::make('admin.sidebar.realm')->context(['realm' => $realm]),
                         ]),
+                        ...$this->instanceSection($instance),
                     ]),
                     Stack::make('admin-main')
                         ->width(Width::Fill)
@@ -96,18 +103,49 @@ final class AdminLayout extends LayoutDefinition
         ]);
     }
 
-    private function currentRealm(Request $request): ?Realm
+    /**
+     * The instance-wide areas sit under the realm's own, behind a separator
+     * that only appears when the admin may open any of them.
+     *
+     * @return array<int, Component>
+     */
+    private function instanceSection(Slot $instance): array
     {
-        $realm = $request->route('realm');
+        $visible = array_filter($instance->resolveComponents(), fn (Component $item): bool => $item->shouldRender());
+
+        return $visible === [] ? [] : [
+            Separator::make(),
+            Menu::make('admin-sidebar-instance-menu')->items([$instance]),
+        ];
+    }
+
+    /**
+     * The realm of the page being rendered, remembered for the pages that name
+     * none — the realm list, the API reference, the instance-wide trail. The
+     * master realm stands in until an admin has opened one, and again when the
+     * remembered one is gone.
+     */
+    private function currentRealm(Request $request): Realm
+    {
+        $routed = $request->route('realm');
+        $realm = match (true) {
+            $routed instanceof Realm => $routed,
+            is_string($routed) => Realm::query()->where('slug', $routed)->first(),
+            default => null,
+        };
 
         if ($realm instanceof Realm) {
+            $request->session()->put(self::RealmSessionKey, $realm->slug);
+
             return $realm;
         }
 
-        return is_string($realm) ? Realm::query()->where('slug', $realm)->first() : null;
+        $remembered = $request->session()->get(self::RealmSessionKey);
+
+        return (is_string($remembered) ? Realm::query()->where('slug', $remembered)->first() : null) ?? Realm::master();
     }
 
-    private function realmSwitcher(?Realm $realm): Dropdown
+    private function realmSwitcher(Realm $realm): Dropdown
     {
         $realms = Realm::query()->orderBy('name')->get();
 
@@ -119,7 +157,7 @@ final class AdminLayout extends LayoutDefinition
                     ->align(Align::Center)
                     ->gap(Gap::Small)
                     ->schema([
-                        Text::make($realm instanceof Realm ? $realm->name : __('navigation.select-realm'), 'realm-switcher-label')
+                        Text::make($realm->name, 'realm-switcher-label')
                             ->size(Size::Sm)
                             ->hideWhenCollapsed(),
                         IconComponent::make(Icon::ChevronsUpDown)->size(Size::Sm),
