@@ -5,7 +5,6 @@ namespace App\Clients\Ui\Forms;
 
 use App\Clients\Ui\Concerns\BuildsClientFields;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
-use App\Clients\Ui\Pages\ClientDetailPage;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\UpdatesClient;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
@@ -47,9 +46,7 @@ final class UpdateClientForm extends FormDefinition
         $realm = $this->realm();
         $client = $this->realmClient();
 
-        $secret = $this->updateClient->handle($client, $this->clientAttributes($data, $client));
-
-        ClientDetailPage::revealSecret($secret);
+        $this->updateClient->handle($client, $this->clientAttributes($data, $client));
 
         return Effects::respond()->toast(__('admin.clients.updated'), Variant::Success)
             ->toRoute('admin.realms.clients.show', ['realm' => $realm->slug, 'client' => $client->id]);

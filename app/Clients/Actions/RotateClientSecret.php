@@ -16,21 +16,19 @@ final readonly class RotateClientSecret implements RotatesClientSecret
 {
     public function __construct(private ClientRepository $clients) {}
 
-    public function handle(Client $client): string
+    public function handle(Client $client): void
     {
         if (! $client->confidential()) {
             throw new LogicException('A public client has no secret to rotate.');
         }
 
-        return DB::transaction(function () use ($client): string {
+        DB::transaction(function () use ($client): void {
             $this->clients->regenerateSecret($client);
 
             Audit::record(ClientAuditEvent::ClientSecretRotated, $client, Realm::ofClient($client), [
                 'realm' => $client->realm,
                 'client_id' => $client->client_id,
             ]);
-
-            return $client->secret ?? throw new LogicException('The regenerated secret is not readable.');
         });
     }
 }

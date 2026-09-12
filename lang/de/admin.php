@@ -280,7 +280,7 @@ return [
             'scopes' => 'Scopes',
             'secret' => [
                 'heading' => 'Client-Secret',
-                'subtitle' => 'Kopieren Sie das Secret jetzt. Es wird nur einmal angezeigt und kann nicht wiederhergestellt werden.',
+                'subtitle' => 'Verschlüsselt gespeichert und daher hier jederzeit lesbar. Bei einem Leck rotieren.',
                 'label' => 'Client-Secret',
             ],
             'settings' => [

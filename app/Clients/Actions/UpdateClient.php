@@ -16,9 +16,9 @@ final readonly class UpdateClient implements UpdatesClient
 {
     public function __construct(private ClientRepository $clients) {}
 
-    public function handle(Client $client, ClientAttributes $attributes): ?string
+    public function handle(Client $client, ClientAttributes $attributes): void
     {
-        return DB::transaction(function () use ($client, $attributes): ?string {
+        DB::transaction(function () use ($client, $attributes): void {
             $before = $client->only(array_keys($attributes->toArray()));
             $wasConfidential = $client->confidential();
 
@@ -30,11 +30,8 @@ final readonly class UpdateClient implements UpdatesClient
 
             $client->save();
 
-            $secret = null;
-
             if (! $wasConfidential && $attributes->confidential()) {
                 $this->clients->regenerateSecret($client);
-                $secret = $client->secret;
             }
 
             $changes = [];
@@ -52,8 +49,6 @@ final readonly class UpdateClient implements UpdatesClient
                     'changes' => $changes,
                 ]);
             }
-
-            return $secret;
         });
     }
 }

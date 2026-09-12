@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Clients\Ui\Actions;
 
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
-use App\Clients\Ui\Pages\ClientDetailPage;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\RotatesClientSecret;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
@@ -41,7 +40,7 @@ final class RotateClientSecret extends ActionDefinition
     {
         $client = $this->realmClient();
 
-        ClientDetailPage::revealSecret($this->rotateSecret->handle($client));
+        $this->rotateSecret->handle($client);
 
         return ActionResult::success()
             ->toast(__('admin.clients.detail.rotate-secret.done'), Variant::Success)

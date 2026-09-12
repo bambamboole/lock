@@ -138,7 +138,7 @@ test('a client detail page opens under its own realm only', function () {
         ->and($client->name)->toBe('Existing app');
 });
 
-test('creating a confidential client reveals its secret exactly once', function () {
+test('creating a confidential client stores a secret the page keeps showing', function () {
     $this->realm->writeSettings(['default_scopes' => ['openid', 'profile']]);
 
     $this->actingAs(globalAdmin())->submitForm(CreateClientForm::class, clientFormData(), ['realm' => 'acme'])->assertRedirect();
@@ -150,7 +150,7 @@ test('creating a confidential client reveals its secret exactly once', function 
 
     expect($secrets)->toHaveCount(1)
         ->and($secrets[0])->toBe($client->secret)
-        ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty()
+        ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBe($secrets)
         ->and($client->realm)->toBe('acme')
         ->and($client->token_endpoint_auth_method)->toBe(TokenEndpointAuthMethod::ClientSecretBasic)
         ->and($client->grant_types)->toBe(['authorization_code', 'refresh_token'])
@@ -267,7 +267,7 @@ test('turning a public client confidential mints a secret and back again drops i
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty();
 });
 
-test('rotating the secret replaces it and reveals the new one once', function () {
+test('rotating the secret replaces it and the page shows the new one', function () {
     $client = realmClient($this->realm);
     $previousSecret = $client->secret;
     $detailUrl = "/admin/realms/acme/clients/{$client->id}";
@@ -281,7 +281,7 @@ test('rotating the secret replaces it and reveals the new one once', function ()
     expect($secrets)->toHaveCount(1)
         ->and($currentSecret)->not->toBe($previousSecret)
         ->and($secrets[0])->toBe($currentSecret)
-        ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty()
+        ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBe($secrets)
         ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientSecretRotated->eventName())->sole()->subject_id)->toBe($client->id);
 });
 
