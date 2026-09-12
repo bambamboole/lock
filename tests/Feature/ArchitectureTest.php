@@ -6,7 +6,7 @@ use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -248,7 +248,7 @@ it('keeps every concrete app class final', function () {
 });
 
 it('keeps every scope value a kebab-cased area with a read or write verb', function () {
-    foreach (ApiScope::values() as $value) {
+    foreach (Scope::values() as $value) {
         expect($value)->toMatch('/^[a-z][a-z-]*:[a-z][a-z-]*$/')
             ->and(Str::afterLast($value, ':'))->toBeIn(['read', 'write']);
     }

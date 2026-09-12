@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Forms;
 
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Data\UpdateRealmData;
@@ -34,7 +34,7 @@ use Lattice\Ui\Enums\Variant;
  * The input derives from the setting's declared type, so a new setting in
  * {@see RealmConfiguration} needs no form of its own.
  */
-#[AsForm('admin.realms.setting', can: ApiScope::RealmsWrite)]
+#[AsForm('admin.realms.setting', can: Scope::RealmsWrite)]
 final class RealmSettingForm extends FormDefinition
 {
     public function __construct(private readonly UpdatesRealm $updateRealm) {}

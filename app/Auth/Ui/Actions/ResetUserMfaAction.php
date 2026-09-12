@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Auth\Ui\Actions;
 
 use App\Auth\Models\User;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -15,7 +15,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.reset-mfa', can: ApiScope::UsersWrite)]
+#[AsAction('admin.users.reset-mfa', can: Scope::UsersWrite)]
 final class ResetUserMfaAction extends ActionDefinition
 {
     public function __construct(private readonly ResetsUserMfa $resetMfa) {}

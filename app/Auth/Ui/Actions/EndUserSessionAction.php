@@ -5,10 +5,10 @@ namespace App\Auth\Ui\Actions;
 
 use App\Auth\Models\User;
 use App\Auth\Ui\Tables\UserSessionsTable;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -17,7 +17,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.sessions.end', can: ApiScope::UsersWrite)]
+#[AsAction('admin.users.sessions.end', can: Scope::UsersWrite)]
 final class EndUserSessionAction extends ActionDefinition
 {
     public function __construct(private readonly EndsUserSessions $endSessions) {}

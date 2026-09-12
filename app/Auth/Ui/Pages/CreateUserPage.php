@@ -5,7 +5,7 @@ namespace App\Auth\Ui\Pages;
 
 use App\Auth\Ui\Forms\CreateUserForm;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
@@ -17,7 +17,7 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/users/create', name: 'admin.realms.users.create', can: ApiScope::UsersWrite)]
+#[AsPage(route: '/admin/realms/{realm}/users/create', name: 'admin.realms.users.create', can: Scope::UsersWrite)]
 final class CreateUserPage extends AdminPage
 {
     public function title(): string

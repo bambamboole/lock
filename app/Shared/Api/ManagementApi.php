@@ -7,8 +7,8 @@ use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
 use App\Shared\Roles\Enums\RoleAuditEvent;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Lock's own management API as an OAuth protected resource: a resource row of
- * the master realm carrying the scopes of {@see ApiScope}. The rows are real,
+ * the master realm carrying the scopes of {@see Scope}. The rows are real,
  * so the console lists them and a token request resolves them like any other
  * resource, but `app:deploy` owns them and the console refuses to change them.
  */
@@ -84,7 +84,7 @@ final readonly class ManagementApi
                 $isNew = ! $role->exists;
                 $role->save();
 
-                $wanted = array_map(fn (ApiScope $scope): string => $scopes[$scope->value], $granted);
+                $wanted = array_map(fn (Scope $scope): string => $scopes[$scope->value], $granted);
 
                 $synced = $role->scopes()->sync($wanted);
                 $touched = $synced['attached'] !== [] || $synced['detached'] !== [];
@@ -142,7 +142,7 @@ final readonly class ManagementApi
     {
         $changed = false;
 
-        foreach (ApiScope::cases() as $scope) {
+        foreach (Scope::cases() as $scope) {
             $row = $resource->scopes()->firstOrNew(['value' => $scope->value]);
             $created = ! $row->exists;
 
@@ -161,7 +161,7 @@ final readonly class ManagementApi
             }
         }
 
-        $removed = $resource->scopes()->whereNotIn('value', ApiScope::values())->get();
+        $removed = $resource->scopes()->whereNotIn('value', Scope::values())->get();
 
         foreach ($removed as $row) {
             $row->delete();

@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -24,13 +24,13 @@ it('seals one playground reference per operation scope set of the document', fun
 
     $scopeSets = array_map(fn (array $access): array => $access['scopes'], (array) $reference->prop('remoteTokens'));
 
-    expect($scopeSets)->toEqualCanonicalizing([[ApiScope::RealmsRead->value], [ApiScope::RealmsWrite->value]]);
+    expect($scopeSets)->toEqualCanonicalizing([[Scope::RealmsRead->value], [Scope::RealmsWrite->value]]);
 });
 
 it('mints a scoped token on execute that the API accepts', function () {
     selfSsoProviderFake();
 
-    $request = playgroundTokenRequest(ApiScope::RealmsRead);
+    $request = playgroundTokenRequest(Scope::RealmsRead);
 
     $token = $this->actingAs(globalAdmin())
         ->withHeader('X-Lattice-Ref', $request['ref'])
@@ -39,7 +39,7 @@ it('mints a scoped token on execute that the API accepts', function () {
         ->json();
 
     expect($token['audience'])->toBe(app(ManagementApi::class)->audience())
-        ->and($token['scopes'])->toBe([ApiScope::RealmsRead->value])
+        ->and($token['scopes'])->toBe([Scope::RealmsRead->value])
         ->and($token['expiresIn'])->toBeLessThanOrEqual(300);
 
     auth()->forgetGuards();
@@ -51,17 +51,17 @@ it('mints a scoped token on execute that the API accepts', function () {
 });
 
 it('refuses to mint a token for an admin who cannot write realms', function () {
-    $request = playgroundTokenRequest(ApiScope::RealmsWrite);
+    $request = playgroundTokenRequest(Scope::RealmsWrite);
 
-    $this->actingAs(globalAdminWith(ApiScope::RealmsRead))
+    $this->actingAs(globalAdminWith(Scope::RealmsRead))
         ->withHeader('X-Lattice-Ref', $request['ref'])
         ->postJson($request['endpoint'], $request['payload'])
         ->assertForbidden();
 });
 
 it('refuses a scope set no sealed reference covers', function () {
-    $request = playgroundTokenRequest(ApiScope::RealmsRead);
-    $request['payload']['scopes'] = [ApiScope::RealmsWrite->value];
+    $request = playgroundTokenRequest(Scope::RealmsRead);
+    $request['payload']['scopes'] = [Scope::RealmsWrite->value];
 
     $this->actingAs(globalAdmin())
         ->withHeader('X-Lattice-Ref', $request['ref'])
@@ -70,5 +70,5 @@ it('refuses a scope set no sealed reference covers', function () {
 });
 
 it('closes the page to an admin without realms:read', function () {
-    $this->actingAs(globalAdminWith(ApiScope::ActivityRead))->get(route('admin.api'))->assertForbidden();
+    $this->actingAs(globalAdminWith(Scope::ActivityRead))->get(route('admin.api'))->assertForbidden();
 });

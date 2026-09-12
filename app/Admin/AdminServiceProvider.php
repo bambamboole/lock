@@ -12,8 +12,8 @@ use App\Admin\Ui\Pages\RealmEventsPage;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Auth\Support\RequestUser;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
@@ -35,7 +35,7 @@ final class AdminServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmEventsPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.events'))
                 ->prefix(Affix::icon('shield-alert'))
-                ->can(ApiScope::ActivityRead),
+                ->can(Scope::ActivityRead),
             priority: 50,
         );
 
@@ -44,7 +44,7 @@ final class AdminServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmActivityPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.activity'))
                 ->prefix(Icon::Clock)
-                ->can(ApiScope::ActivityRead),
+                ->can(Scope::ActivityRead),
             priority: 60,
         );
 
@@ -53,7 +53,7 @@ final class AdminServiceProvider extends ServiceProvider
             static fn (): MenuItem => MenuItem::fromPage(ApiReferencePage::class)
                 ->label(__('navigation.api'))
                 ->prefix(Icon::CodeXml)
-                ->can(ApiScope::RealmsRead),
+                ->can(Scope::RealmsRead),
             priority: 20,
         );
 
@@ -62,12 +62,12 @@ final class AdminServiceProvider extends ServiceProvider
             static fn (): MenuItem => MenuItem::fromPage(ActivityPage::class)
                 ->label(__('navigation.activity'))
                 ->prefix(Icon::Clock)
-                ->can(ApiScope::ActivityRead),
+                ->can(Scope::ActivityRead),
             priority: 30,
         );
 
         Gate::before(function (User $user, string $ability): ?bool {
-            $scope = ApiScope::tryFrom($ability);
+            $scope = Scope::tryFrom($ability);
 
             return $scope === null ? null : $user->hasManagementScope($scope);
         });

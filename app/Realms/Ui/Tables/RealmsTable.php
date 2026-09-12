@@ -7,7 +7,7 @@ namespace App\Realms\Ui\Tables;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Concerns\OpensRealmDeletion;
 use App\Realms\Ui\Concerns\PresentsRealmDomainStatus;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +22,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<Realm>
  */
-#[AsTable('admin.realms', can: ApiScope::RealmsRead)]
+#[AsTable('admin.realms', can: Scope::RealmsRead)]
 final class RealmsTable extends EloquentTableDefinition
 {
     use OpensRealmDeletion;

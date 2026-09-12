@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Clients\Ui\Actions;
 
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\SetsClientRevocation;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.clients.revoke', can: ApiScope::ClientsWrite)]
+#[AsAction('admin.clients.revoke', can: Scope::ClientsWrite)]
 final class RevokeClient extends ActionDefinition
 {
     use ResolvesRealmClient;

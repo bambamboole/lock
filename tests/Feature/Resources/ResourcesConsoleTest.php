@@ -14,8 +14,8 @@ use App\Resources\Ui\Actions\UpdateResourceAction;
 use App\Resources\Ui\Actions\UpdateResourceScopeAction;
 use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Resources\Ui\Tables\ResourcesTable;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -38,7 +38,7 @@ function realmScopes(Realm $realm): Builder
     return ResourceScope::query()->whereHas('resource', fn (Builder $query) => $query->where('realm_id', $realm->id));
 }
 
-$resourceViewer = fn (): User => globalAdminWith(ApiScope::ResourcesRead);
+$resourceViewer = fn (): User => globalAdminWith(Scope::ResourcesRead);
 
 test('a resources-manage admin adds a resource and it is recorded', function () {
     $this->actingAs(globalAdmin())->callAction(CreateResourceAction::class, [
@@ -216,7 +216,7 @@ test('a view-only admin reads the console but cannot change anything', function 
 test('the resources console is closed without a resources scope', function () {
     $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api']);
 
-    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
+    $this->actingAs(globalAdminWith(Scope::ActivityRead));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
     $this->loadDeniedTable(ResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();

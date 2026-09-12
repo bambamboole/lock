@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Admin\Ui\Remote\ApiReferenceTokens;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Dedoc\Scramble\CacheableGenerator;
@@ -20,7 +20,7 @@ use Lattice\Ui\PageSchema;
  * the API. `app:deploy` warms the cache the generator reads; a cold cache
  * generates on the first render instead.
  */
-#[AsPage(route: '/admin/api', name: 'admin.api', can: ApiScope::RealmsRead)]
+#[AsPage(route: '/admin/api', name: 'admin.api', can: Scope::RealmsRead)]
 final class ApiReferencePage extends AdminPage
 {
     /** The node the playground's sealed references are bound to. */

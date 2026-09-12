@@ -6,7 +6,7 @@ namespace App\Roles\Ui\Actions;
 use App\Roles\Models\Role;
 use App\Roles\Ui\Concerns\ResolvesRole;
 use App\Roles\Ui\Tables\RolesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\DeletesRole;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -17,7 +17,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.realm-roles.delete', can: ApiScope::RolesWrite)]
+#[AsAction('admin.realm-roles.delete', can: Scope::RolesWrite)]
 final class DeleteRoleAction extends ActionDefinition
 {
     use ResolvesRole;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
@@ -36,7 +36,7 @@ it('seeds the first administrator and gives a local setup console credentials of
         ->and(Hash::check((string) $environment['LOCK_CONSOLE_CLIENT_SECRET'], (string) $client->getRawOriginal('secret')))->toBeTrue()
         ->and($realm->clients()->firstPartyClientId)->toBe($client->client_id)
         ->and($user->belongsToRealm($realm))->toBeTrue()
-        ->and($user->can(ApiScope::RealmsWrite))->toBeTrue();
+        ->and($user->can(Scope::RealmsWrite))->toBeTrue();
 });
 
 it('provisions the configured console client again after a fresh migration', function () {

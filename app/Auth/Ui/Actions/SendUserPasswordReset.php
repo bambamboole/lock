@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Auth\Ui\Actions;
 
 use App\Auth\Models\User;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -16,7 +16,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.send-password-reset', can: ApiScope::UsersWrite)]
+#[AsAction('admin.users.send-password-reset', can: Scope::UsersWrite)]
 final class SendUserPasswordReset extends ActionDefinition
 {
     public function __construct(private readonly SendPasswordResetLink $sendResetLink) {}

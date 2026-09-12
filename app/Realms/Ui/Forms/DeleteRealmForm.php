@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Forms;
 
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Contracts\DeletesRealm;
 use Closure;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsForm('admin.realms.delete', can: ApiScope::RealmsWrite)]
+#[AsForm('admin.realms.delete', can: Scope::RealmsWrite)]
 final class DeleteRealmForm extends FormDefinition
 {
     public function __construct(private readonly DeletesRealm $deleteRealm) {}

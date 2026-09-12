@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 use App\Realms\Http\Api\V1\Controllers\RealmController;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Http\Middleware\EnsureManagementApiAudience;
 use App\Shared\Http\Middleware\EnsureScopes;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +20,6 @@ Route::prefix('v1')
     ->middleware(['auth:oidc', EnsureManagementApiAudience::class])
     ->group(function (): void {
         Route::apiResource('realms', RealmController::class)
-            ->middlewareFor(['index', 'show'], EnsureScopes::using(ApiScope::RealmsRead->value))
-            ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(ApiScope::RealmsWrite->value));
+            ->middlewareFor(['index', 'show'], EnsureScopes::using(Scope::RealmsRead->value))
+            ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(Scope::RealmsWrite->value));
     });

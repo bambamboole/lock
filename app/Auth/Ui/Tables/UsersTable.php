@@ -13,8 +13,8 @@ use App\Auth\Ui\Actions\ResetUserMfaAction;
 use App\Auth\Ui\Actions\SendUserPasswordReset;
 use App\Auth\Ui\Actions\UnblockUserAction;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
@@ -34,7 +34,7 @@ use Lattice\Ui\Enums\Size;
 /**
  * @extends EloquentTableDefinition<User>
  */
-#[AsTable('admin.users', can: ApiScope::UsersRead)]
+#[AsTable('admin.users', can: Scope::UsersRead)]
 final class UsersTable extends EloquentTableDefinition
 {
     /**

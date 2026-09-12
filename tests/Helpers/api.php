@@ -8,8 +8,8 @@ use App\Admin\Ui\Pages\ApiReferencePage;
 use App\Admin\Ui\Remote\ApiReferenceTokens;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Core\Contracts\SignsComponentReferences;
 use Tests\TestCase;
@@ -31,7 +31,7 @@ function provisionManagementApi(): Resource
  * A machine bearer token for Lock's own management API: addressed to its
  * resource, carrying exactly the listed scopes and no user behind it.
  */
-function managementApiToken(TestCase $test, ApiScope ...$scopes): string
+function managementApiToken(TestCase $test, Scope ...$scopes): string
 {
     provisionManagementApi();
 
@@ -50,7 +50,7 @@ function managementApiToken(TestCase $test, ApiScope ...$scopes): string
  *
  * @return array<string, mixed>
  */
-function playgroundTokenRequest(ApiScope ...$scopes): array
+function playgroundTokenRequest(Scope ...$scopes): array
 {
     $values = array_column($scopes, 'value');
     $context = [

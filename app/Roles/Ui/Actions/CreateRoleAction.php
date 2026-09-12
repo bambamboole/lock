@@ -6,7 +6,7 @@ namespace App\Roles\Ui\Actions;
 use App\Roles\Ui\Concerns\BuildsRoleFields;
 use App\Roles\Ui\Concerns\ResolvesRole;
 use App\Roles\Ui\Tables\RolesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\CreatesRole;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -15,7 +15,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Form\FormData;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.realm-roles.create', can: ApiScope::RolesWrite)]
+#[AsAction('admin.realm-roles.create', can: Scope::RolesWrite)]
 final class CreateRoleAction extends ActionDefinition
 {
     use BuildsRoleFields;

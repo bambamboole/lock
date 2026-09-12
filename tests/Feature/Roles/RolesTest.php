@@ -10,8 +10,8 @@ use App\Roles\Ui\Actions\DeleteRoleAction;
 use App\Roles\Ui\Actions\UpdateRoleAction;
 use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Roles\Ui\Tables\RolesTable;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\SyncsUserRoles;
 use App\Shared\Roles\Enums\RoleAuditEvent;
 
@@ -133,7 +133,7 @@ test('the roles console is forbidden without a roles scope', function () {
     $role = Role::factory()->for($this->realm)->create(['name' => 'member']);
     $context = ['realm' => 'acme', 'role' => $role->id];
 
-    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
+    $this->actingAs(globalAdminWith(Scope::ActivityRead));
     $this->get('/admin/realms/acme/roles')->assertForbidden();
     $this->loadDeniedTable(RolesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateRoleAction::class, ['name' => 'other'], ['realm' => 'acme'])->assertForbidden();

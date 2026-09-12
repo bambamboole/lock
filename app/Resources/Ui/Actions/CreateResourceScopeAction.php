@@ -7,7 +7,7 @@ use App\Resources\Models\Resource;
 use App\Resources\Ui\Concerns\BuildsResourceScopeFields;
 use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Ui\Tables\ResourceScopesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -17,7 +17,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Form\FormData;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.resource-scopes.create', can: ApiScope::ResourcesWrite)]
+#[AsAction('admin.resource-scopes.create', can: Scope::ResourcesWrite)]
 final class CreateResourceScopeAction extends ActionDefinition
 {
     use BuildsResourceScopeFields;

@@ -7,7 +7,7 @@ use App\Roles\Models\Role;
 use App\Roles\Ui\Concerns\BuildsRoleFields;
 use App\Roles\Ui\Concerns\ResolvesRole;
 use App\Roles\Ui\Tables\RolesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\UpdatesRole;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -19,7 +19,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.realm-roles.update', can: ApiScope::RolesWrite)]
+#[AsAction('admin.realm-roles.update', can: Scope::RolesWrite)]
 final class UpdateRoleAction extends ActionDefinition
 {
     use BuildsRoleFields;

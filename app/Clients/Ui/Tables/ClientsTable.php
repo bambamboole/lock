@@ -8,7 +8,7 @@ use App\Clients\Ui\Actions\RestoreClient;
 use App\Clients\Ui\Actions\RevokeClient;
 use App\Clients\Ui\Actions\RotateClientSecret;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Ui\Components\ActionBar;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
@@ -25,7 +25,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<Client>
  */
-#[AsTable('admin.clients', can: ApiScope::ClientsRead)]
+#[AsTable('admin.clients', can: Scope::ClientsRead)]
 final class ClientsTable extends EloquentTableDefinition
 {
     /**

@@ -7,7 +7,7 @@ use App\Resources\Models\Resource;
 use App\Resources\Ui\Concerns\BuildsResourceFields;
 use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Ui\Tables\ResourcesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -19,7 +19,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.resources.update', can: ApiScope::ResourcesWrite)]
+#[AsAction('admin.resources.update', can: Scope::ResourcesWrite)]
 final class UpdateResourceAction extends ActionDefinition
 {
     use BuildsResourceFields;

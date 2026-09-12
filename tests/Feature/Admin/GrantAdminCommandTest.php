@@ -4,9 +4,9 @@ declare(strict_types=1);
 use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Authorization\Enums\Scope;
 
 test('admin:grant makes a user an admin and records it with a system actor', function () {
     $user = User::factory()->for(Realm::master())->create();
@@ -15,7 +15,7 @@ test('admin:grant makes a user an admin and records it with a system actor', fun
 
     $activity = Activity::global()->sole();
 
-    expect($user->refresh()->can(ApiScope::RealmsWrite))->toBeTrue()
+    expect($user->refresh()->can(Scope::RealmsWrite))->toBeTrue()
         ->and($activity->event)->toBe(AdminAuditEvent::SuperAdminGranted->eventName())
         ->and($activity->subject_id)->toBe($user->id)
         ->and($activity->causer_name)->toBe(__('admin.activity.system-actor'))

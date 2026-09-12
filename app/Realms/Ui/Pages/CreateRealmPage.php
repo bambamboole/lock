@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Pages;
 
 use App\Realms\Ui\Forms\CreateRealmForm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
@@ -15,7 +15,7 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/create', name: 'admin.realms.create', can: ApiScope::RealmsWrite)]
+#[AsPage(route: '/admin/realms/create', name: 'admin.realms.create', can: Scope::RealmsWrite)]
 final class CreateRealmPage extends AdminPage
 {
     public function title(): string

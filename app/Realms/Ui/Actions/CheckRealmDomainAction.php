@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Actions;
 
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.realms.domain.check', can: ApiScope::RealmsWrite)]
+#[AsAction('admin.realms.domain.check', can: Scope::RealmsWrite)]
 final class CheckRealmDomainAction extends ActionDefinition
 {
     public function __construct(private readonly ChecksRealmDomain $checkDomain) {}

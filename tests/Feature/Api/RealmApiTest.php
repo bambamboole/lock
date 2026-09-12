@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmConfiguration;
@@ -31,7 +31,7 @@ it('refuses a request without a token', function () {
 });
 
 it('refuses a token that only grants the read scope for a write', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
+    $this->withToken(managementApiToken($this, Scope::RealmsRead))
         ->postJson(realmsUrl(), ['name' => 'Globex', 'slug' => 'globex', 'domain' => 'globex.test'])
         ->assertForbidden()
         ->assertJsonPath('error', 'insufficient_scope');
@@ -42,7 +42,7 @@ it('refuses a token that only grants the read scope for a write', function () {
 it('refuses a token addressed to the realm itself rather than to this API', function () {
     provisionManagementApi();
 
-    $token = $this->issueClientToken($this->createOidcMachineClient(), [ApiScope::RealmsRead->value]);
+    $token = $this->issueClientToken($this->createOidcMachineClient(), [Scope::RealmsRead->value]);
 
     $this->withToken($token)->getJson(realmsUrl())
         ->assertUnauthorized()
@@ -50,7 +50,7 @@ it('refuses a token addressed to the realm itself rather than to this API', func
 });
 
 it('lists every realm and filters by slug', function () {
-    $token = managementApiToken($this, ApiScope::RealmsRead);
+    $token = managementApiToken($this, Scope::RealmsRead);
 
     $this->withToken($token)->getJson(realmsUrl())
         ->assertOk()
@@ -68,7 +68,7 @@ it('lists every realm and filters by slug', function () {
 });
 
 it('shows a realm by slug and reports the master realm as such', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
+    $this->withToken(managementApiToken($this, Scope::RealmsRead))
         ->getJson(realmsUrl('/'.Realm::master()->slug))
         ->assertOk()
         ->assertJsonPath('data.master', true)
@@ -77,7 +77,7 @@ it('shows a realm by slug and reports the master realm as such', function () {
 });
 
 it('creates a realm with its own signing key and a verified domain', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), ['name' => 'Globex', 'slug' => 'globex', 'domain' => 'globex.test'])
         ->assertCreated()
         ->assertJsonPath('data.slug', 'globex')
@@ -89,14 +89,14 @@ it('creates a realm with its own signing key and a verified domain', function ()
 });
 
 it('rejects a slug that is already taken', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), ['name' => 'Other Acme', 'slug' => 'acme', 'domain' => 'other.test'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('slug');
 });
 
 it('renames a realm', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['name' => 'Acme Inc'])
         ->assertOk()
         ->assertJsonPath('data.name', 'Acme Inc');
@@ -107,7 +107,7 @@ it('renames a realm', function () {
 it('re-points a domain and re-checks it', function () {
     $this->acme->forceFill(['domain_status' => RealmDomainStatus::Verified])->save();
 
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['domain' => 'acme.example'])
         ->assertOk()
         ->assertJsonPath('data.domain', 'acme.example')
@@ -117,7 +117,7 @@ it('re-points a domain and re-checks it', function () {
 });
 
 it('refuses to give the master realm a domain of its own', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/'.Realm::master()->slug), ['domain' => 'takeover.test'])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('domain');
@@ -126,7 +126,7 @@ it('refuses to give the master realm a domain of its own', function () {
 });
 
 it('deletes a realm and frees its slug', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->deleteJson(realmsUrl('/acme'))
         ->assertNoContent();
 
@@ -134,7 +134,7 @@ it('deletes a realm and frees its slug', function () {
 });
 
 it('refuses to delete the master realm', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->deleteJson(realmsUrl('/'.Realm::master()->slug))
         ->assertStatus(409);
 
@@ -142,7 +142,7 @@ it('refuses to delete the master realm', function () {
 });
 
 it('answers on the master host only', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
+    $this->withToken(managementApiToken($this, Scope::RealmsRead))
         ->getJson(realmUrl($this->acme, '/api/v1/realms'))
         ->assertNotFound();
 });
@@ -154,14 +154,14 @@ it('declares its scopes as the resource a token is addressed to', function () {
 
     $this->getJson(realmUrl(Realm::master(), '/.well-known/oauth-protected-resource/api'))
         ->assertOk()
-        ->assertJsonPath('scopes_supported', fn (array $scopes): bool => ! array_diff($scopes, ApiScope::values()) && ! array_diff(ApiScope::values(), $scopes));
+        ->assertJsonPath('scopes_supported', fn (array $scopes): bool => ! array_diff($scopes, Scope::values()) && ! array_diff(Scope::values(), $scopes));
 });
 
 it('reports the realm configuration with every setting typed', function () {
     $this->acme->writeSettings(['access_token_lifetime' => 900]);
     $this->acme->writeSettings(['login_methods' => ['passkey']]);
 
-    $configuration = $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
+    $configuration = $this->withToken(managementApiToken($this, Scope::RealmsRead))
         ->getJson(realmsUrl('/acme'))
         ->assertOk()
         ->json('data.settings');
@@ -175,7 +175,7 @@ it('reports the realm configuration with every setting typed', function () {
 it('updates a subset of the configuration and leaves the rest alone', function () {
     $before = $this->acme->configuration();
 
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => [
             'access_token_lifetime' => 900,
             'mfa_requirement' => 'always',
@@ -193,7 +193,7 @@ it('updates a subset of the configuration and leaves the rest alone', function (
 });
 
 it('stores a quoted number as the integer the setting holds', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => ['totp_window' => '4']])
         ->assertOk()
         ->assertJsonPath('data.settings.totp_window', 4);
@@ -202,7 +202,7 @@ it('stores a quoted number as the integer the setting holds', function () {
 });
 
 it('records a configuration change on the realm trail', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => ['recovery_codes' => 12]])
         ->assertOk();
 
@@ -217,7 +217,7 @@ it('records a configuration change on the realm trail', function () {
 it('rejects a setting that contradicts one it was not sent with', function () {
     $this->acme->writeSettings(['session_absolute_lifetime' => 3600]);
 
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => ['session_token_ttl' => 7200]])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('settings.session_token_ttl');
@@ -226,21 +226,21 @@ it('rejects a setting that contradicts one it was not sent with', function () {
 });
 
 it('rejects a value outside the setting’s own rules', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => ['mfa_requirement' => 'whenever']])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('settings.mfa_requirement');
 });
 
 it('rejects a setting it does not know', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['settings' => ['make_me_admin' => true]])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('settings.make_me_admin');
 });
 
 it('renames and reconfigures a realm in one request', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), [
             'name' => 'Acme Inc',
             'settings' => ['password_min_length' => 16],
@@ -253,7 +253,7 @@ it('renames and reconfigures a realm in one request', function () {
 });
 
 it('creates a realm with a configuration and leaves the rest on the defaults', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), [
             'name' => 'Globex',
             'slug' => 'globex',
@@ -274,7 +274,7 @@ it('creates a realm with a configuration and leaves the rest on the defaults', f
 });
 
 it('keeps no realm behind when the configuration it was created with is rejected', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), [
             'name' => 'Globex',
             'slug' => 'globex',
@@ -288,7 +288,7 @@ it('keeps no realm behind when the configuration it was created with is rejected
 });
 
 it('rejects a setting it does not know on create', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), [
             'name' => 'Globex',
             'slug' => 'globex',
@@ -300,7 +300,7 @@ it('rejects a setting it does not know on create', function () {
 });
 
 it('records the settings a realm was created with', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->postJson(realmsUrl(), [
             'name' => 'Globex',
             'slug' => 'globex',
@@ -315,7 +315,7 @@ it('records the settings a realm was created with', function () {
 });
 
 it('applies a name, settings and a new domain in one request', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), [
             'name' => 'Acme Inc',
             'domain' => 'acme.example',
@@ -329,7 +329,7 @@ it('applies a name, settings and a new domain in one request', function () {
 });
 
 it('refuses a domain that is not lowercase on both paths', function () {
-    $token = managementApiToken($this, ApiScope::RealmsWrite);
+    $token = managementApiToken($this, Scope::RealmsWrite);
 
     $this->withToken($token)
         ->postJson(realmsUrl(), ['name' => 'Globex', 'slug' => 'globex', 'domain' => 'Globex.Test'])
@@ -348,7 +348,7 @@ it('refuses a domain that is not lowercase on both paths', function () {
 });
 
 it('refuses the whole request when one of its parts is rejected', function () {
-    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+    $this->withToken(managementApiToken($this, Scope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), [
             'name' => 'Acme Inc',
             'settings' => ['mfa_requirement' => 'whenever'],

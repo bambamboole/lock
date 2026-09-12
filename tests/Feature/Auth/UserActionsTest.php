@@ -6,10 +6,10 @@ use App\Auth\Ui\Actions\ResendUserVerification;
 use App\Auth\Ui\Actions\SendUserPasswordReset;
 use App\Realms\Models\Realm;
 use App\Roles\Ui\Actions\UpdateUserRoles;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
@@ -26,7 +26,7 @@ test('a roles-write admin grants a master realm role, and the console opens for 
         'role_ids' => [$superAdmin->id],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
-    expect($target->refresh()->can(ApiScope::RealmsWrite))->toBeTrue();
+    expect($target->refresh()->can(Scope::RealmsWrite))->toBeTrue();
 });
 
 test('clearing a user\'s roles revokes their console access', function () {
@@ -93,7 +93,7 @@ test('a users-manage admin can send a password reset', function () {
 
 test('an admin without users-manage cannot resend verification', function () {
     Notification::fake();
-    $outsider = globalAdminWith(ApiScope::UsersRead);
+    $outsider = globalAdminWith(Scope::UsersRead);
     $target = User::factory()->unverified()->create();
 
     $this->actingAs($outsider)
@@ -105,7 +105,7 @@ test('an admin without users-manage cannot resend verification', function () {
 
 test('an admin without users-manage cannot send a password reset', function () {
     Notification::fake();
-    $outsider = globalAdminWith(ApiScope::UsersRead);
+    $outsider = globalAdminWith(Scope::UsersRead);
     $target = User::factory()->create();
 
     $this->actingAs($outsider)

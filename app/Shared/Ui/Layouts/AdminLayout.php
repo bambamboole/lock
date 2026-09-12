@@ -5,7 +5,7 @@ namespace App\Shared\Ui\Layouts;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
@@ -59,7 +59,7 @@ final class AdminLayout extends LayoutDefinition
                 ->schema([
                     Sidebar::make('admin-sidebar')->collapsible()->items([
                         BrandMark::wordmark('admin-sidebar-logo'),
-                        ...($user->can(ApiScope::RealmsRead) ? [$this->realmSwitcher($realm)] : []),
+                        ...($user->can(Scope::RealmsRead) ? [$this->realmSwitcher($realm)] : []),
                         Menu::make('admin-sidebar-menu')->items([
                             $realm instanceof Realm
                                 ? Slot::make('admin.sidebar.realm')->context(['realm' => $realm])

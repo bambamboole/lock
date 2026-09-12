@@ -8,9 +8,9 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Api\ManagementRoles;
+use App\Shared\Authorization\Enums\Scope;
 
 function globalAdmin(string $roleName = ManagementRoles::SUPER_ADMIN): User
 {
@@ -29,7 +29,7 @@ function grantGlobalRole(User $user, string $name): void
 /**
  * A throwaway master realm role holding exactly these management scopes.
  */
-function globalAdminWith(ApiScope ...$scopes): User
+function globalAdminWith(Scope ...$scopes): User
 {
     $realm = Realm::master();
     $admin = User::factory()->for($realm)->create();
@@ -44,12 +44,12 @@ function globalAdminWith(ApiScope ...$scopes): User
 /**
  * @return list<string>
  */
-function managementScopeIds(ApiScope ...$scopes): array
+function managementScopeIds(Scope ...$scopes): array
 {
     $resource = Realm::master()->realmResources()->where('identifier', ManagementApi::RESOURCE)->sole();
 
     return array_values($resource->scopes()
-        ->whereIn('value', array_map(fn (ApiScope $scope): string => $scope->value, $scopes))
+        ->whereIn('value', array_map(fn (Scope $scope): string => $scope->value, $scopes))
         ->pluck('id')
         ->map(fn (mixed $id): string => (string) $id)
         ->all());

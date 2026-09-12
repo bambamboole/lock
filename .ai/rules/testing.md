@@ -116,7 +116,7 @@ Shared helper functions are namespaced `Tests\Helpers` in `tests/Helpers/*.php` 
 imported per file with `use function Tests\Helpers\globalAdmin;`. `tests/Pest.php` holds only the
 `pest()->extend()` bindings. Never define a new global (unnamespaced) shared helper: every file-local test helper
 shares one global function table across the suite, so a name reused in a second file is a fatal redeclare.
-`globalAdmin()` (an administrator holding a protected role), `globalAdminWith(ApiScope ...)` (one holding
+`globalAdmin()` (an administrator holding a protected role), `globalAdminWith(Scope ...)` (one holding
 exactly those scopes — the actor for a "forbidden without X" test), `identitySessionFor()`/`consoleSessionFor()`
 (a signed-in session for either guard) and `realmSetting()` (one realm setting as the admin form submits it) are the
 shared fixtures — reuse them instead of hand-rolling admin, session and realm setup.

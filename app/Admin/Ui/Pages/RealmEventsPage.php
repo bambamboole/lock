@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Pages;
 
 use App\Admin\Ui\Tables\RealmAuditEventsTable;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
@@ -16,7 +16,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/events', name: 'admin.realms.events', can: ApiScope::ActivityRead)]
+#[AsPage(route: '/admin/realms/{realm}/events', name: 'admin.realms.events', can: Scope::ActivityRead)]
 final class RealmEventsPage extends AdminPage
 {
     public function title(): string

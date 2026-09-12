@@ -15,7 +15,7 @@ use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Resources\Support\RealmResources;
 use App\Resources\Ui\Pages\RealmResourcesPage;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Resources\Contracts\CreatesResource;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
 use App\Shared\Resources\Contracts\DeletesResource;
@@ -49,7 +49,7 @@ final class ResourcesServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmResourcesPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.resources'))
                 ->prefix(Affix::icon('layers'))
-                ->can(ApiScope::ResourcesRead),
+                ->can(Scope::ResourcesRead),
             priority: 40,
         );
 

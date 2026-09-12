@@ -7,8 +7,8 @@ namespace App\Auth\Models;
 use App\Realms\Models\Realm;
 use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
 use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
 use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
@@ -118,7 +118,7 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->totpFactors()->whereNotNull('confirmed_at')->exists() || $this->passkeys()->exists();
     }
 
-    public function hasManagementScope(ApiScope $scope): bool
+    public function hasManagementScope(Scope $scope): bool
     {
         return $this->managementScopes()->contains($scope->value);
     }
@@ -128,7 +128,7 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
      * `CheckScopes` applies to a token, so a gate and an API route read a
      * scope set the same way.
      *
-     * @param  list<ApiScope>  $scopes
+     * @param  list<Scope>  $scopes
      */
     public function hasManagementScopes(array $scopes): bool
     {

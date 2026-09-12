@@ -5,7 +5,7 @@ namespace App\Realms\Ui\Pages;
 
 use App\Auth\Models\User;
 use App\Realms\Ui\Tables\RealmsTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -18,7 +18,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms', name: 'admin.realms', can: ApiScope::RealmsRead)]
+#[AsPage(route: '/admin/realms', name: 'admin.realms', can: Scope::RealmsRead)]
 final class RealmsPage extends AdminPage
 {
     public function title(): string
@@ -34,7 +34,7 @@ final class RealmsPage extends AdminPage
             Stack::make('admin-realms-page')->gap(Gap::Large)->schema([
                 PageHeader::make(__('admin.realms.heading'), __('admin.realms.description'), ActionBar::make(primary: [
                     Button::make(__('admin.realms.create.submit'))
-                        ->visible($user instanceof User && $user->can(ApiScope::RealmsWrite))
+                        ->visible($user instanceof User && $user->can(Scope::RealmsWrite))
                         ->effects(Effects::redirect(route('admin.realms.create', [], false))),
                 ])),
                 Table::use(RealmsTable::class),

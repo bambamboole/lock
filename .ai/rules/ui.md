@@ -26,7 +26,7 @@ protected resources, `app/Auth/Ui/**` for its users, `app/Roles/Ui/**` for its r
 The shell owns no navigation of its own. Its sidebar is two slots a domain fills from its provider —
 `admin.sidebar.realm`, which carries the selected `Realm` in its context, and `admin.sidebar.instance` — and
 `admin.users.detail.cards` is how the roles card reaches the user page. Order is the `priority:` argument, and an
-entry gates itself with `MenuItem::…->can(ApiScope::…)` rather than the shell testing the user. Because the module
+entry gates itself with `MenuItem::…->can(Scope::…)` rather than the shell testing the user. Because the module
 registering an entry owns the page, it builds it with `MenuItem::fromPage()`; only the realm switcher is built in
 the shell, and it links by route name because importing `App\Realms\Ui\Pages\…` there would make the shared layer
 depend on a domain.
@@ -50,7 +50,7 @@ definition endpoints may run after the page request, so the registered context r
 
 Give closure resolvers a concrete model return type. Lattice uses it to map bound route models to registered context
 keys. The `realm` resolver in `RealmsServiceProvider` is a plain lookup: every realm definition gates itself on an
-`ApiScope`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
+`Scope`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
 may not see anyway. A resolver for data that is not admin-only has to check the signed-in user itself.
 
 Context resolvers are pure lookups. A resolver also runs while components are merely being built, once per distinct
@@ -59,7 +59,7 @@ about. Request-wide state keyed to the context belongs in `Definition::activated
 signed endpoint after the gate has passed; a page has no `activated()`.
 
 Declare simple authorization on the definition attribute:
-`#[AsForm('admin.realms.update', can: ApiScope::RealmsWrite)]`. With a registered
+`#[AsForm('admin.realms.update', can: Scope::RealmsWrite)]`. With a registered
 subject key (`on: 'realm'`) Lattice resolves the subject before the definition runs and denies a missing subject. Keep `authorize()` only for conditions a gate
 subject cannot express, and use the nullable context accessor inside it.
 

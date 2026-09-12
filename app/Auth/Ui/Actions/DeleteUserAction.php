@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Auth\Ui\Actions;
 
 use App\Auth\Models\User;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -17,7 +17,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.delete', can: ApiScope::UsersWrite)]
+#[AsAction('admin.users.delete', can: Scope::UsersWrite)]
 final class DeleteUserAction extends ActionDefinition
 {
     use ResolvesCurrentUser;

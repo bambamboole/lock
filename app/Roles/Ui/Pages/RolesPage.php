@@ -6,7 +6,7 @@ namespace App\Roles\Ui\Pages;
 use App\Realms\Models\Realm;
 use App\Roles\Ui\Actions\CreateRoleAction;
 use App\Roles\Ui\Tables\RolesTable;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -18,7 +18,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/roles', name: 'admin.realms.roles', can: ApiScope::RolesRead)]
+#[AsPage(route: '/admin/realms/{realm}/roles', name: 'admin.realms.roles', can: Scope::RolesRead)]
 final class RolesPage extends AdminPage
 {
     public function title(): string

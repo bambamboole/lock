@@ -13,7 +13,7 @@ use App\Realms\Models\Realm;
 use App\Realms\Support\RealmHostGate;
 use App\Realms\Ui\Pages\RealmSettingsPage;
 use App\Realms\Ui\Pages\RealmsPage;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\DeletesRealm;
@@ -44,7 +44,7 @@ final class RealmsServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.settings'))
                 ->prefix(Icon::Settings)
-                ->can(ApiScope::RealmsRead),
+                ->can(Scope::RealmsRead),
             priority: 70,
         );
 
@@ -53,7 +53,7 @@ final class RealmsServiceProvider extends ServiceProvider
             static fn (): MenuItem => MenuItem::fromPage(RealmsPage::class)
                 ->label(__('navigation.realms'))
                 ->prefix(Icon::List)
-                ->can(ApiScope::RealmsRead),
+                ->can(Scope::RealmsRead),
             priority: 10,
         );
 

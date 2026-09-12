@@ -6,8 +6,8 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
+use App\Shared\Authorization\Enums\Scope;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -25,7 +25,7 @@ test('a users-manage admin can open the realm users page and load its table', fu
 })->with([ManagementRoles::SUPER_ADMIN, ManagementRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
-    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
+    $this->actingAs(globalAdminWith(Scope::ActivityRead));
     $this->get('/admin/realms/acme/users')->assertForbidden();
     $this->loadDeniedTable(UsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
 });

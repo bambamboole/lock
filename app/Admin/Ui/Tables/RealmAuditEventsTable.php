@@ -6,10 +6,10 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Ui\Fragments\AuditEventContextFragment;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Enums\AuditEventCategory;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Fragments\Components\Fragment;
@@ -25,7 +25,7 @@ use Lattice\Ui\Enums\ColumnWidth;
 /**
  * @extends EloquentTableDefinition<AuditEvent>
  */
-#[AsTable('admin.realm-events', can: ApiScope::ActivityRead)]
+#[AsTable('admin.realm-events', can: Scope::ActivityRead)]
 final class RealmAuditEventsTable extends EloquentTableDefinition
 {
     /**

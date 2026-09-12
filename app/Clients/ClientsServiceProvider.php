@@ -12,7 +12,7 @@ use App\Clients\Actions\SetClientRevocation;
 use App\Clients\Actions\UpdateClient;
 use App\Clients\Ui\Pages\RealmClientsPage;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\CreatesClient;
 use App\Shared\Clients\Contracts\DeletesClient;
 use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
@@ -44,7 +44,7 @@ final class ClientsServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmClientsPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.clients'))
                 ->prefix(Affix::icon('key-round'))
-                ->can(ApiScope::ClientsRead),
+                ->can(Scope::ClientsRead),
             priority: 20,
         );
 

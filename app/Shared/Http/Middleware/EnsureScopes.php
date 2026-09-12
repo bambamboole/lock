@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Shared\Http\Middleware;
 
 use App\Auth\Models\User;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Auth\Support\RequestUser;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Shared\Protocol\OAuthServerException;
 use Bambamboole\LaravelOidc\Server\Tokens\Http\Middleware\CheckScopes;
 use Closure;
@@ -27,9 +27,9 @@ final class EnsureScopes extends CheckScopes
 
         if ($user instanceof User) {
             foreach ($scopes as $scope) {
-                $case = ApiScope::tryFrom($scope);
+                $case = Scope::tryFrom($scope);
 
-                if (! $case instanceof ApiScope || ! $user->hasManagementScope($case)) {
+                if (! $case instanceof Scope || ! $user->hasManagementScope($case)) {
                     throw OAuthServerException::insufficientScope();
                 }
             }

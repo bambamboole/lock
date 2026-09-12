@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
 use App\Roles\Ui\Actions\DeleteRoleAction;
 use App\Roles\Ui\Actions\UpdateRoleAction;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
@@ -19,7 +19,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<Role>
  */
-#[AsTable(self::ID, can: ApiScope::RolesRead)]
+#[AsTable(self::ID, can: Scope::RolesRead)]
 final class RolesTable extends EloquentTableDefinition
 {
     public const string ID = 'admin.realm-roles';

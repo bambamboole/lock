@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Api;
 
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 
 /**
  * The roles Lock ships with: realm roles of the master realm whose scopes are
@@ -21,18 +21,18 @@ final class ManagementRoles
     public const string SUPPORT = 'Support';
 
     /**
-     * @return array<string, list<ApiScope>>
+     * @return array<string, list<Scope>>
      */
     public static function grants(): array
     {
         return [
-            self::SUPER_ADMIN => ApiScope::cases(),
+            self::SUPER_ADMIN => Scope::cases(),
             self::SUPPORT => [
-                ApiScope::RealmsRead,
-                ApiScope::UsersRead,
-                ApiScope::UsersWrite,
-                ApiScope::RolesRead,
-                ApiScope::ActivityRead,
+                Scope::RealmsRead,
+                Scope::UsersRead,
+                Scope::UsersWrite,
+                Scope::RolesRead,
+                Scope::ActivityRead,
             ],
         ];
     }

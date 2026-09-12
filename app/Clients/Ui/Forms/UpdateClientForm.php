@@ -6,7 +6,7 @@ namespace App\Clients\Ui\Forms;
 use App\Clients\Ui\Concerns\BuildsClientFields;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
 use App\Clients\Ui\Pages\ClientDetailPage;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\UpdatesClient;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsForm('admin.clients.update', can: ApiScope::ClientsWrite)]
+#[AsForm('admin.clients.update', can: Scope::ClientsWrite)]
 final class UpdateClientForm extends FormDefinition
 {
     use BuildsClientFields;

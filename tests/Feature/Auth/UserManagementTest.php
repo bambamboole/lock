@@ -16,9 +16,9 @@ use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
@@ -141,7 +141,7 @@ test('an address is unique within the realm but free in another realm', function
 });
 
 test('creating a user is forbidden without users-manage', function () {
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead));
+    $this->actingAs(globalAdminWith(Scope::UsersRead));
 
     $this->get('/admin/realms/acme/users/create')->assertForbidden();
     $this->submitDeniedForm(CreateUserForm::class, ['name' => 'X', 'email' => 'x@example.com', 'credentials' => 'invite'], ['realm' => 'acme'])
@@ -189,7 +189,7 @@ test('a row rejects an address already used inside the realm', function () {
 test('editing a user is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->create();
 
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead))
+    $this->actingAs(globalAdminWith(Scope::UsersRead))
         ->submitDeniedForm(UpdateUserNameForm::class, ['name' => 'X'], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 });
@@ -221,7 +221,7 @@ test('an admin cannot block themselves and one without users-manage cannot block
     $target = User::factory()->for($this->realm)->create();
 
     $this->actingAs($admin)->callDeniedAction(BlockUserAction::class, [], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead))->callDeniedAction(BlockUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
+    $this->actingAs(globalAdminWith(Scope::UsersRead))->callDeniedAction(BlockUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
 
     expect($admin->refresh()->isBlocked())->toBeFalse()
         ->and($target->refresh()->isBlocked())->toBeFalse();
@@ -249,7 +249,7 @@ test('resetting MFA removes authenticator apps, recovery codes and passkeys', fu
 test('resetting MFA is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->withTwoFactor()->create();
 
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead))
+    $this->actingAs(globalAdminWith(Scope::UsersRead))
         ->callDeniedAction(ResetUserMfaAction::class, [], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 
@@ -282,7 +282,7 @@ test('an admin cannot delete themselves and one without users-manage cannot dele
     $target = User::factory()->for($this->realm)->create();
 
     $this->actingAs($admin)->callDeniedAction(DeleteUserAction::class, [], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead))->callDeniedAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
+    $this->actingAs(globalAdminWith(Scope::UsersRead))->callDeniedAction(DeleteUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertForbidden();
 
     expect(User::query()->whereKey($admin->id)->exists())->toBeTrue()
         ->and(User::query()->whereKey($target->id)->exists())->toBeTrue();
@@ -341,7 +341,7 @@ test('ending sessions is forbidden without users-manage', function () {
     $target = User::factory()->for($this->realm)->create();
     $session = activeSessionFor($target);
 
-    $this->actingAs(globalAdminWith(ApiScope::UsersRead))
+    $this->actingAs(globalAdminWith(Scope::UsersRead))
         ->callDeniedAction(EndAllUserSessionsAction::class, [], ['realm' => 'acme', 'user' => $target->id])
         ->assertForbidden();
 

@@ -17,7 +17,7 @@ use App\Auth\Ui\Forms\UpdateUserNameForm;
 use App\Auth\Ui\Forms\UpdateUserVerificationForm;
 use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -41,7 +41,7 @@ use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 use Lattice\Ui\Slot;
 
-#[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: ApiScope::UsersRead)]
+#[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: Scope::UsersRead)]
 final class UserDetailPage extends AdminPage
 {
     public function render(PageSchema $schema, Realm $realm, User $user): PageSchema

@@ -19,11 +19,11 @@ use App\Auth\Ui\Pages\DevLoginPage;
 use App\Auth\Ui\Pages\RealmUsersPage;
 use App\Auth\Ui\Pages\SetupTwoFactorPage;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Auth\Contracts\CreatesRealmUser;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginApi;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
@@ -73,7 +73,7 @@ final class AuthServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.users'))
                 ->prefix(Affix::icon('users'))
-                ->can(ApiScope::UsersRead),
+                ->can(Scope::UsersRead),
             priority: 10,
         );
 

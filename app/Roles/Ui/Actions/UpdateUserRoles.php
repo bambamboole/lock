@@ -6,7 +6,7 @@ namespace App\Roles\Ui\Actions;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use App\Shared\Roles\Contracts\SyncsUserRoles;
 use Illuminate\Http\Request;
@@ -20,7 +20,7 @@ use Lattice\Form\FormData;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.realm-roles.update', can: ApiScope::RolesWrite)]
+#[AsAction('admin.users.realm-roles.update', can: Scope::RolesWrite)]
 final class UpdateUserRoles extends ActionDefinition
 {
     use ResolvesCurrentUser;

@@ -6,7 +6,7 @@ namespace App\Auth\Ui\Pages;
 
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -19,7 +19,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/users', name: 'admin.realms.users', can: ApiScope::UsersRead)]
+#[AsPage(route: '/admin/realms/{realm}/users', name: 'admin.realms.users', can: Scope::UsersRead)]
 final class RealmUsersPage extends AdminPage
 {
     public function title(): string

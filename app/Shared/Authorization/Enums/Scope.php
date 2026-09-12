@@ -1,15 +1,16 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Api\Enums;
+namespace App\Shared\Authorization\Enums;
 
 /**
- * The scopes of the management API resource — the only authorization currency
- * Lock has. A token carries them, a realm role grants them, and both the
- * console and `CheckScopes` read the same values. There is no implication
- * between them: a role that may write also lists the matching read scope.
+ * The only authorization currency Lock has. A token carries them, a role grants
+ * them, and the console and `EnsureScopes` read the same values — which is why
+ * they live here and not with the management API whose resource carries their
+ * rows. There is no implication between them: a role that may write also lists
+ * the matching read scope.
  */
-enum ApiScope: string
+enum Scope: string
 {
     case RealmsRead = 'realms:read';
 

@@ -13,7 +13,7 @@ use App\Roles\Actions\UpdateRole;
 use App\Roles\Models\Role;
 use App\Roles\Ui\Components\UserRolesCard;
 use App\Roles\Ui\Pages\RolesPage;
-use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\CreatesRole;
 use App\Shared\Roles\Contracts\DeletesRole;
 use App\Shared\Roles\Contracts\SyncsUserRoles;
@@ -41,7 +41,7 @@ final class RolesServiceProvider extends ServiceProvider
             static fn (Realm $realm): MenuItem => MenuItem::fromPage(RolesPage::class, ['realm' => $realm->slug])
                 ->label(__('navigation.roles'))
                 ->prefix(Affix::icon('shield-check'))
-                ->can(ApiScope::RolesRead),
+                ->can(Scope::RolesRead),
             priority: 30,
         );
 
