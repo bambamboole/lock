@@ -19,6 +19,7 @@
         "laravel/octane": "^2.19.1",
         "laravel/tinker": "^3.0.2",
         "lattice-php/lattice": "^0.77.0",
+        "sentry/sentry-laravel": "^4.27",
         "spatie/laravel-activitylog": "^5.1.1"
     },
     "require-dev": {

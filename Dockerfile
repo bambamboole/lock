@@ -40,7 +40,8 @@ ENV AUTORUN_ENABLED=true \
     OCTANE_SERVER=frankenphp \
     PHP_OPCACHE_ENABLE=1 \
     APP_NAME=Lock \
-    LOG_CHANNEL=stderr \
+    LOG_CHANNEL=stack \
+    LOG_STACK=stderr,sentry_logs \
     LOG_LEVEL=info \
     SESSION_SECURE_COOKIE=true
 
