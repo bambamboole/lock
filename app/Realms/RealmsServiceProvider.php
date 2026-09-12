@@ -10,6 +10,7 @@ use App\Realms\Actions\DeleteRealm;
 use App\Realms\Actions\UpdateRealm;
 use App\Realms\Actions\UpdateRealmDomain;
 use App\Realms\Models\Realm;
+use App\Realms\Models\RealmSocialProvider;
 use App\Realms\Support\RealmHostGate;
 use App\Realms\Ui\Pages\RealmSettingsPage;
 use App\Realms\Ui\Pages\RealmsPage;
@@ -66,6 +67,8 @@ final class RealmsServiceProvider extends ServiceProvider
             fn (string $value): Realm => Realm::where('slug', $value)->firstOrFail(),
             keyBy: fn (Realm $realm): string => $realm->slug,
         );
+
+        Lattice::context('socialProvider', fn (string $value): RealmSocialProvider => RealmSocialProvider::query()->findOrFail($value));
 
         Route::matched(fn (RouteMatched $event) => app(RealmHostGate::class)->guard($event->request, $event->route));
     }

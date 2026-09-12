@@ -7,6 +7,7 @@ namespace App\Shared\Realms\Enums;
 enum RealmSettingSection: string
 {
     case Login = 'login';
+    case Social = 'social';
     case Tokens = 'tokens';
     case Sessions = 'sessions';
     case Mfa = 'mfa';

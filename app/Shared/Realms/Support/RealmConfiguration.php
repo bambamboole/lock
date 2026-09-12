@@ -89,6 +89,8 @@ final class RealmConfiguration
             'login_methods' => ['required', 'array', 'list', 'min:1', 'max:3'],
             'login_methods.*' => ['required', 'string', 'distinct', Rule::in(array_column(LoginMethod::cases(), 'value'))],
             'email_verification_required' => ['required', 'boolean'],
+            'link_by_verified_email' => ['required', 'boolean'],
+            'auto_provision' => ['required', 'boolean'],
             'mfa_requirement' => ['required', 'string', Rule::in(array_column(MfaRequirement::cases(), 'value'))],
             'challenge_providers' => ['required', 'array', 'list', 'min:1', 'max:2'],
             'challenge_providers.*' => ['required', 'string', 'distinct', Rule::in(['totp', 'webauthn'])],
@@ -159,6 +161,10 @@ final class RealmConfiguration
             'login' => [
                 'login_methods' => RealmSettingType::LoginMethods,
                 'email_verification_required' => RealmSettingType::Flag,
+            ],
+            'social' => [
+                'link_by_verified_email' => RealmSettingType::Flag,
+                'auto_provision' => RealmSettingType::Flag,
             ],
             'mfa' => [
                 'mfa_requirement' => RealmSettingType::MfaRequirement,

@@ -26,6 +26,9 @@ return [
                 'deleted' => 'Client gelöscht',
             ],
             'realm' => [
+                'social-provider-created' => 'Social-Provider angelegt',
+                'social-provider-updated' => 'Social-Provider aktualisiert',
+                'social-provider-deleted' => 'Social-Provider gelöscht',
                 'created' => 'Realm angelegt',
                 'updated' => 'Realm aktualisiert',
                 'deleted' => 'Realm gelöscht',

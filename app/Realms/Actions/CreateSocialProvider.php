@@ -1,0 +1,41 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Realms\Actions;
+
+use App\Realms\Data\CreateSocialProviderData;
+use App\Realms\Models\Realm;
+use App\Realms\Models\RealmSocialProvider;
+use App\Shared\Audit\Audit;
+use App\Shared\Realms\Enums\RealmAdminEvent;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
+final class CreateSocialProvider
+{
+    public function handle(Realm $realm, CreateSocialProviderData $data): RealmSocialProvider
+    {
+        return DB::transaction(function () use ($realm, $data): RealmSocialProvider {
+            Validator::make(['key' => $data->key], [
+                'key' => [Rule::unique(RealmSocialProvider::class, 'key')->where('realm_id', $realm->id)],
+            ])->validate();
+            $driver = $data->driver;
+            $provider = $realm->socialProviders()->create([
+                'key' => $data->key,
+                'driver' => $driver,
+                'enabled' => $data->enabled,
+                'config' => array_intersect_key($data->config, array_flip($driver->fields())),
+            ]);
+
+            Audit::record(RealmAdminEvent::SocialProviderCreated, $provider, $realm, [
+                'realm' => $realm->slug,
+                'key' => $provider->key,
+                'driver' => $driver->value,
+                'enabled' => $provider->enabled,
+            ]);
+
+            return $provider;
+        });
+    }
+}

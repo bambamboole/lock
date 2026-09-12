@@ -5,6 +5,7 @@ namespace App\Shared\Realms\Data;
 
 use App\Shared\Data\Data;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
+use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
@@ -49,6 +50,10 @@ final class RealmSettings extends Data
         public array $loginMethods,
         #[SpecProperty('Whether an unverified address blocks sign-in.')]
         public bool $emailVerificationRequired,
+        #[SpecProperty('Link an upstream identity to a local user with the same verified email address.')]
+        public bool $linkByVerifiedEmail,
+        #[SpecProperty('Create a realm user on their first verified upstream sign-in.')]
+        public bool $autoProvision,
         #[SpecProperty('When a second factor is demanded: `never`, `if_enrolled`, `always`.')]
         public string $mfaRequirement,
         #[SpecProperty('The second factors on offer: `totp`, `webauthn`.')]
@@ -103,6 +108,7 @@ final class RealmSettings extends Data
         $credentials = new CredentialSettings;
         $clients = new ClientSettings;
         $password = PasswordPolicy::fromConfig();
+        $brokering = BrokeringSettings::fromConfig();
 
         return new self(
             accessTokenLifetime: $tokens->accessTokenLifetime,
@@ -114,6 +120,8 @@ final class RealmSettings extends Data
             sessionTokenRefreshSkew: $sessions->tokenRefreshSkew,
             loginMethods: array_map(fn (LoginMethod $method): string => $method->value, $authentication->methods),
             emailVerificationRequired: $authentication->emailVerificationRequired,
+            linkByVerifiedEmail: $brokering->linkByVerifiedEmail,
+            autoProvision: $brokering->autoProvision,
             mfaRequirement: $authentication->mfa->value,
             challengeProviders: $credentials->challengeProviders,
             totpSecretLength: $credentials->totpSecretLength,

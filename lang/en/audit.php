@@ -26,6 +26,9 @@ return [
                 'deleted' => 'Client deleted',
             ],
             'realm' => [
+                'social-provider-created' => 'Social provider created',
+                'social-provider-updated' => 'Social provider updated',
+                'social-provider-deleted' => 'Social provider deleted',
                 'created' => 'Realm created',
                 'updated' => 'Realm updated',
                 'deleted' => 'Realm deleted',
