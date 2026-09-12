@@ -14,7 +14,6 @@ use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Illuminate\Http\Request;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -43,24 +42,9 @@ use Lattice\Ui\PageSchema;
 #[AsPage(route: '/admin/realms/{realm}/clients/{client}', name: 'admin.realms.clients.show', can: Scope::ClientsRead)]
 final class ClientDetailPage extends AdminPage
 {
-    private const string SECRET_FLASH_KEY = 'admin.clients.revealed-secret';
-
-    /**
-     * A client secret is readable exactly once, on the page after the request
-     * that minted it; the column only holds the hash.
-     */
-    public static function revealSecret(?string $secret): void
+    public function render(PageSchema $schema, Realm $realm, Client $client): PageSchema
     {
-        if ($secret !== null) {
-            session()->flash(self::SECRET_FLASH_KEY, $secret);
-        }
-    }
-
-    public function render(PageSchema $schema, Realm $realm, Client $client, Request $request): PageSchema
-    {
-        abort_unless($client->realm_id === $realm->slug, 404);
-
-        $secret = $request->session()->get(self::SECRET_FLASH_KEY);
+        abort_unless($client->realm === $realm->slug, 404);
 
         $schema->title($client->name)->breadcrumbs($this->realmBreadcrumbs(
             $realm,
@@ -78,7 +62,7 @@ final class ClientDetailPage extends AdminPage
                         __('admin.clients.detail.description', ['realm' => $realm->name]),
                         $this->headerActions($client),
                     ),
-                    ...(is_string($secret) ? [$this->secretCard($client, $secret)] : []),
+                    ...($client->confidential() ? [$this->secretCard($client)] : []),
                     $this->settingsCard($client),
                 ]),
         ]);
@@ -95,7 +79,7 @@ final class ClientDetailPage extends AdminPage
         return ActionBar::make(
             primary: $client->confidential() ? [Action::use(RotateClientSecret::class)] : [],
             overflow: [
-                ...($client->revoked
+                ...($client->isRevoked()
                     ? [Action::use(RestoreClient::class)]
                     : [Action::use(RevokeClient::class)]),
                 Action::use(DeleteClient::class),
@@ -104,14 +88,14 @@ final class ClientDetailPage extends AdminPage
         );
     }
 
-    private function secretCard(Client $client, string $secret): Card
+    private function secretCard(Client $client): Card
     {
         return Card::make(__('admin.clients.detail.secret.heading'), __('admin.clients.detail.secret.subtitle'))->schema([
             Stack::make('client-secret')->gap(Gap::Small)->schema([
                 Text::make(__('admin.clients.columns.client-id'))->size(Size::Sm)->color(ColorName::Muted),
                 CodeBlock::make($client->client_id, 'client-secret-client-id')->copyable(),
                 Text::make(__('admin.clients.detail.secret.label'))->size(Size::Sm)->color(ColorName::Muted),
-                CodeBlock::make($secret, 'client-secret-value')->copyable(),
+                CodeBlock::make((string) $client->secret, 'client-secret-value')->copyable(),
             ]),
         ]);
     }
@@ -151,8 +135,8 @@ final class ClientDetailPage extends AdminPage
                 ComponentEntry::make('scopes', __('admin.clients.detail.scopes'), 'client-scopes')
                     ->value($this->badges($client->assignedScopes())),
                 BadgeEntry::make('status', __('admin.clients.columns.status'), 'client-status')
-                    ->value($client->revoked ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
-                    ->color($client->revoked ? ColorName::Danger : ColorName::Success),
+                    ->value($client->isRevoked() ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
+                    ->color($client->isRevoked() ? ColorName::Danger : ColorName::Success),
                 DateEntry::make('created_at', __('admin.clients.detail.created-at'), 'client-created-at')
                     ->value($client->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),

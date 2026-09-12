@@ -32,7 +32,7 @@ final readonly class EndBrowserSession
             ->where('id', $session->id)
             ->delete();
 
-        $sid = $this->oidcSessions->findByBrowserSession($session->id)?->sid;
+        $sid = $this->oidcSessions->findByBrowserSession($session->id)?->id;
 
         if ($sid !== null) {
             $this->endUserSessions->handle($user, $sid);

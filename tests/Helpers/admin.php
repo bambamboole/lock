@@ -6,7 +6,6 @@ namespace Tests\Helpers;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Api\ManagementRoles;
@@ -53,20 +52,4 @@ function managementScopeIds(Scope ...$scopes): array
         ->pluck('id')
         ->map(fn (mixed $id): string => (string) $id)
         ->all());
-}
-
-/**
- * @return list<string>
- */
-function scopeValuesOf(Role $role): array
-{
-    return array_values($role->scopes()->pluck('value')->map(fn (mixed $value): string => (string) $value)->sort()->values()->all());
-}
-
-/**
- * @return list<string>
- */
-function resourceScopeValues(ResourceScope ...$scopes): array
-{
-    return array_values(array_map(fn (ResourceScope $scope): string => $scope->value, $scopes));
 }

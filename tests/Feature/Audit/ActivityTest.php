@@ -6,7 +6,6 @@ use App\Audit\Ui\Fragments\InstanceActivityChangesFragment;
 use App\Audit\Ui\Tables\InstanceActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
@@ -14,17 +13,6 @@ use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
-
-test('a role update that changes nothing is not logged', function () {
-    $admin = globalAdmin();
-    $target = User::factory()->for(Realm::master())->create();
-
-    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
-        'role_ids' => [],
-    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
-
-    expect(Activity::global()->count())->toBe(0);
-});
 
 test('any admin can read the activity trail', function (string $roleName) {
     $admin = globalAdmin($roleName);

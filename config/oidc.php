@@ -24,4 +24,12 @@ return [
     // A scope belongs to exactly one resource, so the catalog is read per
     // requested RFC 8707 `resource`.
     'scopes' => ResourceScopeCatalog::class,
+
+    // Lock owns both tables the package points at, so both keys are set: the
+    // realm is keyed by `slug` rather than by `id`, because the slug is what
+    // every `realm_id` column holds.
+    'migrations' => [
+        'users' => ['table' => 'users', 'column' => 'id'],
+        'realms' => ['table' => 'realms', 'column' => 'slug'],
+    ],
 ];

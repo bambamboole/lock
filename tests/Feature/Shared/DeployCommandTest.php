@@ -23,7 +23,7 @@ it('runs every deploy step and leaves the app state primed', function () {
     try {
         $this->artisan('app:deploy')->assertSuccessful();
 
-        expect(SigningKey::query()->whereNull('retired_at')->pluck('realm_id')->all())
+        expect(SigningKey::query()->whereNull('retired_at')->pluck('realm')->all())
             ->toEqualCanonicalizing(['admin', 'partners'])
             ->and(Realm::master()->roles()->pluck('name')->all())
             ->toEqualCanonicalizing(ManagementRoles::names())

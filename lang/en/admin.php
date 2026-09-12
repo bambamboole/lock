@@ -280,7 +280,7 @@ return [
             'scopes' => 'Scopes',
             'secret' => [
                 'heading' => 'Client secret',
-                'subtitle' => 'Copy the secret now. It is shown only once and cannot be recovered.',
+                'subtitle' => 'Stored encrypted, so it stays readable here. Rotate it if it leaks.',
                 'label' => 'Client secret',
             ],
             'settings' => [

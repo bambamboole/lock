@@ -137,7 +137,7 @@ final class Realm extends Model implements RealmContract
 
     public static function ofClient(Client $client): self
     {
-        return self::query()->where('slug', $client->realm_id)->sole();
+        return self::query()->where('slug', $client->realm)->sole();
     }
 
     public static function findByHost(string $host): ?self

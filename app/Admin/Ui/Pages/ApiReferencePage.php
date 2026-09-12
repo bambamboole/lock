@@ -13,6 +13,7 @@ use Lattice\ApiReference\ApiReference;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 /**
@@ -34,14 +35,16 @@ final class ApiReferencePage extends AdminPage
     public function render(PageSchema $schema, CacheableGenerator $generator, ManagementApi $api): PageSchema
     {
         return $schema->schema([
-            Stack::make('admin-api-page')->gap(Gap::Large)->schema([
-                PageHeader::make(__('admin.api.heading'), __('admin.api.description')),
-                ApiReference::make(self::REFERENCE_ID)
-                    ->id(self::REFERENCE_ID)
-                    ->spec($generator())
-                    ->hideHeader()
-                    ->tokenSource(ApiReferenceTokens::KEY, audience: $api->audience()),
-            ]),
+            Stack::make('admin-api-page')
+                ->width(Width::ExtraLarge)
+                ->gap(Gap::Large)->schema([
+                    PageHeader::make(__('admin.api.heading'), __('admin.api.description')),
+                    ApiReference::make(self::REFERENCE_ID)
+                        ->id(self::REFERENCE_ID)
+                        ->spec($generator())
+                        ->hideHeader()
+                        ->tokenSource(ApiReferenceTokens::KEY, audience: $api->audience()),
+                ]),
         ]);
     }
 }

@@ -21,7 +21,7 @@ final readonly class DeleteClient implements DeletesClient
             ($this->purge)($client);
 
             Audit::record(ClientAuditEvent::ClientDeleted, $client, Realm::ofClient($client), [
-                'realm' => $client->realm_id,
+                'realm' => $client->realm,
                 'client_id' => $client->client_id,
                 'name' => $client->name,
             ]);

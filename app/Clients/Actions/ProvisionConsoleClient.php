@@ -11,7 +11,6 @@ use App\Shared\Console\Enums\BootstrapOutcome;
 use Bambamboole\LaravelOidc\Server\Clients\Actions\ProvisionFirstPartyClient;
 use Bambamboole\LaravelOidc\Server\Clients\Exceptions\FirstPartyClientProvisioningException;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\Facades\DB;
 use SensitiveParameter;
 
@@ -28,7 +27,6 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
 
     public function __construct(
         private ProvisionFirstPartyClient $provisioner,
-        private Hasher $hasher,
     ) {}
 
     /**
@@ -69,7 +67,7 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
                 'grant_types' => self::GrantTypes,
             ]);
 
-            if (! $this->hasher->check($clientSecret, (string) $client->getRawOriginal('secret'))) {
+            if (! hash_equals((string) $client->secret, $clientSecret)) {
                 $client->secret = $clientSecret;
             }
 

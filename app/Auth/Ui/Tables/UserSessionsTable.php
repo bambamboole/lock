@@ -51,16 +51,15 @@ final class UserSessionsTable extends EloquentTableDefinition
         $user = $this->user();
 
         $builder = OidcSession::query()
-            ->where('oidc_sessions.realm_id', $user->realm->slug)
+            ->where('oidc_sessions.realm', $user->realm->slug)
             ->where('oidc_sessions.user_id', $user->id)
             ->select('oidc_sessions.*')
-            ->selectRaw('oidc_sessions.sid as id')
             ->selectRaw(
                 'case when oidc_sessions.revoked_at is not null then ? when oidc_sessions.expires_at <= ? then ? else ? end as status',
                 [self::REVOKED, now(), self::EXPIRED, self::ACTIVE],
             )
             ->selectSub(
-                SessionParticipant::query()->selectRaw('count(*)')->whereColumn('oidc_session_participants.sid', 'oidc_sessions.sid'),
+                SessionParticipant::query()->selectRaw('count(*)')->whereColumn('oidc_session_participants.session_id', 'oidc_sessions.id'),
                 'participants_count',
             );
 
@@ -74,7 +73,7 @@ final class UserSessionsTable extends EloquentTableDefinition
     public function columns(): array
     {
         return [
-            TextColumn::make('sid')->label(__('admin.users.detail.sessions.columns.sid'))->copyable(),
+            TextColumn::make('id')->label(__('admin.users.detail.sessions.columns.sid'))->copyable(),
             BadgeColumn::make('status')
                 ->label(__('admin.users.detail.sessions.columns.status'))
                 ->options([

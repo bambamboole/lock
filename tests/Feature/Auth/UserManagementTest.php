@@ -42,7 +42,7 @@ beforeEach(function () {
 
 function activeSessionFor(User $user, ?Client $client = null): OidcSession
 {
-    $session = OidcSession::factory()->forUser($user)->create(['realm_id' => $user->realm->slug]);
+    $session = OidcSession::factory()->forUser($user)->create(['realm' => $user->realm->slug]);
 
     if ($client instanceof Client) {
         SessionParticipant::factory()->inSession($session)->forClient($client)->create();
@@ -297,7 +297,7 @@ test('the sessions table lists the user\'s sessions under their own realm only',
     $rows = $this->loadTable(UserSessionsTable::class, context: ['realm' => 'acme', 'user' => $target->id])->assertOk()->json('data');
     $row = collect(is_array($rows) ? $rows : [])->sole();
 
-    expect($row['id'])->toBe($session->sid)
+    expect($row['id'])->toBe($session->id)
         ->and($row['status'])->toBe('active')
         ->and($row['participants_count'])->toBe(1);
 
@@ -312,15 +312,15 @@ test('a single session can be ended and the relying party is told', function () 
     $kept = activeSessionFor($target);
 
     $this->actingAs(globalAdmin())
-        ->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->sid])
+        ->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->id])
         ->assertOk();
 
     expect($ended->refresh()->revoked_at)->not->toBeNull()
         ->and($kept->refresh()->revoked_at)->toBeNull()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserSessionEnded->eventName())->sole()->getProperty('sid'))->toBe($ended->sid);
-    Bus::assertDispatched(SendBackChannelLogout::class, fn (SendBackChannelLogout $job): bool => $job->sid === $ended->sid);
+        ->and(Activity::global()->where('event', UserAuditEvent::UserSessionEnded->eventName())->sole()->getProperty('sid'))->toBe($ended->id);
+    Bus::assertDispatched(SendBackChannelLogout::class, fn (SendBackChannelLogout $job): bool => $job->sid === $ended->id);
 
-    $this->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->sid])->assertStatus(422);
+    $this->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->id])->assertStatus(422);
 });
 
 test('ending all sessions revokes every active one', function () {

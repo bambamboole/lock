@@ -33,7 +33,7 @@ it('provisions the console client with the configured id and secret', function (
     $settings = Realm::master()->clients();
 
     expect($client->grant_types)->toEqualCanonicalizing(['authorization_code', 'refresh_token', 'client_credentials'])
-        ->and($client->realm_id)->toBe('admin')
+        ->and($client->realm)->toBe('admin')
         ->and($client->redirect_uris)->toContain(config('app.url').'/login/callback')
         ->and($settings->firstPartyClientId)->toBe('lock-console')
         ->and($settings->firstPartyTrusted)->toBeTrue();

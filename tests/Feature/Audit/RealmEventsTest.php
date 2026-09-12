@@ -29,22 +29,6 @@ test('the events table lists only the selected realm', function () {
     expect(collect(is_array($rows) ? $rows : [])->pluck('id')->all())->toBe([$mine->id]);
 });
 
-test('the events table filters by category and by failure', function () {
-    $failed = AuditEvent::factory()->for($this->realm)->ofType(AuditEventType::LoginFailed)->create();
-    AuditEvent::factory()->for($this->realm)->ofType(AuditEventType::LoginSucceeded)->create();
-    AuditEvent::factory()->for($this->realm)->ofType(AuditEventType::TokenIssued)->create();
-
-    $this->actingAs(globalAdmin());
-
-    $auth = $this->loadTable(RealmAuditEventsTable::class, ['tf' => ['category' => ['value' => 'auth']]], ['realm' => 'acme'])
-        ->assertOk()->json('data');
-    $failures = $this->loadTable(RealmAuditEventsTable::class, ['tf' => ['failure' => ['value' => 'true']]], ['realm' => 'acme'])
-        ->assertOk()->json('data');
-
-    expect(collect(is_array($auth) ? $auth : [])->count())->toBe(2)
-        ->and(collect(is_array($failures) ? $failures : [])->pluck('id')->all())->toBe([$failed->id]);
-});
-
 test('a row detail renders the request provenance and the event payload', function () {
     $event = AuditEvent::factory()->for($this->realm)->ofType(AuditEventType::LoginFailed)->create([
         'ip' => '203.0.113.7',

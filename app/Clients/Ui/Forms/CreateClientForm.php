@@ -5,7 +5,6 @@ namespace App\Clients\Ui\Forms;
 
 use App\Clients\Ui\Concerns\BuildsClientFields;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
-use App\Clients\Ui\Pages\ClientDetailPage;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\CreatesClient;
 use Illuminate\Http\Request;
@@ -38,8 +37,6 @@ final class CreateClientForm extends FormDefinition
     {
         $realm = $this->realm();
         $client = $this->createClient->handle($realm, $this->clientAttributes($data, null));
-
-        ClientDetailPage::revealSecret($client->plainSecret);
 
         return Effects::respond()->toast(__('admin.clients.created'), Variant::Success)
             ->toRoute('admin.realms.clients.show', ['realm' => $realm->slug, 'client' => $client->id]);

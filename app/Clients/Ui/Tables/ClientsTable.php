@@ -38,7 +38,7 @@ final class ClientsTable extends EloquentTableDefinition
         $builder = Client::query()
             ->inRealm($realm->slug)
             ->select('oidc_clients.*')
-            ->selectRaw("CASE WHEN revoked THEN 'blocked' ELSE 'active' END AS status");
+            ->selectRaw("CASE WHEN revoked_at IS NOT NULL THEN 'blocked' ELSE 'active' END AS status");
 
         if ($query->sorts === []) {
             $builder->orderBy('name');
@@ -102,7 +102,7 @@ final class ClientsTable extends EloquentTableDefinition
 
         return array_filter([ActionBar::menu('admin.clients.row-actions', [
             ...($confidential ? [Action::use(RotateClientSecret::class, $context)] : []),
-            ...((bool) ($row['revoked'] ?? false)
+            ...(($row['revoked_at'] ?? null) !== null
                 ? [Action::use(RestoreClient::class, $context)]
                 : [Action::use(RevokeClient::class, $context)]),
             Action::use(DeleteClient::class, $context),

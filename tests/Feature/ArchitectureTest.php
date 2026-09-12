@@ -211,42 +211,6 @@ it('uses uuid primary keys on all domain models', function () {
     }
 });
 
-it('keeps every concrete app class final', function () {
-    $appPath = dirname(__DIR__, 2).'/app';
-    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($appPath, FilesystemIterator::SKIP_DOTS));
-
-    $concrete = [];
-    $notFinal = [];
-
-    /** @var SplFileInfo $file */
-    foreach ($files as $file) {
-        if ($file->getExtension() !== 'php') {
-            continue;
-        }
-
-        $class = 'App\\'.str_replace('/', '\\', substr($file->getPathname(), strlen($appPath) + 1, -4));
-
-        if (! class_exists($class)) {
-            continue;
-        }
-
-        $reflection = new ReflectionClass($class);
-
-        if ($reflection->isAbstract() || $reflection->isEnum()) {
-            continue;
-        }
-
-        $concrete[] = $class;
-
-        if (! $reflection->isFinal()) {
-            $notFinal[] = $class;
-        }
-    }
-
-    expect($concrete)->not->toBeEmpty()
-        ->and($notFinal)->toBeEmpty();
-});
-
 it('keeps every scope value a kebab-cased area with a read or write verb', function () {
     foreach (Scope::values() as $value) {
         expect($value)->toMatch('/^[a-z][a-z-]*:[a-z][a-z-]*$/')

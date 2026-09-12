@@ -55,7 +55,7 @@ it('lists the user browser sessions and marks the current one', function () {
 
 it('signs out another browser session and revokes the provider session behind it', function () {
     $user = User::factory()->for(Realm::master())->create();
-    $oidcSession = OidcSession::factory()->forUser($user)->create(['session_id' => 'other-session']);
+    $oidcSession = OidcSession::factory()->forUser($user)->create(['browser_session_id' => 'other-session']);
     browserSessionRow($user, 'other-session');
 
     $this->actingAs($user)
@@ -65,7 +65,7 @@ it('signs out another browser session and revokes the provider session behind it
         ->assertOk();
 
     expect(DB::table('sessions')->where('id', 'other-session')->exists())->toBeFalse()
-        ->and(OidcSession::query()->whereKey($oidcSession->sid)->firstOrFail()->revoked_at)->not->toBeNull();
+        ->and(OidcSession::query()->whereKey($oidcSession->id)->firstOrFail()->revoked_at)->not->toBeNull();
 });
 
 it('refuses to sign out the current session or another user session', function () {

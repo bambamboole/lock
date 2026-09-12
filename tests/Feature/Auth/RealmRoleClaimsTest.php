@@ -62,7 +62,7 @@ it('reflects a role change on the refreshed access token', function () {
     $refreshed = $this->post(route('oidc.token'), [
         'grant_type' => 'refresh_token',
         'client_id' => $this->client->client_id,
-        'client_secret' => $this->client->plainSecret,
+        'client_secret' => $this->client->secret,
         'refresh_token' => (string) $tokens->refreshToken,
     ])->assertOk();
 
