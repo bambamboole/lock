@@ -13,9 +13,10 @@ use App\Shared\Realms\Contracts\DeletesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use Bambamboole\Spectacular\QueryBuilder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\AllowedFilter;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -36,20 +37,23 @@ final readonly class RealmController
      *
      * @return AnonymousResourceCollection<array-key, RealmResource>
      */
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(): AnonymousResourceCollection
     {
-        return RealmResource::collection(
-            QueryBuilder::for(Realm::class)
-                ->allowedFilters(
-                    AllowedFilter::partial('name'),
-                    AllowedFilter::exact('slug'),
-                    AllowedFilter::exact('domain'),
-                    AllowedFilter::exact('domain_status'),
-                )
-                ->allowedSorts('name', 'slug', 'created_at')
-                ->defaultSort('name')
-                ->apiPaginate(),
-        );
+        $realms = QueryBuilder::for(Realm::class)
+            ->allowedFilters(
+                AllowedFilter::partial('name'),
+                AllowedFilter::exact('slug'),
+                AllowedFilter::exact('domain'),
+                AllowedFilter::exact('domain_status'),
+            )
+            ->allowedSorts('name', 'slug', 'created_at')
+            ->defaultSort('name')
+            ->apiPaginate();
+
+        // Every realm serialises its configuration, which reads its settings rows.
+        Collection::make($realms->items())->load('storedSettings');
+
+        return RealmResource::collection($realms);
     }
 
     /**
@@ -57,7 +61,7 @@ final readonly class RealmController
      */
     public function show(Realm $realm): RealmResource
     {
-        return new RealmResource($realm);
+        return $this->resource($realm);
     }
 
     /**
@@ -77,19 +81,25 @@ final readonly class RealmController
 
         $this->checkDomain->handle($realm);
 
-        return new RealmResource($realm->refresh())->response()->setStatusCode(Response::HTTP_CREATED);
+        return $this->resource($realm->refresh())->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
      * Update a realm
      *
-     * A realm's slug is immutable. Re-pointing the domain changes the issuer of
-     * every token the realm mints and restarts the domain check.
+     * A realm's slug is immutable. Settings left out of `configuration` keep
+     * their current value. Re-pointing the domain changes the issuer of every
+     * token the realm mints and restarts the domain check.
      */
     public function update(UpdateRealmRequest $request, Realm $realm): RealmResource
     {
-        if ($request->has('name')) {
-            $this->updateRealm->handle($realm, ['name' => $request->string('name')->toString()]);
+        $submitted = [
+            ...$request->has('name') ? ['name' => $request->string('name')->toString()] : [],
+            ...$request->array('configuration'),
+        ];
+
+        if ($submitted !== []) {
+            $this->updateConfiguration($realm, $submitted);
         }
 
         if ($request->has('domain')) {
@@ -97,7 +107,35 @@ final readonly class RealmController
             $this->checkDomain->handle($realm);
         }
 
-        return new RealmResource($realm->refresh());
+        return $this->resource($realm->refresh());
+    }
+
+    /** The realm's configuration reads its settings rows. */
+    private function resource(Realm $realm): RealmResource
+    {
+        return new RealmResource($realm->loadMissing('storedSettings'));
+    }
+
+    /**
+     * The update validates the submission merged into the realm's current
+     * configuration, so it reports a setting under its own name. On the wire
+     * the settings live under `configuration`, and an error has to point there.
+     *
+     * @param  array<string, mixed>  $submitted
+     */
+    private function updateConfiguration(Realm $realm, array $submitted): void
+    {
+        try {
+            $this->updateRealm->handle($realm, $submitted);
+        } catch (ValidationException $exception) {
+            $errors = [];
+
+            foreach ($exception->errors() as $key => $messages) {
+                $errors[$key === 'name' ? $key : 'configuration.'.$key] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     /**

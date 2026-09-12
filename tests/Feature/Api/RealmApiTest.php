@@ -5,7 +5,10 @@ declare(strict_types=1);
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Audit\Models\Activity;
+use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
+use App\Shared\Realms\Support\RealmConfiguration;
 
 use function Tests\Helpers\domainReachesThisInstance;
 use function Tests\Helpers\managementApiToken;
@@ -152,4 +155,99 @@ it('declares its scopes as the resource a token is addressed to', function () {
     $this->getJson(realmUrl(Realm::master(), '/.well-known/oauth-protected-resource/api'))
         ->assertOk()
         ->assertJsonPath('scopes_supported', ApiScope::values());
+});
+
+it('reports the realm configuration with every setting typed', function () {
+    $this->acme->settings->set('realm.access_token_lifetime', 900);
+    $this->acme->settings->set('realm.login_methods', ['passkey']);
+
+    $configuration = $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
+        ->getJson(realmsUrl('/acme'))
+        ->assertOk()
+        ->json('data.configuration');
+
+    expect(array_keys($configuration))->toEqualCanonicalizing(array_keys(RealmConfiguration::defaults()))
+        ->and($configuration['access_token_lifetime'])->toBe(900)
+        ->and($configuration['login_methods'])->toBe(['passkey'])
+        ->and($configuration['password_mixed_case'])->toBeBool();
+});
+
+it('updates a subset of the configuration and leaves the rest alone', function () {
+    $before = $this->acme->configuration();
+
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => [
+            'access_token_lifetime' => 900,
+            'mfa_requirement' => 'always',
+            'login_methods' => ['password', 'passkey'],
+        ]])
+        ->assertOk()
+        ->assertJsonPath('data.configuration.access_token_lifetime', 900)
+        ->assertJsonPath('data.configuration.mfa_requirement', 'always');
+
+    $after = $this->acme->refresh()->configuration();
+
+    expect($after['login_methods'])->toBe(['password', 'passkey'])
+        ->and($after['password_min_length'])->toBe($before['password_min_length'])
+        ->and($after['refresh_token_lifetime'])->toBe($before['refresh_token_lifetime']);
+});
+
+it('stores a quoted number as the integer the setting holds', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => ['totp_window' => '4']])
+        ->assertOk()
+        ->assertJsonPath('data.configuration.totp_window', 4);
+
+    expect($this->acme->refresh()->settings->get('realm.totp_window'))->toBe(4);
+});
+
+it('records a configuration change on the realm trail', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => ['recovery_codes' => 12]])
+        ->assertOk();
+
+    $activity = Activity::forRealm($this->acme)
+        ->where('event', RealmAuditEvent::RealmUpdated->eventName())
+        ->sole();
+
+    expect($activity->getProperty('changes'))->toBe(['recovery_codes' => ['old' => 8, 'new' => 12]])
+        ->and($activity->causer_id)->toBeNull();
+});
+
+it('rejects a setting that contradicts one it was not sent with', function () {
+    $this->acme->settings->set('realm.session_absolute_lifetime', 3600);
+
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => ['session_token_ttl' => 7200]])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('configuration.session_token_ttl');
+
+    expect($this->acme->refresh()->settings->get('realm.session_token_ttl'))->not->toBe(7200);
+});
+
+it('rejects a value outside the setting’s own rules', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => ['mfa_requirement' => 'whenever']])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('configuration.mfa_requirement');
+});
+
+it('rejects a setting it does not know', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), ['configuration' => ['make_me_admin' => true]])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('configuration');
+});
+
+it('renames and reconfigures a realm in one request', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->patchJson(realmsUrl('/acme'), [
+            'name' => 'Acme Inc',
+            'configuration' => ['password_min_length' => 16],
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.name', 'Acme Inc')
+        ->assertJsonPath('data.configuration.password_min_length', 16);
+
+    expect(Activity::forRealm($this->acme)->where('event', RealmAuditEvent::RealmUpdated->eventName())->count())->toBe(1);
 });

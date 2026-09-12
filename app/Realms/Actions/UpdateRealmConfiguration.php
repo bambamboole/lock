@@ -7,6 +7,7 @@ namespace App\Realms\Actions;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
+use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,14 @@ use Illuminate\Validation\Rule;
 
 final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
 {
-    /** @param array<string, mixed> $data */
+    /**
+     * A submitted value is cast to the type its setting declares before it is
+     * compared and stored: the stored configuration is typed, and a transport
+     * that types nothing — JSON with a quoted number, an HTML form — would
+     * otherwise leave a string where an int belongs.
+     *
+     * @param  array<string, mixed>  $data
+     */
     public function handle(Realm $realm, array $data): void
     {
         DB::transaction(function () use ($realm, $data): void {
@@ -33,9 +41,10 @@ final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
             $changes = [];
 
             foreach (array_keys($submitted) as $key) {
-                $value = $validated[$key];
+                $setting = RealmConfiguration::setting($key);
+                $value = $setting instanceof RealmSetting ? $setting->cast($validated[$key]) : $validated[$key];
 
-                if ($before[$key] == $value) {
+                if ($before[$key] === $value) {
                     continue;
                 }
 
