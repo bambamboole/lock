@@ -7,10 +7,12 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Actions\EndUserSessionAction;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
+use App\Shared\Ui\Components\ActionBar;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BadgeColumn;
@@ -96,13 +98,17 @@ final class UserSessionsTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::UsersWrite)) {
+            return [];
+        }
+
         if (($row['status'] ?? null) !== self::ACTIVE) {
             return [];
         }
 
-        return [
+        return array_filter([ActionBar::menu('admin.users.sessions.row-actions', [
             Action::use(EndUserSessionAction::class, ['sid' => $row['id']]),
-        ];
+        ])]);
     }
 
     private function user(): User

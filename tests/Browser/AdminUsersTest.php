@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 
 use function Tests\Helpers\globalAdmin;
 
@@ -21,4 +22,17 @@ it('blocks a user from the row menu of the users table', function () {
         ->assertNoJavaScriptErrors();
 
     expect($this->target->refresh()->isBlocked())->toBeTrue();
+});
+
+it('ends an active session through the session table menu', function () {
+    $session = OidcSession::factory()->forUser($this->target)->create(['realm' => 'acme']);
+
+    visit("/admin/realms/acme/users/{$this->target->id}")
+        ->click('[data-test="admin.users.sessions.row-actions"]')
+        ->click('End')
+        ->click('[data-test="confirm-accept"]')
+        ->assertSee('Session ended.')
+        ->assertNoJavaScriptErrors();
+
+    expect($session->refresh()->revoked_at)->not->toBeNull();
 });

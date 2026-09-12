@@ -11,6 +11,7 @@ use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BadgeColumn;
 use Lattice\Table\Columns\NumberColumn;
@@ -77,6 +78,10 @@ final class RealmsTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::RealmsWrite)) {
+            return [];
+        }
+
         return array_filter([ActionBar::menu('admin.realms.row-actions', [$this->deleteRealmTrigger((string) $row['slug'])])]);
     }
 }

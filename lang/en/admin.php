@@ -626,6 +626,17 @@ return [
         ],
         'create' => [
             'label' => 'Create role',
+            'description' => 'Create a role and choose its scopes in :realm.',
+        ],
+        'detail' => [
+            'description' => 'Role of :realm.',
+            'created-at' => 'Created',
+            'settings' => ['heading' => 'Settings'],
+            'scopes' => ['empty' => 'No scopes assigned to this role.'],
+            'protected' => [
+                'label' => 'System role',
+                'description' => 'This role is managed by Lock and cannot be changed or deleted.',
+            ],
         ],
         'edit' => [
             'label' => 'Edit',

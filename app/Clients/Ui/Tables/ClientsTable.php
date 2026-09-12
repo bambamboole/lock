@@ -14,6 +14,7 @@ use App\Shared\Ui\Components\ActionBar;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BadgeColumn;
@@ -97,6 +98,10 @@ final class ClientsTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::ClientsWrite)) {
+            return [];
+        }
+
         $context = ['client' => $row['id']];
         $confidential = $row['token_endpoint_auth_method'] !== TokenEndpointAuthMethod::None->value;
 

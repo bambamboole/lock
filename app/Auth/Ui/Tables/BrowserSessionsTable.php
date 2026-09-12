@@ -8,6 +8,7 @@ use App\Auth\Support\BrowserSession;
 use App\Auth\Support\BrowserSessions;
 use App\Auth\Ui\Actions\SignOutBrowserSession;
 use App\Shared\Concerns\ResolvesCurrentUser;
+use App\Shared\Ui\Components\ActionBar;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Table\Attributes\AsTable;
@@ -31,11 +32,6 @@ final class BrowserSessionsTable extends TableDefinition
     public const string ID = 'account.sessions';
 
     public function __construct(private readonly BrowserSessions $sessions) {}
-
-    public function layout(): string
-    {
-        return 'grid';
-    }
 
     public function pagination(): PaginationType
     {
@@ -73,7 +69,9 @@ final class BrowserSessionsTable extends TableDefinition
             return [];
         }
 
-        return [Action::use(SignOutBrowserSession::class, ['session' => $row['id']])];
+        return array_filter([ActionBar::menu('account.sessions.row-actions', [
+            Action::use(SignOutBrowserSession::class, ['session' => $row['id']]),
+        ])]);
     }
 
     public function source(): TableSource

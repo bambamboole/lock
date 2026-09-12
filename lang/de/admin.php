@@ -626,6 +626,17 @@ return [
         ],
         'create' => [
             'label' => 'Rolle anlegen',
+            'description' => 'Eine Rolle anlegen und ihre Scopes in :realm auswählen.',
+        ],
+        'detail' => [
+            'description' => 'Rolle von :realm.',
+            'created-at' => 'Erstellt',
+            'settings' => ['heading' => 'Einstellungen'],
+            'scopes' => ['empty' => 'Dieser Rolle sind keine Scopes zugewiesen.'],
+            'protected' => [
+                'label' => 'Systemrolle',
+                'description' => 'Diese Rolle wird von Lock verwaltet und kann nicht geändert oder gelöscht werden.',
+            ],
         ],
         'edit' => [
             'label' => 'Bearbeiten',
