@@ -17,6 +17,7 @@ use App\Shared\Api\ManagementApi;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Enums\ColorName;
 use Lattice\Table\Attributes\AsTable;
@@ -131,6 +132,10 @@ final class UsersTable extends EloquentTableDefinition
      */
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::UsersWrite)) {
+            return [];
+        }
+
         $context = ['user' => $row['id']];
         $blocked = (bool) ($row['blocked'] ?? false);
 

@@ -5,11 +5,14 @@ declare(strict_types=1);
 use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Resources\Models\Resource;
+use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Roles\Ui\Actions\CreateRoleAction;
 use App\Roles\Ui\Actions\DeleteRoleAction;
 use App\Roles\Ui\Actions\UpdateRoleAction;
 use App\Roles\Ui\Actions\UpdateUserRoles;
+use App\Roles\Ui\Forms\CreateRoleForm;
 use App\Roles\Ui\Tables\RolesTable;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Authorization\Enums\Scope;
@@ -222,4 +225,67 @@ test('support cannot manage roles', function () {
     $this->actingAs($support)->callDeniedAction(UpdateUserRoles::class, [
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertForbidden();
+});
+
+test('creating a role through its page form assigns scopes and opens its detail page', function () {
+    $resource = Resource::factory()->for($this->realm)->create();
+    $scope = ResourceScope::factory()->for($resource)->create();
+
+    $this->actingAs(globalAdmin())->submitForm(CreateRoleForm::class, [
+        'name' => 'editor',
+        'description' => 'Edit content',
+        'scope_ids' => [$scope->id],
+    ], ['realm' => 'acme'])->assertRedirect();
+
+    $role = $this->realm->roles()->where('name', 'editor')->sole();
+
+    expect($role->scopes()->pluck('resource_scopes.id')->all())->toBe([$scope->id]);
+
+    $row = $this->loadTable(RolesTable::class, context: ['realm' => 'acme'])->assertOk()->row($role->id);
+
+    expect($row->clickHref())->toBe("/admin/realms/acme/roles/{$role->id}")
+        ->and($row->actionIds())->toBe(['admin.realm-roles.update', 'admin.realm-roles.delete']);
+
+    $this->get("/admin/realms/acme/roles/{$role->id}")->assertOk();
+    $this->get("/admin/realms/globex/roles/{$role->id}")->assertNotFound();
+});
+
+test('the role creation form rejects scopes from another realm', function () {
+    $resource = Resource::factory()->for($this->other)->create();
+    $scope = ResourceScope::factory()->for($resource)->create();
+
+    $this->actingAs(globalAdmin())->submitForm(CreateRoleForm::class, [
+        'name' => 'editor',
+        'scope_ids' => [$scope->id],
+    ], ['realm' => 'acme'])->assertInvalid(['scope_ids']);
+
+    expect($this->realm->roles()->where('name', 'editor')->exists())->toBeFalse();
+});
+
+test('role readers can open details but cannot create edit or delete roles', function () {
+    $role = Role::factory()->for($this->realm)->create();
+    $this->actingAs(globalAdminWith(Scope::RolesRead));
+    $this->get("/admin/realms/acme/roles/{$role->id}")->assertOk();
+    $this->get('/admin/realms/acme/roles/create')->assertForbidden();
+    $this->submitDeniedForm(CreateRoleForm::class, ['name' => 'editor'], ['realm' => 'acme'])->assertForbidden();
+
+    $row = $this->loadTable(RolesTable::class, context: ['realm' => 'acme'])->assertOk()->row($role->id);
+
+    expect($row->actionIds())->toBeEmpty();
+});
+
+test('protected roles have readable detail pages without mutable row actions', function () {
+    $realm = Realm::master();
+    $role = $realm->roles()->where('name', ManagementRoles::SUPER_ADMIN)->sole();
+    $this->actingAs(globalAdmin());
+    $this->get("/admin/realms/{$realm->slug}/roles/{$role->id}")->assertOk();
+
+    $row = $this->loadTable(RolesTable::class, context: ['realm' => $realm->slug])->assertOk()->row($role->id);
+
+    expect($row->actionIds())->toBeEmpty();
+
+    $this->callDeniedAction(UpdateRoleAction::class, ['name' => 'renamed'], ['realm' => $realm->slug, 'role' => $role->id])->assertForbidden();
+    $this->callDeniedAction(DeleteRoleAction::class, [], ['realm' => $realm->slug, 'role' => $role->id])->assertForbidden();
+
+    expect($role->refresh()->name)->toBe(ManagementRoles::SUPER_ADMIN);
 });

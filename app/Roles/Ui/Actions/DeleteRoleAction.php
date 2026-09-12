@@ -5,7 +5,6 @@ namespace App\Roles\Ui\Actions;
 
 use App\Roles\Models\Role;
 use App\Roles\Ui\Concerns\ResolvesRole;
-use App\Roles\Ui\Tables\RolesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\DeletesRole;
 use Illuminate\Http\Request;
@@ -46,6 +45,6 @@ final class DeleteRoleAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.roles.deleted'), Variant::Success)
-            ->reloadComponent(RolesTable::ID);
+            ->toRoute('admin.realms.roles', ['realm' => $this->realm()->slug]);
     }
 }

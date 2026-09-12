@@ -10,6 +10,7 @@ use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\TextColumn;
@@ -50,6 +51,10 @@ final class ResourceScopesTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::ResourcesWrite)) {
+            return [];
+        }
+
         $context = ['resourceScope' => $row['id']];
 
         return array_filter([ActionBar::menu('admin.resource-scopes.row-actions', [

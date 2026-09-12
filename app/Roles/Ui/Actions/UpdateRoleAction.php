@@ -55,6 +55,7 @@ final class UpdateRoleAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.roles.updated'), Variant::Success)
-            ->reloadComponent(RolesTable::ID);
+            ->reloadComponent(RolesTable::ID)
+            ->reloadPage();
     }
 }

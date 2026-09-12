@@ -9,6 +9,7 @@ use App\Resources\Ui\Actions\UpdateResourceAction;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\NumberColumn;
@@ -60,6 +61,10 @@ final class ResourcesTable extends EloquentTableDefinition
 
     public function actions(array $row): array
     {
+        if (! Gate::allows(Scope::ResourcesWrite)) {
+            return [];
+        }
+
         $context = ['resource' => $row['id']];
 
         return array_filter([ActionBar::menu('admin.resources.row-actions', [
