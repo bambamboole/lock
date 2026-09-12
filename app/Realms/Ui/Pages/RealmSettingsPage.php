@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Realms\Ui\Pages;
 
-use App\Admin\Enums\AdminPermission;
-use App\Admin\Ui\Actions\CheckRealmDomainAction;
-use App\Admin\Ui\Concerns\BuildsRealmSettingRows;
-use App\Admin\Ui\Concerns\OpensRealmDeletion;
-use App\Admin\Ui\Concerns\PresentsRealmDomainStatus;
-use App\Admin\Ui\Forms\UpdateRealmDomainForm;
-use App\Admin\Ui\Forms\UpdateRealmForm;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Realms\Ui\Actions\CheckRealmDomainAction;
+use App\Realms\Ui\Concerns\BuildsRealmSettingRows;
+use App\Realms\Ui\Concerns\OpensRealmDeletion;
+use App\Realms\Ui\Concerns\PresentsRealmDomainStatus;
+use App\Realms\Ui\Forms\UpdateRealmDomainForm;
+use App\Realms\Ui\Forms\UpdateRealmForm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
 use Illuminate\Http\Request;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;

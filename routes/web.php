@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Http\Controllers\DomainCheckController;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Auth\Support\RequestUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

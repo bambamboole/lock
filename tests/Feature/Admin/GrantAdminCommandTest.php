@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 
 test('admin:grant makes a user an admin and records it with a system actor', function () {

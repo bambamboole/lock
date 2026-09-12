@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 

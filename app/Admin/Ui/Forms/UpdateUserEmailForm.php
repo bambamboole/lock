@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Forms;
 
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Lattice\Form\Attributes\AsForm;

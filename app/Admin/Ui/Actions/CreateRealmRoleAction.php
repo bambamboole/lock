@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsRealmRoleFields;
 use App\Admin\Ui\Concerns\ResolvesRealmRole;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\CreatesRealmRole;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;

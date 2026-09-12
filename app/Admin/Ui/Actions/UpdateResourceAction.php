@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsResourceFields;
 use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Resources\Models\Resource;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;

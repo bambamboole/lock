@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Forms;
 
-use App\Admin\Enums\AdminPermission;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Http\Request;
 use Lattice\Form\Attributes\AsForm;
 use Lattice\Form\Components\Form as FormComponent;

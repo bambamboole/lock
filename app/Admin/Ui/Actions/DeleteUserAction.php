@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Concerns\ResolvesCurrentUser;

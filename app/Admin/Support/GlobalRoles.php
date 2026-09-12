@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Support;
 
-use App\Admin\Enums\AdminPermission;
+use App\Shared\Admin\Enums\AdminPermission;
 
 final class GlobalRoles
 {

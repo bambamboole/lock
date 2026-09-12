@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;

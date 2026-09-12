@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Audit;
 use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Http\Request;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Fragments\AuditEventContextFragment;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Enums\AuditEventCategory;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;

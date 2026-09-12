@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Enums;
+namespace App\Shared\Admin\Enums;
 
 use App\Shared\Auth\Contracts\PermissionEnum;
 

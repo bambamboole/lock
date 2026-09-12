@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\ResolvesRealmClient;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\DeletesClient;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;

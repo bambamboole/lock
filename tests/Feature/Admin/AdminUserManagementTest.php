@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Actions\DeleteUserAction;
 use App\Admin\Ui\Actions\EndAllUserSessionsAction;
@@ -18,6 +17,7 @@ use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;

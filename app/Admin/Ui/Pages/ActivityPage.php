@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Pages;
 
 use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Stack;

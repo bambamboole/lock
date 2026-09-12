@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
+use App\Shared\Admin\Enums\AdminPermission;
 
 it('creates the protected global roles when nothing seeded them yet', function () {
     Role::query()->delete();

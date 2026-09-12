@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Realms\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use Illuminate\Http\Request;

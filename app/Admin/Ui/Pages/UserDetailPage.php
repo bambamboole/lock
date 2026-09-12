@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Pages;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Actions\DeleteUserAction;
 use App\Admin\Ui\Actions\EndAllUserSessionsAction;
@@ -20,8 +19,10 @@ use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;

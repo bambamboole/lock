@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Support\Facades\Gate;
 
 use function Tests\Helpers\grantGlobalRole;

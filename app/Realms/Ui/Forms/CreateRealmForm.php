@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Forms;
+namespace App\Realms\Ui\Forms;
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;

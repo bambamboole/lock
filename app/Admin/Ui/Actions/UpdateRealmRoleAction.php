@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsRealmRoleFields;
 use App\Admin\Ui\Concerns\ResolvesRealmRole;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Realms\Models\RealmRole;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\UpdatesRealmRole;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;

@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Actions;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsResourceScopeFields;
 use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Resources\Models\ResourceScope;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;

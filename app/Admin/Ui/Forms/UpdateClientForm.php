@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Forms;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsClientFields;
 use App\Admin\Ui\Concerns\ResolvesRealmClient;
 use App\Admin\Ui\Pages\ClientDetailPage;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\UpdatesClient;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;

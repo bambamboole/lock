@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 
 function globalAdmin(string $roleName = GlobalRoles::SUPER_ADMIN): User
 {

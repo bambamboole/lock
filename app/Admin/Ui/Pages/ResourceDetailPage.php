@@ -3,15 +3,16 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Pages;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateResourceScopeAction;
 use App\Admin\Ui\Actions\DeleteResourceAction;
 use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;

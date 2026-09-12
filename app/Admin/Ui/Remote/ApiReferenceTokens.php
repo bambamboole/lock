@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Remote;
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Auth\Support\RequestUser;

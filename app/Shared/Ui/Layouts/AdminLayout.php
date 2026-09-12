@@ -1,21 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Layouts;
+namespace App\Shared\Ui\Layouts;
 
-use App\Admin\Enums\AdminPermission;
-use App\Admin\Ui\Pages\ActivityPage;
-use App\Admin\Ui\Pages\ApiReferencePage;
-use App\Admin\Ui\Pages\RealmActivityPage;
-use App\Admin\Ui\Pages\RealmClientsPage;
-use App\Admin\Ui\Pages\RealmEventsPage;
-use App\Admin\Ui\Pages\RealmResourcesPage;
-use App\Admin\Ui\Pages\RealmRolesPage;
-use App\Admin\Ui\Pages\RealmSettingsPage;
-use App\Admin\Ui\Pages\RealmsPage;
-use App\Admin\Ui\Pages\RealmUsersPage;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
@@ -137,13 +127,13 @@ final class AdminLayout extends LayoutDefinition
             ->items([
                 ...$realms->map(fn (Realm $candidate): MenuItem => $this->realmSwitcherItem($candidate, $candidate->is($realm)))->all(),
                 Separator::make(),
-                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.all-realms'))->prefix(Icon::List),
+                $this->menuItem(__('navigation.all-realms'), 'admin.realms')->prefix(Icon::List),
             ]);
     }
 
     private function realmSwitcherItem(Realm $realm, bool $current): MenuItem
     {
-        $item = MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])->label($realm->name);
+        $item = $this->menuItem($realm->name, 'admin.realms.users', ['realm' => $realm->slug]);
 
         return $current ? $item->prefix(Icon::Check) : $item;
     }
@@ -155,14 +145,14 @@ final class AdminLayout extends LayoutDefinition
     {
         return [
             ...($user->can(AdminPermission::ManageUsers) ? [
-                MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])->label(__('navigation.users'))->prefix(Affix::icon('users')),
+                $this->menuItem(__('navigation.users'), 'admin.realms.users', ['realm' => $realm->slug])->prefix(Affix::icon('users')),
             ] : []),
-            ...($user->can(AdminPermission::ManageRealms) ? [MenuItem::fromPage(RealmClientsPage::class, ['realm' => $realm->slug])->label(__('navigation.clients'))->prefix(Affix::icon('key-round'))] : []),
-            ...($user->can(AdminPermission::ManageUsers) ? [MenuItem::fromPage(RealmRolesPage::class, ['realm' => $realm->slug])->label(__('navigation.roles'))->prefix(Affix::icon('shield-check'))] : []),
-            ...($user->can(AdminPermission::ViewResources) ? [MenuItem::fromPage(RealmResourcesPage::class, ['realm' => $realm->slug])->label(__('navigation.resources'))->prefix(Affix::icon('layers'))] : []),
-            MenuItem::fromPage(RealmEventsPage::class, ['realm' => $realm->slug])->label(__('navigation.events'))->prefix(Affix::icon('shield-alert')),
-            MenuItem::fromPage(RealmActivityPage::class, ['realm' => $realm->slug])->label(__('navigation.activity'))->prefix(Icon::Clock),
-            MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])->label(__('navigation.settings'))->prefix(Icon::Settings),
+            ...($user->can(AdminPermission::ManageRealms) ? [$this->menuItem(__('navigation.clients'), 'admin.realms.clients', ['realm' => $realm->slug])->prefix(Affix::icon('key-round'))] : []),
+            ...($user->can(AdminPermission::ManageUsers) ? [$this->menuItem(__('navigation.roles'), 'admin.realms.roles', ['realm' => $realm->slug])->prefix(Affix::icon('shield-check'))] : []),
+            ...($user->can(AdminPermission::ViewResources) ? [$this->menuItem(__('navigation.resources'), 'admin.realms.resources', ['realm' => $realm->slug])->prefix(Affix::icon('layers'))] : []),
+            $this->menuItem(__('navigation.events'), 'admin.realms.events', ['realm' => $realm->slug])->prefix(Affix::icon('shield-alert')),
+            $this->menuItem(__('navigation.activity'), 'admin.realms.activity', ['realm' => $realm->slug])->prefix(Icon::Clock),
+            $this->menuItem(__('navigation.settings'), 'admin.realms.settings', ['realm' => $realm->slug])->prefix(Icon::Settings),
         ];
     }
 
@@ -173,11 +163,22 @@ final class AdminLayout extends LayoutDefinition
     {
         return [
             ...($user->can(AdminPermission::ViewRealms) ? [
-                MenuItem::fromPage(RealmsPage::class)->label(__('navigation.realms'))->prefix(Icon::List),
-                MenuItem::fromPage(ApiReferencePage::class)->label(__('navigation.api'))->prefix(Icon::CodeXml),
+                $this->menuItem(__('navigation.realms'), 'admin.realms')->prefix(Icon::List),
+                $this->menuItem(__('navigation.api'), 'admin.api')->prefix(Icon::CodeXml),
             ] : []),
-            MenuItem::fromPage(ActivityPage::class)->label(__('navigation.activity'))->prefix(Icon::Clock),
+            $this->menuItem(__('navigation.activity'), 'admin.activity')->prefix(Icon::Clock),
         ];
+    }
+
+    /**
+     * The shell is shared, so it links the console by route name: importing a
+     * domain's page class here would make App\Shared depend on that domain.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    private function menuItem(string $label, string $route, array $parameters = []): MenuItem
+    {
+        return MenuItem::make($label)->href(route($route, $parameters, false));
     }
 
     private function backToAppButton(): Button

@@ -1,13 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Realms\Ui\Pages;
 
-use App\Admin\Enums\AdminPermission;
-use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Models\User;
+use App\Realms\Ui\Tables\RealmsTable;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Facades\Effects;
@@ -36,7 +37,7 @@ final class RealmsPage extends AdminPage
                         ->visible($user instanceof User && $user->can(AdminPermission::ManageRealms))
                         ->effects(Effects::redirect(route('admin.realms.create', [], false))),
                 ])),
-                Table::use(AdminRealmsTable::class),
+                Table::use(RealmsTable::class),
             ]),
         ]);
     }

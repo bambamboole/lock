@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Admin\Actions\EnsureAdministrator;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
-use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
@@ -28,18 +25,6 @@ final class AdminServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        /*
-         * Every realm definition gates itself on an admin permission, so the
-         * resolver is a plain lookup.
-         */
-        Lattice::context(
-            'realm',
-            fn (string $value): Realm => Realm::where('slug', $value)->firstOrFail(),
-            keyBy: fn (Realm $realm): string => $realm->slug,
-        );
-
-        Lattice::context('client', fn (string $value): Client => Client::query()->findOrFail($value));
-        Lattice::context('realmRole', fn (string $value): RealmRole => RealmRole::query()->findOrFail($value));
         Lattice::context('resource', fn (string $value): Resource => Resource::query()->findOrFail($value));
         Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
 

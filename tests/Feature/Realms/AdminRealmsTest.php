@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 use App\Admin\Support\GlobalRoles;
-use App\Admin\Ui\Forms\CreateRealmForm;
-use App\Admin\Ui\Forms\DeleteRealmForm;
-use App\Admin\Ui\Forms\RealmSettingForm;
-use App\Admin\Ui\Forms\UpdateRealmForm;
-use App\Admin\Ui\Tables\AdminRealmsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Realms\Ui\Forms\CreateRealmForm;
+use App\Realms\Ui\Forms\DeleteRealmForm;
+use App\Realms\Ui\Forms\RealmSettingForm;
+use App\Realms\Ui\Forms\UpdateRealmForm;
+use App\Realms\Ui\Tables\RealmsTable;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
@@ -20,7 +20,7 @@ test('every admin can list and open realms', function (string $roleName) {
     $realm = Realm::factory()->create();
 
     $this->actingAs(globalAdmin($roleName));
-    $this->loadTable(AdminRealmsTable::class)->assertOk();
+    $this->loadTable(RealmsTable::class)->assertOk();
     $this->get('/admin/realms')->assertOk();
     $this->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 })->with(['support admin' => GlobalRoles::SUPPORT, 'super admin' => GlobalRoles::SUPER_ADMIN]);
@@ -29,7 +29,7 @@ test('a realm user reaches neither the realms list nor a realm', function () {
     $realm = Realm::factory()->create();
 
     $this->actingAs(User::factory()->create());
-    $this->loadDeniedTable(AdminRealmsTable::class)->assertForbidden();
+    $this->loadDeniedTable(RealmsTable::class)->assertForbidden();
     $this->get('/admin/realms')->assertForbidden();
     $this->get("/admin/realms/{$realm->slug}/settings")->assertForbidden();
 });
@@ -60,7 +60,7 @@ test('a realm row opens its settings and carries the same deletion trigger', fun
     $realm = Realm::factory()->create();
     $master = Realm::master();
 
-    $table = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk();
+    $table = $this->actingAs(globalAdmin())->loadTable(RealmsTable::class)->assertOk();
 
     expect($table->row($realm->id)->clickHref())->toBe("/admin/realms/{$realm->slug}/settings")
         ->and($table->row($realm->id)->actionIds())->toBe(["delete-realm-{$realm->slug}"])
@@ -71,7 +71,7 @@ test('a realm row counts the realm\'s users', function () {
     $realm = Realm::factory()->create();
     User::factory()->for($realm)->count(2)->create();
 
-    $table = $this->actingAs(globalAdmin())->loadTable(AdminRealmsTable::class)->assertOk();
+    $table = $this->actingAs(globalAdmin())->loadTable(RealmsTable::class)->assertOk();
 
     expect($table->row($realm->id)->value('users_count'))->toBe(2);
 });

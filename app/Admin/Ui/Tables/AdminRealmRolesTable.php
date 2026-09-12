@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\DeleteRealmRoleAction;
 use App\Admin\Ui\Actions\UpdateRealmRoleAction;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;

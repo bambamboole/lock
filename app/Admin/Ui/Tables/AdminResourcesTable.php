@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\DeleteResourceAction;
 use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;

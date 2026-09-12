@@ -8,9 +8,9 @@ paths:
 
 ## AdminPermission is the permission catalog
 
-Every permission is a case of `App\Admin\Enums\AdminPermission`, a string-backed enum implementing the
-`App\Shared\Auth\Contracts\PermissionEnum` marker so `User::hasGlobalPermission()` can take it without importing
-the Admin domain. Adding a permission is one enum case. `App\Admin\Support\GlobalRoles` maps the protected `Super
+Every permission is a case of `App\Shared\Admin\Enums\AdminPermission`, a string-backed enum implementing the
+`App\Shared\Auth\Contracts\PermissionEnum` marker. It lives in `App\Shared` because every domain contributing a
+console page gates on it; `AdminServiceProvider` owns its `Gate::before` binding. Adding a permission is one enum case. `App\Admin\Support\GlobalRoles` maps the protected `Super
 Admin`/`Support` roles to their cases, and `php artisan permission:sync` (run by `app:deploy`) re-syncs those grants
 so a new case reaches the Super Admin role on the next deploy.
 

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Realms\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
-use App\Admin\Ui\Concerns\OpensRealmDeletion;
-use App\Admin\Ui\Concerns\PresentsRealmDomainStatus;
 use App\Realms\Models\Realm;
+use App\Realms\Ui\Concerns\OpensRealmDeletion;
+use App\Realms\Ui\Concerns\PresentsRealmDomainStatus;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,7 +23,7 @@ use Lattice\Table\TableQuery;
  * @extends EloquentTableDefinition<Realm>
  */
 #[AsTable('admin.realms', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
-final class AdminRealmsTable extends EloquentTableDefinition
+final class RealmsTable extends EloquentTableDefinition
 {
     use OpensRealmDeletion;
     use PresentsRealmDomainStatus;

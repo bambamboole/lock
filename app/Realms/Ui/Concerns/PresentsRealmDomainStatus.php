@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Concerns;
+namespace App\Realms\Ui\Concerns;
 
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use Lattice\Core\Enums\ColorName;

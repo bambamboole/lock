@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\CreateResourceAction;
 use App\Admin\Ui\Actions\CreateResourceScopeAction;
@@ -16,6 +15,7 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
 

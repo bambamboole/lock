@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Actions;
 
 use App\Admin\Actions\UnblockUser;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Forms;
 
 use App\Admin\Actions\CreateRealmUser;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Lattice\Facades\Effects;

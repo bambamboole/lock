@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateRealmRoleAction;
 use App\Admin\Ui\Actions\DeleteRealmRoleAction;
 use App\Admin\Ui\Actions\UpdateRealmRoleAction;
@@ -11,6 +10,7 @@ use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
 use App\Shared\Realms\Enums\RealmAuditEvent;

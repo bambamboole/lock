@@ -3,8 +3,8 @@ declare(strict_types=1);
 
 namespace App\Admin\Models;
 
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;

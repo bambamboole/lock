@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Concerns;
+namespace App\Realms\Ui\Concerns;
 
-use App\Admin\Enums\AdminPermission;
-use App\Admin\Ui\Forms\DeleteRealmForm;
+use App\Realms\Ui\Forms\DeleteRealmForm;
+use App\Shared\Admin\Enums\AdminPermission;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Modal;

@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\EndUserSessionAction;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
 use Illuminate\Database\Eloquent\Builder;

@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\ResendUserVerification;
@@ -10,6 +9,7 @@ use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Audit\Models\Activity;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;

@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Concerns;
+namespace App\Realms\Ui\Concerns;
 
-use App\Admin\Ui\Forms\RealmSettingForm;
 use App\Realms\Models\Realm;
+use App\Realms\Ui\Forms\RealmSettingForm;
 use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Enums\RealmSettingType;

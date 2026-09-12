@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Tables;
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\BlockUserAction;
 use App\Admin\Ui\Actions\DeleteUserAction;
 use App\Admin\Ui\Actions\EndAllUserSessionsAction;
@@ -14,6 +13,7 @@ use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;

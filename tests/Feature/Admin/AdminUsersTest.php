@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Admin\Enums\AdminPermission;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;

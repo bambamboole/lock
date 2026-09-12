@@ -13,14 +13,23 @@ child of a module except its `Ui` slice and service provider.
 
 ## The admin console is the only management UI
 
-Realms, their configuration and their users are managed from `app/Admin/Ui/**` by users of the master realm; a
+Realms, their configuration and their users are managed from the `/admin/…` console by users of the master realm; a
 realm user gets account pages, never a console. A module that wants to contribute UI to a page it does not own
 hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` instead of importing the page.
+
+Its shell — `App\Shared\Ui\Layouts\AdminLayout` and the `App\Shared\Ui\Pages\AdminPage` base class — lives in
+`app/Shared/Ui/**` so any domain may contribute a console page, and it links the console by route name rather than
+by page class: importing `App\Realms\Ui\Pages\…` there would make the shared layer depend on a domain. A domain
+owns the pages for its own records (`app/Realms/Ui/**` for the realm record itself); the pages whose domain has no
+`Ui` slice yet stay in `app/Admin/Ui/**`.
 
 The console is Keycloak-shaped: a realm-scoped page lives under `/admin/realms/{realm}/…` and takes the bound
 `Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide whether the sidebar shows
 the instance areas (realms, activity) or the selected realm's areas (users, settings) below the realm switcher.
 Instance-wide pages stay directly under `/admin/…`. There is no cross-realm user list on purpose.
+
+A definition's id is the endpoint every client already calls, so it does not follow the class between namespaces:
+the realm definitions moved to `App\Realms\Ui` keep their `admin.realms.*` ids.
 
 ## Resolve models through registered context, never route parameters or session state
 
@@ -32,7 +41,7 @@ is genuinely needed; do not query from `contextString()` or read `$request->rout
 definition endpoints may run after the page request, so the registered context remains the source of truth.
 
 Give closure resolvers a concrete model return type. Lattice uses it to map bound route models to registered context
-keys. The `realm` resolver in `AdminServiceProvider` is a plain lookup: every realm definition gates itself on an
+keys. The `realm` resolver in `RealmsServiceProvider` is a plain lookup: every realm definition gates itself on an
 `AdminPermission`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
 may not see anyway. A resolver for data that is not admin-only has to check the signed-in user itself.
 

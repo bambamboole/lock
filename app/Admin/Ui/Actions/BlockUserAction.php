@@ -4,8 +4,8 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Actions;
 
 use App\Admin\Actions\BlockUser;
-use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
+use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;

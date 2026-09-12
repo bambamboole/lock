@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Permission;
 use App\Admin\Models\Role;
+use App\Shared\Admin\Enums\AdminPermission;
 
 it('shares a permission row across roles instead of duplicating it', function () {
     $support = Role::factory()->create(['name' => 'Helpdesk']);

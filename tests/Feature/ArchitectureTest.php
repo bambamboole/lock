@@ -1,13 +1,13 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Enums\AdminPermission;
 use App\Admin\Models\Role;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Shared\Admin\Enums\AdminPermission;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
