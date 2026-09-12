@@ -58,7 +58,7 @@ it('leaves the console client untouched when no secret is configured', function 
     $this->artisan('app:bootstrap')->assertSuccessful();
 
     config()->set(['lock.console_client.secret' => null]);
-    Realm::master()->settings->set('realm.first_party_trusted', false);
+    Realm::master()->writeSettings(['first_party_trusted' => false]);
 
     $this->artisan('app:bootstrap')->expectsOutputToContain('skipped')->assertSuccessful();
 
@@ -111,7 +111,7 @@ it('leaves an existing password alone when none is configured', function () {
 });
 
 it('fails loudly when the configured password violates the realm policy', function () {
-    Realm::master()->settings->set('realm.password_min_length', 20);
+    Realm::master()->writeSettings(['password_min_length' => 20]);
 
     $this->artisan('app:bootstrap')
         ->expectsOutputToContain('The LOCK_ADMIN_PASSWORD field must be at least 20 characters.')

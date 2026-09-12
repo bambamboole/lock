@@ -158,8 +158,8 @@ it('declares its scopes as the resource a token is addressed to', function () {
 });
 
 it('reports the realm configuration with every setting typed', function () {
-    $this->acme->settings->set('realm.access_token_lifetime', 900);
-    $this->acme->settings->set('realm.login_methods', ['passkey']);
+    $this->acme->writeSettings(['access_token_lifetime' => 900]);
+    $this->acme->writeSettings(['login_methods' => ['passkey']]);
 
     $configuration = $this->withToken(managementApiToken($this, ApiScope::RealmsRead))
         ->getJson(realmsUrl('/acme'))
@@ -198,7 +198,7 @@ it('stores a quoted number as the integer the setting holds', function () {
         ->assertOk()
         ->assertJsonPath('data.configuration.totp_window', 4);
 
-    expect($this->acme->refresh()->settings->get('realm.totp_window'))->toBe(4);
+    expect($this->acme->refresh()->configuration()['totp_window'])->toBe(4);
 });
 
 it('records a configuration change on the realm trail', function () {
@@ -215,14 +215,14 @@ it('records a configuration change on the realm trail', function () {
 });
 
 it('rejects a setting that contradicts one it was not sent with', function () {
-    $this->acme->settings->set('realm.session_absolute_lifetime', 3600);
+    $this->acme->writeSettings(['session_absolute_lifetime' => 3600]);
 
     $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
         ->patchJson(realmsUrl('/acme'), ['configuration' => ['session_token_ttl' => 7200]])
         ->assertUnprocessable()
         ->assertJsonValidationErrors('configuration.session_token_ttl');
 
-    expect($this->acme->refresh()->settings->get('realm.session_token_ttl'))->not->toBe(7200);
+    expect($this->acme->refresh()->configuration()['session_token_ttl'])->not->toBe(7200);
 });
 
 it('rejects a value outside the setting’s own rules', function () {
@@ -250,4 +250,66 @@ it('renames and reconfigures a realm in one request', function () {
         ->assertJsonPath('data.configuration.password_min_length', 16);
 
     expect(Activity::forRealm($this->acme)->where('event', RealmAuditEvent::RealmUpdated->eventName())->count())->toBe(1);
+});
+
+it('creates a realm with a configuration and leaves the rest on the defaults', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->postJson(realmsUrl(), [
+            'name' => 'Globex',
+            'slug' => 'globex',
+            'domain' => 'globex.test',
+            'configuration' => ['access_token_lifetime' => 900, 'login_methods' => ['passkey']],
+        ])
+        ->assertCreated()
+        ->assertJsonPath('data.configuration.access_token_lifetime', 900)
+        ->assertJsonPath('data.configuration.login_methods', ['passkey']);
+
+    $configuration = Realm::query()->where('slug', 'globex')->sole()->configuration();
+    $defaults = RealmConfiguration::defaults();
+
+    expect($configuration['access_token_lifetime'])->toBe(900)
+        ->and($configuration['login_methods'])->toBe(['passkey'])
+        ->and($configuration['password_min_length'])->toBe($defaults['password_min_length'])
+        ->and($configuration['refresh_token_lifetime'])->toBe($defaults['refresh_token_lifetime']);
+});
+
+it('keeps no realm behind when the configuration it was created with is rejected', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->postJson(realmsUrl(), [
+            'name' => 'Globex',
+            'slug' => 'globex',
+            'domain' => 'globex.test',
+            'configuration' => ['session_token_ttl' => 31536000],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('configuration.session_token_ttl');
+
+    expect(Realm::query()->where('slug', 'globex')->exists())->toBeFalse();
+});
+
+it('rejects a setting it does not know on create', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->postJson(realmsUrl(), [
+            'name' => 'Globex',
+            'slug' => 'globex',
+            'domain' => 'globex.test',
+            'configuration' => ['make_me_admin' => true],
+        ])
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('configuration');
+});
+
+it('records the configuration a realm was created with', function () {
+    $this->withToken(managementApiToken($this, ApiScope::RealmsWrite))
+        ->postJson(realmsUrl(), [
+            'name' => 'Globex',
+            'slug' => 'globex',
+            'domain' => 'globex.test',
+            'configuration' => ['recovery_codes' => 12],
+        ])
+        ->assertCreated();
+
+    $activity = Activity::where('event', RealmAuditEvent::RealmCreated->eventName())->sole();
+
+    expect($activity->getProperty('configuration'))->toBe(['recovery_codes' => 12]);
 });

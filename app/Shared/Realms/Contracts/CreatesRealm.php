@@ -7,5 +7,6 @@ use App\Realms\Models\Realm;
 
 interface CreatesRealm
 {
-    public function handle(string $name, string $domain, string $slug): Realm;
+    /** @param array<string, mixed> $configuration Settings that deviate from the defaults a new realm otherwise follows. */
+    public function handle(string $name, string $domain, string $slug, array $configuration = []): Realm;
 }

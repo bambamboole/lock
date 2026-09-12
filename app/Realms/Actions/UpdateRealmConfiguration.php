@@ -7,20 +7,17 @@ namespace App\Realms\Actions;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
-use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 
 final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
 {
     /**
-     * A submitted value is cast to the type its setting declares before it is
-     * compared and stored: the stored configuration is typed, and a transport
-     * that types nothing — JSON with a quoted number, an HTML form — would
-     * otherwise leave a string where an int belongs.
+     * The submission is merged into the realm's settings DTO before anything is
+     * compared, so a transport that types nothing — JSON with a quoted number,
+     * an HTML form — is normalised to the type each setting holds rather than
+     * leaving a string where an int belongs.
      *
      * @param  array<string, mixed>  $data
      */
@@ -30,36 +27,33 @@ final class UpdateRealmConfiguration implements UpdatesRealmConfiguration
             $realm = Realm::query()->lockForUpdate()->findOrFail($realm->id);
             $before = ['name' => $realm->name, ...$realm->configuration()];
             $submitted = array_intersect_key($data, $before);
-            $validated = Validator::make([...$before, ...$submitted], [
-                ...RealmConfiguration::rules(),
-                'trusted_clients.*' => [
-                    ...RealmConfiguration::rules()['trusted_clients.*'],
-                    Rule::exists('oidc_clients', 'client_id')->where('realm_id', $realm->slug)->where('revoked', 0),
-                ],
-            ])->setAttributeNames(RealmConfiguration::attributeNames())->validate();
+            $validated = RealmConfiguration::validate([...$before, ...$submitted], $realm->slug);
+
+            $settings = $realm->settings->merge(array_intersect_key($validated, array_diff_key($submitted, ['name' => null])));
+            $after = ['name' => $validated['name'], ...$settings->toArray()];
 
             $changes = [];
 
             foreach (array_keys($submitted) as $key) {
-                $setting = RealmConfiguration::setting($key);
-                $value = $setting instanceof RealmSetting ? $setting->cast($validated[$key]) : $validated[$key];
-
-                if ($before[$key] === $value) {
+                if ($before[$key] === $after[$key]) {
                     continue;
                 }
 
-                if ($key === 'name') {
-                    $realm->update(['name' => $value]);
-                } else {
-                    $realm->settings->set('realm.'.$key, $value);
-                }
-
-                $changes[$key] = ['old' => $before[$key], 'new' => $value];
+                $changes[$key] = ['old' => $before[$key], 'new' => $after[$key]];
             }
 
-            if ($changes !== []) {
-                Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => $changes]);
+            if ($changes === []) {
+                return;
             }
+
+            if (array_key_exists('name', $changes)) {
+                $realm->name = $validated['name'];
+            }
+
+            $realm->settings = $settings;
+            $realm->save();
+
+            Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => $changes]);
         });
 
         $realm->refresh();

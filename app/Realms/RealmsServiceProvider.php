@@ -35,8 +35,6 @@ use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use App\Shared\Realms\Contracts\UpdatesRealmRole;
-use App\Shared\Realms\Support\RealmConfiguration;
-use App\Shared\Settings\SettingsRegistry;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -64,7 +62,6 @@ final class RealmsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        RealmConfiguration::register($this->app->make(SettingsRegistry::class));
 
         Route::matched(fn (RouteMatched $event) => app(RealmHostGate::class)->guard($event->request, $event->route));
     }

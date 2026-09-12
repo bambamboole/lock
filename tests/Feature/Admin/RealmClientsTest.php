@@ -140,7 +140,7 @@ test('a client detail page opens under its own realm only', function () {
 });
 
 test('creating a confidential client reveals its secret exactly once', function () {
-    $this->realm->settings->set('realm.default_scopes', ['openid', 'profile']);
+    $this->realm->writeSettings(['default_scopes' => ['openid', 'profile']]);
 
     $this->actingAs(globalAdmin())->submitForm(CreateClientForm::class, clientFormData(), ['realm' => 'acme'])->assertRedirect();
 

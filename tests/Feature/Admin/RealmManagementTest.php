@@ -33,7 +33,7 @@ beforeEach(function () {
 });
 
 it('creates an independent realm with default configuration through the admin form', function () {
-    Realm::master()->settings->set('realm.access_token_lifetime', 120);
+    Realm::master()->writeSettings(['access_token_lifetime' => 120]);
 
     domainReachesThisInstance();
 
@@ -61,7 +61,7 @@ it('rejects duplicate and unsafe realm identifiers', function (string $slug) {
 
 it('renames a realm without touching its identifier or configuration', function () {
     $realm = Realm::factory()->create(['name' => 'Partners', 'slug' => 'partners']);
-    $realm->settings->set('realm.access_token_lifetime', 300);
+    $realm->writeSettings(['access_token_lifetime' => 300]);
 
     $this->submitForm(UpdateRealmForm::class, ['name' => 'External partners'], ['realm' => $realm->slug])
         ->assertRedirect(route('admin.realms.settings', ['realm' => 'partners']));

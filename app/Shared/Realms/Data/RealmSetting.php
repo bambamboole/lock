@@ -42,25 +42,6 @@ final readonly class RealmSetting
         ));
     }
 
-    /**
-     * A validated value still carries the type its transport had — JSON sends a
-     * duration a client typed as `"3600"`, an HTML form sends everything as a
-     * string — while the stored configuration is typed and the validator
-     * compares settings against each other by value and type. This is the one
-     * place that says what type a setting holds.
-     */
-    public function cast(mixed $value): mixed
-    {
-        return match ($this->type) {
-            RealmSettingType::Duration, RealmSettingType::Days, RealmSettingType::Count => (int) $value,
-            RealmSettingType::Text, RealmSettingType::MfaRequirement => (string) $value,
-            RealmSettingType::Flag => (bool) $value,
-            RealmSettingType::Factors, RealmSettingType::LoginMethods, RealmSettingType::StringList => array_values(
-                array_filter(is_array($value) ? $value : [], is_string(...)),
-            ),
-        };
-    }
-
     private static function comparesAnotherSetting(string $rule): bool
     {
         [$name, $parameter] = array_pad(explode(':', $rule, 2), 2, null);

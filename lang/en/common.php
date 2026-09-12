@@ -2,6 +2,9 @@
 declare(strict_types=1);
 
 return [
+    'validation' => [
+        'property' => ['unknown' => 'This field is not allowed.'],
+    ],
     'action' => [
         'more' => 'More actions',
         'save' => 'Save',

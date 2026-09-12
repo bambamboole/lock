@@ -4,13 +4,11 @@ declare(strict_types=1);
 namespace App\Realms\Models;
 
 use App\Auth\Models\User;
-use App\Realms\Observers\RealmObserver;
+use App\Realms\Casts\AsRealmSettings;
 use App\Resources\Models\Resource;
+use App\Shared\Realms\Data\RealmSettings;
 use App\Shared\Realms\Enums\RealmDomainStatus;
-use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
-use App\Shared\Settings\Concerns\HasSettings;
-use App\Shared\Settings\Contracts\ProvidesSettings;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Realms\CurrentRealm;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Realm as RealmContract;
@@ -30,8 +28,8 @@ use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
 use Carbon\CarbonImmutable;
 use Database\Factories\RealmFactory;
+use Illuminate\Database\Eloquent\Attributes\Boot;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\RouteKey;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -48,6 +46,8 @@ use LogicException;
  * @property RealmDomainStatus $domain_status
  * @property CarbonImmutable|null $domain_checked_at
  * @property string|null $domain_check_error
+ * @property RealmSettings $settings
+ * @property string|null $first_party_client_id
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, User> $users
@@ -69,18 +69,38 @@ use LogicException;
  *
  * @mixin \Eloquent
  */
-#[Fillable(['name', 'slug', 'domain'])]
-#[ObservedBy(RealmObserver::class)]
+#[Fillable(['name', 'slug', 'domain', 'settings', 'first_party_client_id'])]
 #[RouteKey('slug')]
-final class Realm extends Model implements ProvidesSettings, RealmContract
+final class Realm extends Model implements RealmContract
 {
     /** @use HasFactory<RealmFactory> */
-    use HasFactory, HasSettings, HasUuids;
+    use HasFactory, HasUuids;
 
     /** @var array<string, mixed> */
     protected $attributes = [
         'domain_status' => 'pending',
+        'settings' => '{}',
     ];
+
+    /**
+     * The slug is what laravel-oidc keys every row it stores by, so it is fixed
+     * once the realm exists, and the master realm is what serves the console.
+     */
+    #[Boot]
+    protected static function bootRealmInvariants(): void
+    {
+        self::updating(function (self $realm): void {
+            if ($realm->isDirty('slug')) {
+                throw new LogicException('Realm identifiers cannot be changed.');
+            }
+        });
+
+        self::deleting(function (self $realm): void {
+            if ($realm->isMaster()) {
+                throw new LogicException('The administration realm cannot be deleted.');
+            }
+        });
+    }
 
     public static function master(): self
     {
@@ -120,7 +140,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public static function findByHost(string $host): ?self
     {
         $host = strtolower($host);
-        $query = self::query()->with('storedSettings');
+        $query = self::query();
 
         return $host === self::masterHost()
             ? $query->where('slug', config('lock.master_realm'))->first()
@@ -167,7 +187,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     /**
      * Not `resources()`: that name belongs to the package's realm contract,
-     * which this model answers with the settings built from these rows.
+     * which this model answers with the settings its configuration declares.
      *
      * @return HasMany<\App\Resources\Models\Resource, $this>
      */
@@ -184,6 +204,7 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         return [
             'domain_status' => RealmDomainStatus::class,
             'domain_checked_at' => 'datetime',
+            'settings' => AsRealmSettings::class,
         ];
     }
 
@@ -195,82 +216,75 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     /** @return array<string, mixed> */
     public function configuration(): array
     {
-        $settings = $this->settings;
-        $configuration = [];
+        return $this->settings->toArray();
+    }
 
-        foreach (array_keys(RealmConfiguration::defaults()) as $key) {
-            $configuration[$key] = $settings->get('realm.'.$key);
-        }
-
-        return $configuration;
+    /**
+     * @param  array<string, mixed>  $values  snake_case setting names
+     */
+    public function writeSettings(array $values): void
+    {
+        $this->settings = $this->settings->merge($values);
+        $this->save();
     }
 
     public function tokens(): TokenSettings
     {
-        $settings = $this->settings;
-
         return new TokenSettings(
-            accessTokenLifetime: $settings->integer('realm.access_token_lifetime'),
-            idTokenLifetime: $settings->integer('realm.id_token_lifetime'),
-            clientCredentialsLifetime: $settings->integer('realm.client_credentials_lifetime'),
-            refreshTokenLifetime: $settings->integer('realm.refresh_token_lifetime'),
+            accessTokenLifetime: $this->settings->accessTokenLifetime,
+            idTokenLifetime: $this->settings->idTokenLifetime,
+            clientCredentialsLifetime: $this->settings->clientCredentialsLifetime,
+            refreshTokenLifetime: $this->settings->refreshTokenLifetime,
         );
     }
 
     public function sessions(): SessionSettings
     {
-        $settings = $this->settings;
-
         return new SessionSettings(
-            absoluteLifetime: $settings->integer('realm.session_absolute_lifetime'),
-            tokenTtl: $settings->integer('realm.session_token_ttl'),
-            tokenRefreshSkew: $settings->integer('realm.session_token_refresh_skew'),
+            absoluteLifetime: $this->settings->sessionAbsoluteLifetime,
+            tokenTtl: $this->settings->sessionTokenTtl,
+            tokenRefreshSkew: $this->settings->sessionTokenRefreshSkew,
         );
     }
 
     public function credentials(): CredentialSettings
     {
-        $settings = $this->settings;
-
         return new CredentialSettings(
-            challengeProviders: $this->stringList('challenge_providers'),
-            totpSecretLength: $settings->integer('realm.totp_secret_length'),
-            totpWindow: $settings->integer('realm.totp_window'),
-            recoveryCodes: $settings->integer('realm.recovery_codes'),
+            challengeProviders: $this->settings->challengeProviders,
+            totpSecretLength: $this->settings->totpSecretLength,
+            totpWindow: $this->settings->totpWindow,
+            recoveryCodes: $this->settings->recoveryCodes,
             password: $this->passwordPolicy(),
         );
     }
 
     public function passwordPolicy(): PasswordPolicy
     {
-        $settings = $this->settings;
-        $maxAgeDays = $settings->integer('realm.password_max_age_days');
+        $maxAgeDays = $this->settings->passwordMaxAgeDays;
 
         return new PasswordPolicy(
-            minLength: $settings->integer('realm.password_min_length'),
-            mixedCase: $settings->boolean('realm.password_mixed_case'),
-            numbers: $settings->boolean('realm.password_numbers'),
-            symbols: $settings->boolean('realm.password_symbols'),
-            uncompromised: $settings->boolean('realm.password_uncompromised'),
-            history: $settings->integer('realm.password_history'),
+            minLength: $this->settings->passwordMinLength,
+            mixedCase: $this->settings->passwordMixedCase,
+            numbers: $this->settings->passwordNumbers,
+            symbols: $this->settings->passwordSymbols,
+            uncompromised: $this->settings->passwordUncompromised,
+            history: $this->settings->passwordHistory,
             maxAgeDays: $maxAgeDays > 0 ? $maxAgeDays : null,
         );
     }
 
     public function clients(): ClientSettings
     {
-        $settings = $this->settings;
-
         return new ClientSettings(
-            dynamicRegistration: $settings->boolean('realm.dynamic_registration'),
-            allowedRedirectSchemes: $this->stringList('allowed_redirect_schemes'),
-            allowedRedirectDomains: $this->stringList('allowed_redirect_domains'),
-            defaultScopes: $this->stringList('default_scopes'),
-            optionalScopes: $this->stringList('optional_scopes'),
-            tokenExchange: $settings->boolean('realm.token_exchange'),
-            firstPartyClientId: $settings->string('realm.first_party_client_id') ?: null,
-            firstPartyTrusted: $settings->boolean('realm.first_party_trusted'),
-            trustedClients: $this->stringList('trusted_clients'),
+            dynamicRegistration: $this->settings->dynamicRegistration,
+            allowedRedirectSchemes: $this->settings->allowedRedirectSchemes,
+            allowedRedirectDomains: $this->settings->allowedRedirectDomains,
+            defaultScopes: $this->settings->defaultScopes,
+            optionalScopes: $this->settings->optionalScopes,
+            tokenExchange: $this->settings->tokenExchange,
+            firstPartyClientId: $this->first_party_client_id,
+            firstPartyTrusted: $this->settings->firstPartyTrusted,
+            trustedClients: $this->settings->trustedClients,
         );
     }
 
@@ -290,12 +304,10 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
 
     public function authentication(): AuthenticationSettings
     {
-        $settings = $this->settings;
-
         return new AuthenticationSettings(
-            methods: LoginMethod::listFromConfig($this->stringList('login_methods')),
-            mfa: MfaRequirement::fromConfig($settings->string('realm.mfa_requirement')),
-            emailVerificationRequired: $settings->boolean('realm.email_verification_required'),
+            methods: LoginMethod::listFromConfig($this->settings->loginMethods),
+            mfa: MfaRequirement::fromConfig($this->settings->mfaRequirement),
+            emailVerificationRequired: $this->settings->emailVerificationRequired,
         );
     }
 
@@ -317,11 +329,5 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function keys(): KeySettings
     {
         return KeySettings::fromConfig();
-    }
-
-    /** @return list<string> */
-    private function stringList(string $key): array
-    {
-        return array_values(array_filter($this->settings->array('realm.'.$key), is_string(...)));
     }
 }

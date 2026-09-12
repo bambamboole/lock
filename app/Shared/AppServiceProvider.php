@@ -5,7 +5,6 @@ namespace App\Shared;
 
 use App\Realms\Models\Realm;
 use App\Shared\Auth\Support\RequestUser;
-use App\Shared\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,8 +20,6 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(SettingsRegistry::class);
-
         $this->configureOidc();
         $this->configureAuditCauser();
 

@@ -24,6 +24,12 @@ return new class extends Migration
             $table->string('domain_status', 20)->default('pending');
             $table->timestamp('domain_checked_at')->nullable();
             $table->string('domain_check_error', 500)->nullable();
+            // Only what the realm moves away from the instance defaults, so a
+            // setting nobody changed keeps following the default it came from.
+            $table->json('settings')->default('{}');
+            // Provisioned rather than configured, which is why it is a column of
+            // its own instead of one of the settings above.
+            $table->string('first_party_client_id')->nullable();
             $table->timestamps();
         });
     }

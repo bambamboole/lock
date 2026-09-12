@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Http\Api\V1\Controllers;
 
-use App\Realms\Http\Api\V1\Requests\StoreRealmRequest;
+use App\Realms\Http\Api\V1\Requests\CreateRealmRequest;
 use App\Realms\Http\Api\V1\Requests\UpdateRealmRequest;
 use App\Realms\Http\Api\V1\Resources\RealmResource;
 use App\Realms\Models\Realm;
@@ -13,7 +13,6 @@ use App\Shared\Realms\Contracts\DeletesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use Bambamboole\Spectacular\QueryBuilder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
@@ -50,9 +49,6 @@ final readonly class RealmController
             ->defaultSort('name')
             ->apiPaginate();
 
-        // Every realm serialises its configuration, which reads its settings rows.
-        Collection::make($realms->items())->load('storedSettings');
-
         return RealmResource::collection($realms);
     }
 
@@ -61,7 +57,7 @@ final readonly class RealmController
      */
     public function show(Realm $realm): RealmResource
     {
-        return $this->resource($realm);
+        return new RealmResource($realm);
     }
 
     /**
@@ -70,18 +66,20 @@ final readonly class RealmController
      * The realm gets its own signing keypair, and its domain is checked right
      * away. A domain that does not reach this instance yet is reported through
      * `domain_status` rather than refused — DNS and the proxy usually follow.
+     * Settings left out of `configuration` follow the instance defaults.
      */
-    public function store(StoreRealmRequest $request): JsonResponse
+    public function store(CreateRealmRequest $request): JsonResponse
     {
-        $realm = $this->createRealm->handle(
+        $realm = $this->reportingConfigurationErrors(fn (): Realm => $this->createRealm->handle(
             $request->string('name')->toString(),
             $request->string('domain')->toString(),
             $request->string('slug')->toString(),
-        );
+            $request->array('configuration'),
+        ));
 
         $this->checkDomain->handle($realm);
 
-        return $this->resource($realm->refresh())->response()->setStatusCode(Response::HTTP_CREATED);
+        return new RealmResource($realm->refresh())->response()->setStatusCode(Response::HTTP_CREATED);
     }
 
     /**
@@ -99,7 +97,7 @@ final readonly class RealmController
         ];
 
         if ($submitted !== []) {
-            $this->updateConfiguration($realm, $submitted);
+            $this->reportingConfigurationErrors(fn () => $this->updateRealm->handle($realm, $submitted));
         }
 
         if ($request->has('domain')) {
@@ -107,31 +105,29 @@ final readonly class RealmController
             $this->checkDomain->handle($realm);
         }
 
-        return $this->resource($realm->refresh());
-    }
-
-    /** The realm's configuration reads its settings rows. */
-    private function resource(Realm $realm): RealmResource
-    {
-        return new RealmResource($realm->loadMissing('storedSettings'));
+        return new RealmResource($realm->refresh());
     }
 
     /**
-     * The update validates the submission merged into the realm's current
-     * configuration, so it reports a setting under its own name. On the wire
-     * the settings live under `configuration`, and an error has to point there.
+     * Both actions validate the submission merged into a whole configuration —
+     * the realm's current values, or the defaults for one being created — so
+     * they report a setting under its own name. On the wire the settings live
+     * under `configuration`, and an error has to point there.
      *
-     * @param  array<string, mixed>  $submitted
+     * @template TReturn
+     *
+     * @param  callable(): TReturn  $write
+     * @return TReturn
      */
-    private function updateConfiguration(Realm $realm, array $submitted): void
+    private function reportingConfigurationErrors(callable $write): mixed
     {
         try {
-            $this->updateRealm->handle($realm, $submitted);
+            return $write();
         } catch (ValidationException $exception) {
             $errors = [];
 
             foreach ($exception->errors() as $key => $messages) {
-                $errors[$key === 'name' ? $key : 'configuration.'.$key] = $messages;
+                $errors[in_array($key, ['name', 'slug', 'domain'], true) ? $key : 'configuration.'.$key] = $messages;
             }
 
             throw ValidationException::withMessages($errors);
