@@ -16,6 +16,7 @@ use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms', name: 'admin.realms', can: Scope::RealmsRead)]
@@ -31,14 +32,17 @@ final class RealmsPage extends AdminPage
         $user = $request->user();
 
         return $schema->schema([
-            Stack::make('admin-realms-page')->gap(Gap::Large)->schema([
-                PageHeader::make(__('admin.realms.heading'), __('admin.realms.description'), ActionBar::make(primary: [
-                    Button::make(__('admin.realms.create.submit'))
-                        ->visible($user instanceof User && $user->can(Scope::RealmsWrite))
-                        ->effects(Effects::redirect(route('admin.realms.create', [], false))),
-                ])),
-                Table::use(RealmsTable::class),
-            ]),
+            Stack::make('admin-realms-page')
+                ->gap(Gap::Large)
+                ->width(Width::ExtraLarge)
+                ->schema([
+                    PageHeader::make(__('admin.realms.heading'), __('admin.realms.description'), ActionBar::make(primary: [
+                        Button::make(__('admin.realms.create.submit'))
+                            ->visible($user instanceof User && $user->can(Scope::RealmsWrite))
+                            ->effects(Effects::redirect(route('admin.realms.create', [], false))),
+                    ])),
+                    Table::use(RealmsTable::class),
+                ]),
         ]);
     }
 }
