@@ -11,6 +11,9 @@ use App\Realms\Actions\UpdateRealm;
 use App\Realms\Actions\UpdateRealmDomain;
 use App\Realms\Models\Realm;
 use App\Realms\Support\RealmHostGate;
+use App\Realms\Ui\Pages\RealmSettingsPage;
+use App\Realms\Ui\Pages\RealmsPage;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\DeletesRealm;
@@ -20,6 +23,8 @@ use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
+use Lattice\Ui\Components\MenuItem;
+use Lattice\Ui\Enums\Icon;
 
 final class RealmsServiceProvider extends ServiceProvider
 {
@@ -34,6 +39,24 @@ final class RealmsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Lattice::extend(
+            'admin.sidebar.realm',
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.settings'))
+                ->prefix(Icon::Settings)
+                ->can(ApiScope::RealmsRead),
+            priority: 70,
+        );
+
+        Lattice::extend(
+            'admin.sidebar.instance',
+            static fn (): MenuItem => MenuItem::fromPage(RealmsPage::class)
+                ->label(__('navigation.realms'))
+                ->prefix(Icon::List)
+                ->can(ApiScope::RealmsRead),
+            priority: 10,
+        );
+
         /*
          * Every realm definition gates itself on a management scope, so the
          * resolver is a plain lookup.

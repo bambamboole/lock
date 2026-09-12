@@ -16,7 +16,10 @@ use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\RolesTokenClaim;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
+use App\Auth\Ui\Pages\RealmUsersPage;
 use App\Auth\Ui\Pages\SetupTwoFactorPage;
+use App\Realms\Models\Realm;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Auth\Contracts\CreatesRealmUser;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
@@ -36,6 +39,8 @@ use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
+use Lattice\Core\Support\Affix;
+use Lattice\Ui\Components\MenuItem;
 
 final class AuthServiceProvider extends ServiceProvider
 {
@@ -63,6 +68,15 @@ final class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Lattice::extend(
+            'admin.sidebar.realm',
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmUsersPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.users'))
+                ->prefix(Affix::icon('users'))
+                ->can(ApiScope::UsersRead),
+            priority: 10,
+        );
+
         Auth::provider('realm-eloquent', fn ($app, array $config): RealmUserProvider => new RealmUserProvider(
             $app['hash'],
             $config['model'],

@@ -10,6 +10,9 @@ use App\Clients\Actions\ProvisionConsoleClient;
 use App\Clients\Actions\RotateClientSecret;
 use App\Clients\Actions\SetClientRevocation;
 use App\Clients\Actions\UpdateClient;
+use App\Clients\Ui\Pages\RealmClientsPage;
+use App\Realms\Models\Realm;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Clients\Contracts\CreatesClient;
 use App\Shared\Clients\Contracts\DeletesClient;
 use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
@@ -19,6 +22,8 @@ use App\Shared\Clients\Contracts\UpdatesClient;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
+use Lattice\Core\Support\Affix;
+use Lattice\Ui\Components\MenuItem;
 
 final class ClientsServiceProvider extends ServiceProvider
 {
@@ -34,6 +39,15 @@ final class ClientsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Lattice::extend(
+            'admin.sidebar.realm',
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmClientsPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.clients'))
+                ->prefix(Affix::icon('key-round'))
+                ->can(ApiScope::ClientsRead),
+            priority: 20,
+        );
+
         Lattice::context('client', fn (string $value): Client => Client::query()->findOrFail($value));
     }
 }

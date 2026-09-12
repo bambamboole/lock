@@ -18,17 +18,22 @@ realm user gets account pages, never a console. A module that wants to contribut
 hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` instead of importing the page.
 
 Its shell — `App\Shared\Ui\Layouts\AdminLayout` and the `App\Shared\Ui\Pages\AdminPage` base class — lives in
-`app/Shared/Ui/**` so any domain may contribute a console page, and it links the console by route name rather than
-by page class: importing `App\Realms\Ui\Pages\…` there would make the shared layer depend on a domain. A domain
-owns the pages for its own records (`app/Realms/Ui/**` for the realm record, `app/Clients/Ui/**` for its OAuth
-clients, `app/Resources/Ui/**` for its protected resources, `app/Auth/Ui/**` for its users,
-`app/Roles/Ui/**` for its roles); the pages whose domain
-has no `Ui` slice yet stay in `app/Admin/Ui/**`. A page that needs a neighbour's card hangs a `Slot` instead of
-importing it: `admin.users.detail.cards` is how the realm roles reach the user page.
+`app/Shared/Ui/**` so any domain may contribute a console page. A domain owns the pages for its own records
+(`app/Realms/Ui/**` for the realm record, `app/Clients/Ui/**` for its OAuth clients, `app/Resources/Ui/**` for its
+protected resources, `app/Auth/Ui/**` for its users, `app/Roles/Ui/**` for its roles); the pages whose domain has no
+`Ui` slice yet stay in `app/Admin/Ui/**`.
+
+The shell owns no navigation of its own. Its sidebar is two slots a domain fills from its provider —
+`admin.sidebar.realm`, which carries the selected `Realm` in its context, and `admin.sidebar.instance` — and
+`admin.users.detail.cards` is how the roles card reaches the user page. Order is the `priority:` argument, and an
+entry gates itself with `MenuItem::…->can(ApiScope::…)` rather than the shell testing the user. Because the module
+registering an entry owns the page, it builds it with `MenuItem::fromPage()`; only the realm switcher is built in
+the shell, and it links by route name because importing `App\Realms\Ui\Pages\…` there would make the shared layer
+depend on a domain.
 
 The console is Keycloak-shaped: a realm-scoped page lives under `/admin/realms/{realm}/…` and takes the bound
-`Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide whether the sidebar shows
-the instance areas (realms, activity) or the selected realm's areas (users, settings) below the realm switcher.
+`Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide which of the two sidebar
+slots it renders below the realm switcher.
 Instance-wide pages stay directly under `/admin/…`. There is no cross-realm user list on purpose.
 
 A definition's id is the endpoint every client already calls, so it does not follow the class between namespaces:

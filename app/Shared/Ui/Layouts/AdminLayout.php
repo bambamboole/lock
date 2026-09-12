@@ -11,13 +11,11 @@ use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsLayout;
 use Lattice\Core\Enums\Breakpoint;
-use Lattice\Core\Support\Affix;
 use Lattice\Facades\Effects;
 use Lattice\Layouts\Components\Outlet;
 use Lattice\Layouts\LayoutDefinition;
 use Lattice\Ui\Components\Breadcrumbs;
 use Lattice\Ui\Components\Button;
-use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\Dropdown;
 use Lattice\Ui\Components\Icon as IconComponent;
 use Lattice\Ui\Components\Menu;
@@ -38,6 +36,7 @@ use Lattice\Ui\Enums\Side;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
+use Lattice\Ui\Slot;
 
 #[AsLayout('admin')]
 final class AdminLayout extends LayoutDefinition
@@ -61,9 +60,11 @@ final class AdminLayout extends LayoutDefinition
                     Sidebar::make('admin-sidebar')->collapsible()->items([
                         BrandMark::wordmark('admin-sidebar-logo'),
                         ...($user->can(ApiScope::RealmsRead) ? [$this->realmSwitcher($realm)] : []),
-                        Menu::make('admin-sidebar-menu')->items(
-                            $realm instanceof Realm ? $this->realmMenuItems($user, $realm) : $this->instanceMenuItems($user),
-                        ),
+                        Menu::make('admin-sidebar-menu')->items([
+                            $realm instanceof Realm
+                                ? Slot::make('admin.sidebar.realm')->context(['realm' => $realm])
+                                : Slot::make('admin.sidebar.instance'),
+                        ]),
                     ]),
                     Stack::make('admin-main')
                         ->width(Width::Fill)
@@ -139,40 +140,11 @@ final class AdminLayout extends LayoutDefinition
     }
 
     /**
-     * @return array<int, Component>
-     */
-    private function realmMenuItems(User $user, Realm $realm): array
-    {
-        return [
-            ...($user->can(ApiScope::UsersRead) ? [
-                $this->menuItem(__('navigation.users'), 'admin.realms.users', ['realm' => $realm->slug])->prefix(Affix::icon('users')),
-            ] : []),
-            ...($user->can(ApiScope::ClientsRead) ? [$this->menuItem(__('navigation.clients'), 'admin.realms.clients', ['realm' => $realm->slug])->prefix(Affix::icon('key-round'))] : []),
-            ...($user->can(ApiScope::RolesRead) ? [$this->menuItem(__('navigation.roles'), 'admin.realms.roles', ['realm' => $realm->slug])->prefix(Affix::icon('shield-check'))] : []),
-            ...($user->can(ApiScope::ResourcesRead) ? [$this->menuItem(__('navigation.resources'), 'admin.realms.resources', ['realm' => $realm->slug])->prefix(Affix::icon('layers'))] : []),
-            $this->menuItem(__('navigation.events'), 'admin.realms.events', ['realm' => $realm->slug])->prefix(Affix::icon('shield-alert')),
-            $this->menuItem(__('navigation.activity'), 'admin.realms.activity', ['realm' => $realm->slug])->prefix(Icon::Clock),
-            $this->menuItem(__('navigation.settings'), 'admin.realms.settings', ['realm' => $realm->slug])->prefix(Icon::Settings),
-        ];
-    }
-
-    /**
-     * @return array<int, Component>
-     */
-    private function instanceMenuItems(User $user): array
-    {
-        return [
-            ...($user->can(ApiScope::RealmsRead) ? [
-                $this->menuItem(__('navigation.realms'), 'admin.realms')->prefix(Icon::List),
-                $this->menuItem(__('navigation.api'), 'admin.api')->prefix(Icon::CodeXml),
-            ] : []),
-            $this->menuItem(__('navigation.activity'), 'admin.activity')->prefix(Icon::Clock),
-        ];
-    }
-
-    /**
-     * The shell is shared, so it links the console by route name: importing a
-     * domain's page class here would make App\Shared depend on that domain.
+     * Only the realm switcher is built here, and it links by route name:
+     * importing a domain's page class would make App\Shared depend on that
+     * domain. Every other entry is a domain's own, hung into the sidebar
+     * slots, where `MenuItem::fromPage()` is available because the module
+     * registering the item owns the page.
      *
      * @param  array<string, mixed>  $parameters
      */
