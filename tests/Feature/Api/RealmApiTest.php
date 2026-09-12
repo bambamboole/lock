@@ -328,20 +328,23 @@ it('applies a name, settings and a new domain in one request', function () {
         ->assertJsonPath('data.settings.recovery_codes', 12);
 });
 
-it('stores a domain lowercased on both paths', function () {
+it('refuses a domain that is not lowercase on both paths', function () {
     $token = managementApiToken($this, ApiScope::RealmsWrite);
 
     $this->withToken($token)
         ->postJson(realmsUrl(), ['name' => 'Globex', 'slug' => 'globex', 'domain' => 'Globex.Test'])
-        ->assertCreated()
-        ->assertJsonPath('data.domain', 'globex.test');
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('domain');
 
     auth()->forgetGuards();
 
     $this->withToken($token)
         ->patchJson(realmsUrl('/acme'), ['domain' => 'Acme2.Test'])
-        ->assertOk()
-        ->assertJsonPath('data.domain', 'acme2.test');
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors('domain');
+
+    expect(Realm::query()->where('slug', 'globex')->exists())->toBeFalse()
+        ->and($this->acme->refresh()->domain)->toBe('acme.test');
 });
 
 it('refuses the whole request when one of its parts is rejected', function () {

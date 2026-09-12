@@ -7,6 +7,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Data\ApiData;
 use App\Shared\Realms\Support\RealmDomain;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
+use Spatie\LaravelData\Attributes\Validation\Lowercase;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Optional;
@@ -24,25 +25,9 @@ final class UpdateRealmData extends ApiData
         #[Max(Realm::NAME_MAX_LENGTH)]
         public Optional|string $name,
         #[SpecProperty('The domain the realm is served from. Re-pointing it changes the issuer and restarts the domain check.')]
-        #[Max(253), Regex(RealmDomain::PATTERN)]
+        #[Max(253), Lowercase, Regex(RealmDomain::PATTERN)]
         public Optional|string $domain,
         #[SpecProperty('Any subset of the realm’s policy; settings left out keep their current value.')]
         public Optional|RealmSettingsPatch $settings,
     ) {}
-
-    /**
-     * A host is case-insensitive, so the payload is normalised before the
-     * pattern is checked — `Acme.Test` names the same realm as `acme.test`.
-     *
-     * @param  array<array-key, mixed>  $properties
-     * @return array<array-key, mixed>
-     */
-    public static function prepareForPipeline(array $properties): array
-    {
-        if (is_string($properties['domain'] ?? null)) {
-            $properties['domain'] = RealmDomain::normalize($properties['domain']);
-        }
-
-        return $properties;
-    }
 }

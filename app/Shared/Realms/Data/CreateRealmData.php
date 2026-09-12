@@ -7,6 +7,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Data\ApiData;
 use App\Shared\Realms\Support\RealmDomain;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
+use Spatie\LaravelData\Attributes\Validation\Lowercase;
 use Spatie\LaravelData\Attributes\Validation\Max;
 use Spatie\LaravelData\Attributes\Validation\Regex;
 use Spatie\LaravelData\Attributes\Validation\Unique;
@@ -27,25 +28,9 @@ final class CreateRealmData extends ApiData
         #[Max(63), Regex('/\A[a-z0-9]+(?:-[a-z0-9]+)*\z/'), Unique('realms', 'slug')]
         public string $slug,
         #[SpecProperty('The domain the realm is served from. Lock checks that it reaches this instance, but keeps the realm either way.')]
-        #[Max(253), Regex(RealmDomain::PATTERN)]
+        #[Max(253), Lowercase, Regex(RealmDomain::PATTERN)]
         public string $domain,
         #[SpecProperty('The realm’s policy. Settings left out follow the instance defaults.')]
         public Optional|RealmSettingsPatch $settings,
     ) {}
-
-    /**
-     * A host is case-insensitive, so the payload is normalised before the
-     * pattern is checked — `Acme.Test` names the same realm as `acme.test`.
-     *
-     * @param  array<array-key, mixed>  $properties
-     * @return array<array-key, mixed>
-     */
-    public static function prepareForPipeline(array $properties): array
-    {
-        if (is_string($properties['domain'] ?? null)) {
-            $properties['domain'] = RealmDomain::normalize($properties['domain']);
-        }
-
-        return $properties;
-    }
 }
