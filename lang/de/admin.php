@@ -83,6 +83,7 @@ return [
             ],
         ],
         'detail' => [
+            'description' => 'Benutzer von :realm.',
             'created-at' => 'Beigetreten',
             'blocked-at' => 'Gesperrt seit',
             'status' => 'Status',
@@ -237,11 +238,13 @@ return [
             ],
             'redirect-uris' => [
                 'label' => 'Redirect-URIs',
-                'help-text' => 'Eine absolute URI pro Zeile. Für den Authorization-Code-Grant erforderlich.',
+                'help-text' => 'Jede absolute URI einzeln hinzufügen. Für den Authorization-Code-Grant erforderlich.',
+                'add' => 'Redirect-URI hinzufügen',
             ],
             'post-logout-redirect-uris' => [
                 'label' => 'Post-Logout-Redirect-URIs',
-                'help-text' => 'Eine absolute URI pro Zeile. Wohin der Client Benutzer nach dem Abmelden schicken darf.',
+                'help-text' => 'Jede absolute URI, die der Client nach dem Abmelden verwenden darf, einzeln hinzufügen.',
+                'add' => 'Post-Logout-URI hinzufügen',
             ],
             'consent-required' => [
                 'label' => 'Einwilligung erforderlich',
@@ -264,7 +267,8 @@ return [
             'scopes' => 'Scopes',
             'secret' => [
                 'heading' => 'Client-Secret',
-                'subtitle' => 'Verschlüsselt gespeichert und daher hier jederzeit lesbar. Bei einem Leck rotieren.',
+                'subtitle' => 'Zum Kopieren das Secret aufklappen. Bei einem Leck rotieren.',
+                'reveal' => 'Client-Secret anzeigen',
                 'label' => 'Client-Secret',
             ],
             'settings' => [
@@ -276,7 +280,7 @@ return [
                 'done' => 'Client-Secret rotiert.',
                 'confirm' => [
                     'title' => 'Client-Secret rotieren?',
-                    'description' => 'Das aktuelle Secret funktioniert sofort nicht mehr. Das neue wird einmalig angezeigt.',
+                    'description' => 'Das aktuelle Secret funktioniert sofort nicht mehr. Das neue kann auf dieser Seite angezeigt werden.',
                 ],
             ],
             'revoke' => [
@@ -342,6 +346,7 @@ return [
             'identifier-uri' => 'Der Identifier muss eine absolute URI mit Host und ohne Fragment sein.',
         ],
         'detail' => [
+            'scopes' => ['heading' => 'Scopes'],
             'description' => 'Resource von :realm.',
             'audience' => 'Audience',
             'settings' => [

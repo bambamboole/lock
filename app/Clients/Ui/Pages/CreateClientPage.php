@@ -6,14 +6,11 @@ namespace App\Clients\Ui\Pages;
 use App\Clients\Ui\Forms\CreateClientForm;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Card;
-use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
@@ -34,15 +31,17 @@ final class CreateClientPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-create-client-page')
-                ->gap(Gap::Large)
-                ->width(Width::Large)
-                ->schema([
-                    PageHeader::make(__('admin.clients.create.heading'), __('admin.clients.create.description', ['realm' => $realm->name])),
+            $this->stack(
+                key: 'admin-create-client-page',
+                heading: __('admin.clients.create.heading'),
+                description: __('admin.clients.create.description', ['realm' => $realm->name]),
+                schema: [
                     Card::make(__('admin.clients.sections.general'))->schema([
                         Form::use(CreateClientForm::class),
                     ]),
-                ]),
+                ],
+                width: Width::Medium,
+            ),
         ]);
     }
 }

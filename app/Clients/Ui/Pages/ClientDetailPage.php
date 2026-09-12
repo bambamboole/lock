@@ -11,7 +11,6 @@ use App\Clients\Ui\Forms\UpdateClientForm;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Lattice\Actions\Components\Action;
@@ -22,6 +21,7 @@ use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\CodeBlock;
+use Lattice\Ui\Components\Collapsible;
 use Lattice\Ui\Components\Component;
 use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\BadgeEntry;
@@ -53,18 +53,20 @@ final class ClientDetailPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-client-detail-page')
-                ->gap(Gap::Large)
-                ->width(Width::Large)
-                ->schema([
-                    PageHeader::make(
-                        $client->name,
-                        __('admin.clients.detail.description', ['realm' => $realm->name]),
-                        $this->headerActions($client),
-                    ),
+            $this->stack(
+                key: 'admin-client-detail-page',
+                heading: $client->name,
+                description: __('admin.clients.detail.description', ['realm' => $realm->name]),
+                headerActions: [
+                    ...($client->isRevoked() ? [Badge::make(__('admin.clients.status.blocked'))->color(ColorName::Danger)] : []),
+                    ...$this->headerActions($client),
+                ],
+                schema: [
                     ...($client->confidential() ? [$this->secretCard($client)] : []),
                     $this->settingsCard($client),
-                ]),
+                ],
+                width: Width::Large,
+            ),
         ]);
     }
 
@@ -94,8 +96,11 @@ final class ClientDetailPage extends AdminPage
             Stack::make('client-secret')->gap(Gap::Small)->schema([
                 Text::make(__('admin.clients.columns.client-id'))->size(Size::Sm)->color(ColorName::Muted),
                 CodeBlock::make($client->client_id, 'client-secret-client-id')->copyable(),
-                Text::make(__('admin.clients.detail.secret.label'))->size(Size::Sm)->color(ColorName::Muted),
-                CodeBlock::make((string) $client->secret, 'client-secret-value')->copyable(),
+                Collapsible::make('client-secret-disclosure')
+                    ->trigger([Text::make(__('admin.clients.detail.secret.reveal'))])
+                    ->content([
+                        CodeBlock::make((string) $client->secret, 'client-secret-value')->copyable(),
+                    ]),
             ]),
         ]);
     }

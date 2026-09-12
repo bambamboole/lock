@@ -19,7 +19,6 @@ use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
@@ -34,9 +33,7 @@ use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\BadgeEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
-use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\DateTimeStyle;
-use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 use Lattice\Ui\Slot;
@@ -57,18 +54,21 @@ final class UserDetailPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-user-detail-page')
-                ->gap(Gap::Large)
-                ->width(Width::Large)
-                ->schema([
-                    PageHeader::make($user->name, null, [
-                        ...($user->isBlocked() ? [Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)] : []),
-                        ...$this->headerActions($user),
-                    ]),
+            $this->stack(
+                key: 'admin-user-detail-page',
+                heading: $user->name,
+                description: __('admin.users.detail.description', ['realm' => $realm->name]),
+                headerActions: [
+                    ...($user->isBlocked() ? [Badge::make(__('admin.users.status.blocked'))->color(ColorName::Danger)] : []),
+                    ...$this->headerActions($user),
+                ],
+                schema: [
                     $this->profileCard($user),
                     Slot::make('admin.users.detail.cards')->context(['target' => $user]),
                     $this->sessionsCard(),
-                ]),
+                ],
+                width: Width::Large,
+            ),
         ]);
     }
 

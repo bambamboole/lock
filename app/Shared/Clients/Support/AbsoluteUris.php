@@ -10,9 +10,6 @@ use Illuminate\Contracts\Validation\ValidationRule;
  * Every entry of a URI list is absolute. A redirect URI is compared against
  * what a relying party sends back, so it has to carry a scheme and a host, and
  * a fragment never survives the round trip.
- *
- * The API submits the list as an array and the console's textarea as one URI
- * per line, so the rule reads both spellings of a list.
  */
 final class AbsoluteUris implements ValidationRule
 {

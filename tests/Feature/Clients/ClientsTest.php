@@ -41,8 +41,8 @@ function clientFormData(array $overrides = []): array
         'name' => 'Partner portal',
         'token_endpoint_auth_method' => TokenEndpointAuthMethod::ClientSecretBasic->value,
         'grant_types' => ['authorization_code', 'refresh_token'],
-        'redirect_uris' => "https://portal.test/callback\nhttps://portal.test/alt",
-        'post_logout_redirect_uris' => 'https://portal.test/',
+        'redirect_uris' => [['uri' => 'https://portal.test/callback'], ['uri' => 'https://portal.test/alt']],
+        'post_logout_redirect_uris' => [['uri' => 'https://portal.test/']],
         ...$overrides,
     ];
 }
@@ -181,8 +181,8 @@ test('a machine client only needs the client credentials grant', function () {
     $this->actingAs(globalAdmin())->submitForm(CreateClientForm::class, clientFormData([
         'token_endpoint_auth_method' => TokenEndpointAuthMethod::ClientSecretPost->value,
         'grant_types' => ['client_credentials'],
-        'redirect_uris' => '',
-        'post_logout_redirect_uris' => '',
+        'redirect_uris' => [],
+        'post_logout_redirect_uris' => [],
     ]), ['realm' => 'acme'])->assertRedirect();
 
     $client = Client::query()->where('name', 'Partner portal')->sole();
@@ -200,10 +200,12 @@ test('rejects inconsistent client settings on the matching field', function (arr
     'refresh token without authorization code' => [['grant_types' => ['refresh_token']], 'grant_types'],
     'client credentials on a public client' => [['token_endpoint_auth_method' => 'none', 'grant_types' => ['authorization_code', 'client_credentials']], 'grant_types'],
     'unknown grant type' => [['grant_types' => ['implicit']], 'grant_types'],
-    'no redirect uri for authorization code' => [['redirect_uris' => ''], 'redirect_uris'],
-    'relative redirect uri' => [['redirect_uris' => '/callback'], 'redirect_uris'],
-    'redirect uri with fragment' => [['redirect_uris' => 'https://portal.test/callback#frag'], 'redirect_uris'],
-    'invalid post-logout uri' => [['post_logout_redirect_uris' => 'not a uri'], 'post_logout_redirect_uris'],
+    'no redirect uri for authorization code' => [['redirect_uris' => []], 'redirect_uris'],
+    'relative redirect uri' => [['redirect_uris' => [['uri' => '/callback']]], 'redirect_uris.0.uri'],
+    'redirect uri with fragment' => [['redirect_uris' => [['uri' => 'https://portal.test/callback#frag']]], 'redirect_uris.0.uri'],
+    'empty redirect row' => [['redirect_uris' => [['uri' => '']]], 'redirect_uris.0.uri'],
+    'multiple uris in one row' => [['redirect_uris' => [['uri' => "https://portal.test/callback\nhttps://portal.test/alt"]]], 'redirect_uris.0.uri'],
+    'invalid post-logout uri' => [['post_logout_redirect_uris' => [['uri' => 'not a uri']]], 'post_logout_redirect_uris.0.uri'],
 ]);
 
 test('each client row saves on its own and leaves the rest of the client alone', function () {
@@ -238,7 +240,7 @@ test('a single client row is validated against the stored client', function () {
     $this->actingAs(globalAdmin());
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'grant_types', ['refresh_token']))
         ->assertInvalid(['grant_types' => __('admin.clients.validation.refresh-token-needs-code')]);
-    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'redirect_uris', ''))
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'redirect_uris', []))
         ->assertInvalid(['redirect_uris' => __('admin.clients.validation.redirect-uri-required')]);
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'grant_types', ['authorization_code', 'client_credentials']))->assertRedirect();
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))
@@ -348,4 +350,25 @@ test('a client row menu follows the state of its own client', function () {
 
     expect($table->row($public->id)->actionIds())->toBe(['admin.clients.revoke', 'admin.clients.delete'])
         ->and($table->row($revoked->id)->actionIds())->toBe(['admin.clients.rotate-secret', 'admin.clients.restore', 'admin.clients.delete']);
+});
+
+test('redirect uri rows replace stored lists and optional lists can be cleared', function () {
+    $client = realmClient($this->realm);
+    $this->actingAs(globalAdmin());
+
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'redirect_uris', [
+        ['uri' => 'https://portal.test/new'],
+        ['uri' => 'https://portal.test/second'],
+    ]))->assertRedirect();
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'post_logout_redirect_uris', [
+        ['uri' => 'https://portal.test/signed-out'],
+    ]))->assertRedirect();
+
+    expect($client->refresh()->redirect_uris)->toBe(['https://portal.test/new', 'https://portal.test/second'])
+        ->and($client->post_logout_redirect_uris)->toBe(['https://portal.test/signed-out']);
+
+    $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'post_logout_redirect_uris', []))->assertRedirect();
+
+    expect($client->refresh()->post_logout_redirect_uris)->toBeEmpty()
+        ->and($client->redirect_uris)->toBe(['https://portal.test/new', 'https://portal.test/second']);
 });
