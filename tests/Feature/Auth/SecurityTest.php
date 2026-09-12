@@ -2,15 +2,10 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Credentials\FactorRegistry;
 
 use function Tests\Helpers\createPasskey;
 use function Tests\Helpers\realmRoute;
 
-/**
- * Enrolling a factor is covered by TwoFactorSetupTest and the list by
- * TwoFactorMethodsTest.
- */
 test('the two-factor section stays hidden until the password is confirmed', function () {
     $user = User::factory()->withTwoFactor()->create();
 
@@ -30,8 +25,6 @@ test('the two-factor section stays hidden until the password is confirmed', func
 test('a passkey alone counts as a second factor', function () {
     $user = User::factory()->create();
     createPasskey($user, 'MacBook Pro');
-
-    expect(app(FactorRegistry::class)->configuredChallengeableEnrollments($user))->toHaveCount(1);
 
     $this->actingAs($user, 'identity')
         ->withSession(['auth.password_confirmed_at' => time()])

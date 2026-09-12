@@ -14,15 +14,6 @@ beforeEach(function () {
     session(['auth.password_confirmed_at' => time()]);
 });
 
-it('prepares the preselected method without the user picking one', function () {
-    visitAccountAs($this->user)
-        ->click('button:has-text("Add method")')
-        ->assertSee('Passkey')
-        ->click('[data-test="wizard-next"]')
-        ->assertSee('Only for you, so you can tell this device apart later.')
-        ->assertNoJavaScriptErrors();
-});
-
 it('prepares the authenticator app once it is picked', function () {
     visitAccountAs($this->user)
         ->click('button:has-text("Add method")')

@@ -4,9 +4,6 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Auth\Ui\Actions\ResendUserVerification;
 use App\Auth\Ui\Actions\SendUserPasswordReset;
-use App\Realms\Models\Realm;
-use App\Roles\Ui\Actions\UpdateUserRoles;
-use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Authorization\Enums\Scope;
@@ -16,46 +13,6 @@ use Illuminate\Support\Facades\Notification;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
-
-test('a roles-write admin grants a master realm role, and the console opens for its holder', function () {
-    $admin = globalAdmin();
-    $target = User::factory()->for(Realm::master())->create();
-    $superAdmin = Realm::master()->roles()->where('name', ManagementRoles::SUPER_ADMIN)->sole();
-
-    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
-        'role_ids' => [$superAdmin->id],
-    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
-
-    expect($target->refresh()->can(Scope::RealmsWrite))->toBeTrue();
-});
-
-test('clearing a user\'s roles revokes their console access', function () {
-    $admin = globalAdmin();
-    $target = globalAdmin();
-
-    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
-        'role_ids' => [],
-    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
-
-    expect($target->refresh()->managementScopes()->all())->toBeEmpty();
-});
-
-test('an admin cannot change their own roles', function () {
-    $admin = globalAdmin();
-
-    $this->actingAs($admin)->callDeniedAction(UpdateUserRoles::class, [
-        'role_ids' => [],
-    ], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
-});
-
-test('support cannot manage roles', function () {
-    $support = globalAdmin(ManagementRoles::SUPPORT);
-    $target = User::factory()->for(Realm::master())->create();
-
-    $this->actingAs($support)->callDeniedAction(UpdateUserRoles::class, [
-        'role_ids' => [],
-    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertForbidden();
-});
 
 test('a users-manage admin can resend verification for an unverified user', function () {
     Notification::fake();

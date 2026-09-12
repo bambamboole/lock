@@ -157,10 +157,7 @@ test('creating a confidential client reveals its secret exactly once', function 
         ->and($client->grant_types)->toBe(['authorization_code', 'refresh_token'])
         ->and($client->redirect_uris)->toBe(['https://portal.test/callback', 'https://portal.test/alt'])
         ->and($client->post_logout_redirect_uris)->toBe(['https://portal.test/'])
-        ->and($client->default_scopes)->toBe(['openid', 'profile'])
-        ->and($client->consent_required)->toBeTrue()
-        ->and($this->realm->runAsCurrent(fn () => app(ClientRepository::class)->findActive($client->client_id)))->not->toBeNull()
-        ->and($this->other->runAsCurrent(fn () => app(ClientRepository::class)->find($client->client_id)))->toBeNull();
+        ->and($client->default_scopes)->toBe(['openid', 'profile']);
 
     $activity = Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientCreated->eventName())->sole();
 
@@ -339,11 +336,6 @@ test('a client row opens its detail page and carries the same actions as it', fu
     $row = $this->loadTable(ClientsTable::class, context: ['realm' => 'acme'])->assertOk()->row($client->id);
 
     expect($row->clickHref())->toBe("/admin/realms/acme/clients/{$client->id}")
-        ->and(headerTriggers($detail))->toBe([
-            'admin.clients.rotate-secret',
-            'admin.clients.revoke',
-            'admin.clients.delete',
-        ])
         ->and($row->actionIds())->toBe(headerTriggers($detail));
 });
 

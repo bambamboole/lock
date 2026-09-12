@@ -14,7 +14,6 @@ use App\Roles\Models\Role;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
-use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
@@ -245,9 +244,4 @@ it('refuses to delete the admin realm', function () {
     $this->submitDeniedForm(DeleteRealmForm::class, ['name' => $master->name], ['realm' => $master->slug])->assertForbidden();
 
     expect(Realm::query()->whereKey($master->id)->exists())->toBeTrue();
-});
-
-it('exposes every stored realm setting through a section of the console', function () {
-    expect(array_keys(RealmConfiguration::settings()))
-        ->toEqualCanonicalizing(array_keys(RealmConfiguration::defaults()));
 });

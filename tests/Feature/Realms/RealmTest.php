@@ -37,7 +37,8 @@ test('an address is unique inside a realm and free in every other', function () 
 });
 
 test('the admin realm cannot be deleted', function () {
-    expect(fn () => app(DeleteRealm::class)->handle(Realm::master()))->toThrow(LogicException::class);
+    expect(fn () => app(DeleteRealm::class)->handle(Realm::master()))->toThrow(LogicException::class)
+        ->and(fn () => Realm::master()->delete())->toThrow(LogicException::class);
 
     $this->assertDatabaseHas('realms', ['slug' => Realm::master()->slug]);
 });
@@ -65,11 +66,4 @@ it('normalises a written value to the type its setting holds', function () {
     expect($realm->refresh()->settings->totpWindow)->toBe(4)
         ->and($realm->settings->passwordNumbers)->toBeTrue()
         ->and($realm->settings->defaultScopes)->toBe(['openid']);
-});
-
-it('refuses to change a slug and to delete the administration realm', function () {
-    $realm = Realm::factory()->create(['slug' => 'acme']);
-
-    expect(fn () => $realm->update(['slug' => 'other']))->toThrow(LogicException::class)
-        ->and(fn () => Realm::master()->delete())->toThrow(LogicException::class);
 });

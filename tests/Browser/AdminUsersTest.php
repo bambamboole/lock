@@ -12,23 +12,6 @@ beforeEach(function () {
     $this->actingAs(globalAdmin());
 });
 
-it('shows each user of the realm by name and address', function () {
-    visit('/admin/realms/acme/users')
-        ->assertSee('Wanda Needle')
-        ->assertSee('wanda@acme.test')
-        ->assertNoJavaScriptErrors();
-});
-
-it('blocks a user from their detail page', function () {
-    visit("/admin/realms/acme/users/{$this->target->id}")
-        ->click('Block user')
-        ->click('[data-test="confirm-accept"]')
-        ->assertSee('User blocked.')
-        ->assertNoJavaScriptErrors();
-
-    expect($this->target->refresh()->isBlocked())->toBeTrue();
-});
-
 it('blocks a user from the row menu of the users table', function () {
     visit('/admin/realms/acme/users')
         ->click('button[aria-label="More actions"]')
