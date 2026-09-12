@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Actions\CreateResourceAction;
-use App\Admin\Ui\Actions\CreateResourceScopeAction;
-use App\Admin\Ui\Actions\DeleteResourceAction;
-use App\Admin\Ui\Actions\DeleteResourceScopeAction;
-use App\Admin\Ui\Actions\UpdateResourceAction;
-use App\Admin\Ui\Actions\UpdateResourceScopeAction;
-use App\Admin\Ui\Tables\AdminResourceScopesTable;
-use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Resources\Ui\Actions\CreateResourceAction;
+use App\Resources\Ui\Actions\CreateResourceScopeAction;
+use App\Resources\Ui\Actions\DeleteResourceAction;
+use App\Resources\Ui\Actions\DeleteResourceScopeAction;
+use App\Resources\Ui\Actions\UpdateResourceAction;
+use App\Resources\Ui\Actions\UpdateResourceScopeAction;
+use App\Resources\Ui\Tables\ResourceScopesTable;
+use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
@@ -151,7 +151,7 @@ test('the resources table lists only the selected realm with its scope counts', 
     ResourceScope::factory()->for($orders)->create(['value' => 'read']);
 
     $rows = $this->actingAs(globalAdmin())
-        ->loadTable(AdminResourcesTable::class, context: ['realm' => 'acme'])
+        ->loadTable(ResourcesTable::class, context: ['realm' => 'acme'])
         ->assertOk()
         ->json('data');
 
@@ -168,13 +168,13 @@ test('the scopes table is scoped to its resource and reachable only through its 
 
     $this->actingAs(globalAdmin());
 
-    $rows = $this->loadTable(AdminResourceScopesTable::class, context: ['realm' => 'acme', 'resource' => $resource->id])
+    $rows = $this->loadTable(ResourceScopesTable::class, context: ['realm' => 'acme', 'resource' => $resource->id])
         ->assertOk()
         ->json('data');
 
     expect(collect(is_array($rows) ? $rows : [])->pluck('value')->all())->toBe(['read']);
 
-    $this->loadDeniedTable(AdminResourceScopesTable::class, context: ['realm' => 'globex', 'resource' => $resource->id])->assertNotFound();
+    $this->loadDeniedTable(ResourceScopesTable::class, context: ['realm' => 'globex', 'resource' => $resource->id])->assertNotFound();
 });
 
 test('a resource is only reachable through its own realm and a scope only through its own resource', function () {
@@ -199,7 +199,7 @@ test('a view-only admin reads the console but cannot change anything', function 
     $this->actingAs($resourceViewer());
     $this->get('/admin/realms/acme/resources')->assertOk();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertOk();
-    $this->loadTable(AdminResourcesTable::class, context: ['realm' => 'acme'])->assertOk();
+    $this->loadTable(ResourcesTable::class, context: ['realm' => 'acme'])->assertOk();
 
     $this->callDeniedAction(CreateResourceAction::class, ['identifier' => 'new', 'name' => 'New'], ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(UpdateResourceAction::class, ['identifier' => 'renamed', 'name' => 'Renamed'], $context)->assertForbidden();
@@ -219,7 +219,7 @@ test('the resources console is closed without a resources scope', function () {
     $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
-    $this->loadDeniedTable(AdminResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();
+    $this->loadDeniedTable(ResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateResourceAction::class, ['identifier' => 'new', 'name' => 'New'], ['realm' => 'acme'])->assertForbidden();
 
     expect($this->realm->realmResources()->count())->toBe(1);

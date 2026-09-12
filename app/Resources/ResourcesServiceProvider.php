@@ -10,6 +10,8 @@ use App\Resources\Actions\DeleteResource;
 use App\Resources\Actions\DeleteResourceScope;
 use App\Resources\Actions\UpdateResource;
 use App\Resources\Actions\UpdateResourceScope;
+use App\Resources\Models\Resource;
+use App\Resources\Models\ResourceScope;
 use App\Resources\Support\RealmResources;
 use App\Shared\Resources\Contracts\CreatesResource;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
@@ -19,6 +21,7 @@ use App\Shared\Resources\Contracts\ProvidesRealmResources;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
 use Illuminate\Support\ServiceProvider;
+use Lattice\Core\Facades\Lattice;
 
 final class ResourcesServiceProvider extends ServiceProvider
 {
@@ -32,5 +35,11 @@ final class ResourcesServiceProvider extends ServiceProvider
         $this->app->bind(CreatesResourceScope::class, CreateResourceScope::class);
         $this->app->bind(UpdatesResourceScope::class, UpdateResourceScope::class);
         $this->app->bind(DeletesResourceScope::class, DeleteResourceScope::class);
+    }
+
+    public function boot(): void
+    {
+        Lattice::context('resource', fn (string $value): Resource => Resource::query()->findOrFail($value));
+        Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
     }
 }

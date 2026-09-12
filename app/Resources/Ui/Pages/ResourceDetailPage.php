@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Resources\Ui\Pages;
 
-use App\Admin\Ui\Actions\CreateResourceScopeAction;
-use App\Admin\Ui\Actions\DeleteResourceAction;
-use App\Admin\Ui\Actions\UpdateResourceAction;
-use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
+use App\Resources\Ui\Actions\CreateResourceScopeAction;
+use App\Resources\Ui\Actions\DeleteResourceAction;
+use App\Resources\Ui\Actions\UpdateResourceAction;
+use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
@@ -53,7 +53,7 @@ final class ResourceDetailPage extends AdminPage
                         key: 'admin-resource',
                     )),
                     $this->settingsCard($realm, $resource, $audiences),
-                    Table::use(AdminResourceScopesTable::class),
+                    Table::use(ResourceScopesTable::class),
                 ]),
         ]);
     }

@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Resources\Ui\Tables;
 
-use App\Admin\Ui\Actions\DeleteResourceScopeAction;
-use App\Admin\Ui\Actions\UpdateResourceScopeAction;
-use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Models\ResourceScope;
+use App\Resources\Ui\Actions\DeleteResourceScopeAction;
+use App\Resources\Ui\Actions\UpdateResourceScopeAction;
+use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +20,7 @@ use Lattice\Table\TableQuery;
  * @extends EloquentTableDefinition<ResourceScope>
  */
 #[AsTable(self::ID, can: ApiScope::ResourcesRead)]
-final class AdminResourceScopesTable extends EloquentTableDefinition
+final class ResourceScopesTable extends EloquentTableDefinition
 {
     use ResolvesRealmResource;
 

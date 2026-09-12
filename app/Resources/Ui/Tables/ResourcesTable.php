@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Resources\Ui\Tables;
 
-use App\Admin\Ui\Actions\DeleteResourceAction;
-use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Realms\Models\Realm;
+use App\Resources\Ui\Actions\DeleteResourceAction;
+use App\Resources\Ui\Actions\UpdateResourceAction;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,7 +21,7 @@ use Lattice\Table\TableQuery;
  * @extends EloquentTableDefinition<\App\Resources\Models\Resource>
  */
 #[AsTable(self::ID, can: ApiScope::ResourcesRead)]
-final class AdminResourcesTable extends EloquentTableDefinition
+final class ResourcesTable extends EloquentTableDefinition
 {
     public const string ID = 'admin.resources';
 

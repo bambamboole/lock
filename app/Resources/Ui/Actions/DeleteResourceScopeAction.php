@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Resources\Ui\Actions;
 
-use App\Admin\Ui\Concerns\ResolvesRealmResource;
-use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Resources\Models\ResourceScope;
+use App\Resources\Ui\Concerns\ResolvesRealmResource;
+use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\DeletesResourceScope;
 use Illuminate\Http\Request;
@@ -46,6 +46,6 @@ final class DeleteResourceScopeAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.resources.scopes.deleted'), Variant::Success)
-            ->reloadComponent(AdminResourceScopesTable::ID);
+            ->reloadComponent(ResourceScopesTable::ID);
     }
 }

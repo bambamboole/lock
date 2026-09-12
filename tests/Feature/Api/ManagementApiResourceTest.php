@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Actions\CreateResourceScopeAction;
-use App\Admin\Ui\Actions\DeleteResourceAction;
-use App\Admin\Ui\Actions\DeleteResourceScopeAction;
-use App\Admin\Ui\Actions\UpdateResourceAction;
-use App\Admin\Ui\Actions\UpdateResourceScopeAction;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
+use App\Resources\Ui\Actions\CreateResourceScopeAction;
+use App\Resources\Ui\Actions\DeleteResourceAction;
+use App\Resources\Ui\Actions\DeleteResourceScopeAction;
+use App\Resources\Ui\Actions\UpdateResourceAction;
+use App\Resources\Ui\Actions\UpdateResourceScopeAction;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use Illuminate\Support\Facades\Artisan;

@@ -6,8 +6,6 @@ namespace App\Admin;
 
 use App\Admin\Actions\EnsureAdministrator;
 use App\Auth\Models\User;
-use App\Resources\Models\Resource;
-use App\Resources\Models\ResourceScope;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Auth\Support\RequestUser;
@@ -26,9 +24,6 @@ final class AdminServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        Lattice::context('resource', fn (string $value): Resource => Resource::query()->findOrFail($value));
-        Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
-
         Gate::before(function (User $user, string $ability): ?bool {
             $scope = ApiScope::tryFrom($ability);
 

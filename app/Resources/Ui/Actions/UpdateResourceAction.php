@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Resources\Ui\Actions;
 
-use App\Admin\Ui\Concerns\BuildsResourceFields;
-use App\Admin\Ui\Concerns\ResolvesRealmResource;
-use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Resources\Models\Resource;
+use App\Resources\Ui\Concerns\BuildsResourceFields;
+use App\Resources\Ui\Concerns\ResolvesRealmResource;
+use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use Illuminate\Http\Request;
@@ -52,7 +52,7 @@ final class UpdateResourceAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.resources.updated'), Variant::Success)
-            ->reloadComponent(AdminResourcesTable::ID)
+            ->reloadComponent(ResourcesTable::ID)
             ->reloadPage();
     }
 }

@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Resources\Ui\Pages;
 
-use App\Admin\Ui\Actions\CreateResourceAction;
-use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Realms\Models\Realm;
+use App\Resources\Ui\Actions\CreateResourceAction;
+use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
@@ -40,7 +40,7 @@ final class RealmResourcesPage extends AdminPage
                     PageHeader::make(__('admin.resources.heading'), __('admin.resources.description', ['realm' => $realm->name]), ActionBar::make(primary: [
                         Action::use(CreateResourceAction::class),
                     ])),
-                    Table::use(AdminResourcesTable::class),
+                    Table::use(ResourcesTable::class),
                 ]),
         ]);
     }

@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Resources\Ui\Actions;
 
-use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Models\Resource;
+use App\Resources\Ui\Concerns\ResolvesRealmResource;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\DeletesResource;
 use Illuminate\Http\Request;

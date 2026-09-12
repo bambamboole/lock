@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Resources\Ui\Actions;
 
-use App\Admin\Ui\Concerns\BuildsResourceScopeFields;
-use App\Admin\Ui\Concerns\ResolvesRealmResource;
-use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Resources\Models\Resource;
+use App\Resources\Ui\Concerns\BuildsResourceScopeFields;
+use App\Resources\Ui\Concerns\ResolvesRealmResource;
+use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
 use Illuminate\Http\Request;
@@ -50,6 +50,6 @@ final class CreateResourceScopeAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.resources.scopes.created'), Variant::Success)
-            ->reloadComponent(AdminResourceScopesTable::ID);
+            ->reloadComponent(ResourceScopesTable::ID);
     }
 }

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Concerns;
+namespace App\Resources\Ui\Concerns;
 
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
