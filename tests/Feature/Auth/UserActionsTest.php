@@ -1,11 +1,11 @@
 <?php
 
 declare(strict_types=1);
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Auth\Ui\Actions\ResendUserVerification;
 use App\Auth\Ui\Actions\SendUserPasswordReset;
-use App\Shared\Audit\Models\Activity;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -22,7 +22,7 @@ test('a users-manage admin can resend verification for an unverified user', func
     $this->actingAs($admin)->callAction(ResendUserVerification::class, [], ['user' => $target->id])->assertOk();
 
     Notification::assertSentTo($target, VerifyEmail::class);
-    expect(Activity::global()->sole()->event)->toBe(UserAuditEvent::VerificationResent->eventName());
+    expect(AdminEvent::global()->sole()->type)->toBe(UserAdminEvent::VerificationResent->type());
 });
 
 test('resending verification for an already-verified user is rejected', function () {
@@ -34,7 +34,7 @@ test('resending verification for an already-verified user is rejected', function
         ->assertStatus(422);
 
     Notification::assertNothingSent();
-    expect(Activity::global()->count())->toBe(0);
+    expect(AdminEvent::global()->count())->toBe(0);
 });
 
 test('a users-manage admin can send a password reset', function () {
@@ -45,7 +45,7 @@ test('a users-manage admin can send a password reset', function () {
     $this->actingAs($admin)->callAction(SendUserPasswordReset::class, [], ['user' => $target->id])->assertOk();
 
     Notification::assertSentTo($target, ResetPassword::class);
-    expect(Activity::global()->sole()->event)->toBe(UserAuditEvent::PasswordResetSent->eventName());
+    expect(AdminEvent::global()->sole()->type)->toBe(UserAdminEvent::PasswordResetSent->type());
 });
 
 test('an admin without users-manage cannot resend verification', function () {

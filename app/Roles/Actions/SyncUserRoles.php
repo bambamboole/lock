@@ -7,7 +7,7 @@ use App\Auth\Models\User;
 use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Roles\Contracts\SyncsUserRoles;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -31,7 +31,7 @@ final class SyncUserRoles implements SyncsUserRoles
             $user->roles()->sync($after->modelKeys());
 
             if ($added !== [] || $removed !== []) {
-                Audit::record(RoleAuditEvent::AssignmentsUpdated, $user, $user->realm, [
+                Audit::record(RoleAdminEvent::AssignmentsUpdated, $user, $user->realm, [
                     'realm' => $user->realm->slug,
                     'added' => $added,
                     'removed' => $removed,

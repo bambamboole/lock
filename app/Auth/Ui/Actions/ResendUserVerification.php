@@ -6,7 +6,7 @@ namespace App\Auth\Ui\Actions;
 
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -33,7 +33,7 @@ final class ResendUserVerification extends ActionDefinition
         // The verification link is minted for the current realm's host.
         $user->realm->runAsCurrent(fn () => $user->sendEmailVerificationNotification());
 
-        Audit::record(UserAuditEvent::VerificationResent, $user);
+        Audit::record(UserAdminEvent::VerificationResent, $user);
 
         return ActionResult::success()
             ->toast(__('admin.users.detail.verification-sent'), Variant::Success);

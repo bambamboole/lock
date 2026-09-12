@@ -7,7 +7,7 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -40,7 +40,7 @@ final class EndUserSessionAction extends ActionDefinition
 
         abort_if($ended === 0, 422, __('admin.users.detail.sessions.not-active'));
 
-        Audit::record(UserAuditEvent::UserSessionEnded, $user, properties: ['sid' => $sid]);
+        Audit::record(UserAdminEvent::UserSessionEnded, $user, context: ['sid' => $sid]);
 
         return ActionResult::success()
             ->toast(__('admin.users.detail.sessions.end.done'), Variant::Success)

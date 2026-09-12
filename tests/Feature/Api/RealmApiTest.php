@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Realms\Models\Realm;
-use App\Shared\Audit\Models\Activity;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmConfiguration;
 
@@ -167,12 +167,12 @@ it('records a configuration change on the realm trail', function () {
         ->patchJson(realmsUrl('/acme'), ['settings' => ['recovery_codes' => 12]])
         ->assertOk();
 
-    $activity = Activity::forRealm($this->acme)
-        ->where('event', RealmAuditEvent::RealmUpdated->eventName())
+    $event = AdminEvent::forRealm($this->acme)
+        ->where('type', RealmAdminEvent::RealmUpdated->type())
         ->sole();
 
-    expect($activity->getProperty('changes'))->toBe(['recovery_codes' => ['old' => 8, 'new' => 12]])
-        ->and($activity->causer_id)->toBeNull();
+    expect(data_get($event->context, 'changes'))->toBe(['recovery_codes' => ['old' => 8, 'new' => 12]])
+        ->and($event->user_id)->toBeNull();
 });
 
 it('rejects a setting that contradicts one it was not sent with', function () {
@@ -238,9 +238,9 @@ it('records the settings a realm was created with', function () {
         ])
         ->assertCreated();
 
-    $activity = Activity::where('event', RealmAuditEvent::RealmCreated->eventName())->sole();
+    $event = AdminEvent::where('type', RealmAdminEvent::RealmCreated->type())->sole();
 
-    expect($activity->getProperty('settings'))->toBe(['recovery_codes' => 12]);
+    expect(data_get($event->context, 'settings'))->toBe(['recovery_codes' => 12]);
 });
 
 it('applies a name, settings and a new domain in one request', function () {
@@ -256,12 +256,12 @@ it('applies a name, settings and a new domain in one request', function () {
         ->assertJsonPath('data.domain_status', RealmDomainStatus::Verified->value)
         ->assertJsonPath('data.settings.recovery_codes', 12);
 
-    $trail = Activity::forRealm($this->acme)->where('event', RealmAuditEvent::RealmUpdated->eventName())->get();
+    $trail = AdminEvent::forRealm($this->acme)->where('type', RealmAdminEvent::RealmUpdated->type())->get();
 
     expect($this->acme->refresh()->name)->toBe('Acme Inc')
         ->and($this->acme->domain)->toBe('acme.example')
         ->and($trail)->toHaveCount(2)
-        ->and($trail->flatMap(fn (Activity $entry): array => array_keys((array) $entry->getProperty('changes')))->all())
+        ->and($trail->flatMap(fn (AdminEvent $entry): array => array_keys((array) data_get($entry->context, 'changes')))->all())
         ->toEqualCanonicalizing(['name', 'recovery_codes', 'domain']);
 });
 

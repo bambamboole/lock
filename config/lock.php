@@ -24,4 +24,13 @@ return [
         'name' => env('LOCK_ADMIN_NAME', 'Administrator'),
     ],
 
+    /*
+     * How long each trail is kept, in days. `model:prune` drops what is older
+     * on its daily run.
+     */
+    'events' => [
+        'admin_retention_days' => (int) env('LOCK_ADMIN_EVENT_RETENTION_DAYS', 365),
+        'user_retention_days' => (int) env('LOCK_USER_EVENT_RETENTION_DAYS', 365),
+    ],
+
 ];

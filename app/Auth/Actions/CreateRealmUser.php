@@ -7,7 +7,7 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\CreatesRealmUser;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -42,7 +42,7 @@ final readonly class CreateRealmUser implements CreatesRealmUser
                 $user->forceFill(['email_verified_at' => now()])->save();
             }
 
-            Audit::record(UserAuditEvent::UserCreated, $user, properties: [
+            Audit::record(UserAdminEvent::UserCreated, $user, context: [
                 'email' => $user->email,
                 'realm' => $realm->slug,
                 'verified' => $verified,

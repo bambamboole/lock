@@ -7,7 +7,7 @@ use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Roles\Contracts\UpdatesRole;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -40,7 +40,7 @@ final class UpdateRole implements UpdatesRole
             }
 
             if ($changes !== []) {
-                Audit::record(RoleAuditEvent::RoleUpdated, $role, $role->realm, [
+                Audit::record(RoleAdminEvent::RoleUpdated, $role, $role->realm, [
                     'realm' => $role->realm->slug,
                     'name' => $role->name,
                     'changes' => $changes,

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
@@ -14,9 +15,8 @@ use App\Resources\Ui\Actions\UpdateResourceAction;
 use App\Resources\Ui\Actions\UpdateResourceScopeAction;
 use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Resources\Ui\Tables\ResourcesTable;
-use App\Shared\Audit\Models\Activity;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Database\Eloquent\Builder;
 
 use function Tests\Helpers\globalAdmin;
@@ -52,11 +52,11 @@ test('a resources-manage admin adds a resource and it is recorded', function () 
         ->and($resource->name)->toBe('Orders API')
         ->and($resource->realm_id)->toBe($this->realm->id);
 
-    $activity = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceCreated->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', ResourceAdminEvent::ResourceCreated->type())->sole();
 
-    expect($activity->subject_id)->toBe($resource->id)
-        ->and($activity->getProperty('realm'))->toBe('acme')
-        ->and($activity->getProperty('identifier'))->toBe('api');
+    expect($event->subject_id)->toBe($resource->id)
+        ->and(data_get($event->context, 'realm'))->toBe('acme')
+        ->and(data_get($event->context, 'identifier'))->toBe('api');
 });
 
 test('an identifier is unique per realm but free in another', function () {
@@ -216,7 +216,7 @@ test('a view-only admin reads the console but cannot change anything', function 
 test('the resources console is closed without a resources scope', function () {
     $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api']);
 
-    $this->actingAs(globalAdminWith(Scope::ActivityRead));
+    $this->actingAs(globalAdminWith(Scope::AdminEventsRead));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
     $this->loadDeniedTable(ResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();

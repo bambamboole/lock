@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\UpdatesClient;
 use App\Shared\Clients\Data\ClientAttributes;
-use App\Shared\Clients\Enums\ClientAuditEvent;
+use App\Shared\Clients\Enums\ClientAdminEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ final readonly class UpdateClient implements UpdatesClient
             }
 
             if ($changes !== []) {
-                Audit::record(ClientAuditEvent::ClientUpdated, $client, Realm::ofClient($client), [
+                Audit::record(ClientAdminEvent::ClientUpdated, $client, Realm::ofClient($client), [
                     'realm' => $client->realm,
                     'client_id' => $client->client_id,
                     'changes' => $changes,

@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\CreatesResource;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
 
 final class CreateResource implements CreatesResource
@@ -20,7 +20,7 @@ final class CreateResource implements CreatesResource
                 'name' => $name,
             ]);
 
-            Audit::record(ResourceAuditEvent::ResourceCreated, $resource, $realm, [
+            Audit::record(ResourceAdminEvent::ResourceCreated, $resource, $realm, [
                 'realm' => $realm->slug,
                 'identifier' => $resource->identifier,
                 'name' => $resource->name,

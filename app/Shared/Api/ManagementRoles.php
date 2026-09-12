@@ -32,7 +32,7 @@ final class ManagementRoles
                 Scope::UsersRead,
                 Scope::UsersWrite,
                 Scope::RolesRead,
-                Scope::ActivityRead,
+                Scope::UserEventsRead,
             ],
         ];
     }

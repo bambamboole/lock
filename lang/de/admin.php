@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 return [
     'events' => [
-        'heading' => 'Sicherheitsereignisse',
-        'description' => 'Anmeldungen, Zwei-Faktor-Prüfungen und Token-Aktivität in :realm.',
-        'empty' => 'Noch keine Sicherheitsereignisse aufgezeichnet.',
+        'system-actor' => 'System (Konsole)',
         'columns' => [
             'when' => 'Wann',
             'actor' => 'Akteur',
@@ -26,37 +24,23 @@ return [
             'user-agent' => 'User-Agent',
         ],
     ],
-    'realm-activity' => [
-        'heading' => 'Realm-Aktivität',
+    'admin-events' => [
+        'heading' => 'Admin-Ereignisse',
+        'empty' => 'Noch keine Admin-Ereignisse.',
+    ],
+    'realm-admin-events' => [
+        'heading' => 'Admin-Ereignisse',
         'description' => 'Konfigurationsänderungen an :realm.',
-        'empty' => 'Noch keine Realm-Aktivität.',
-        'detail' => [
-            'empty' => 'Keine weiteren Details aufgezeichnet.',
-        ],
-        'columns' => [
-            'when' => 'Wann',
-            'actor' => 'Akteur',
-            'event' => 'Ereignis',
-            'description' => 'Beschreibung',
-        ],
+        'empty' => 'Noch keine Admin-Ereignisse für diesen Realm.',
+    ],
+    'realm-user-events' => [
+        'heading' => 'Benutzer-Ereignisse',
+        'description' => 'Anmeldungen, Zwei-Faktor-Prüfungen und Token-Aktivität in :realm.',
+        'empty' => 'Noch keine Benutzer-Ereignisse aufgezeichnet.',
     ],
     'api' => [
         'heading' => 'API',
         'description' => 'Die Management-API dieser Instanz. Eine Anfrage lässt sich direkt aus einer Operation heraus mit den eigenen Berechtigungen ausführen.',
-    ],
-    'activity' => [
-        'heading' => 'Admin-Aktivität',
-        'empty' => 'Noch keine Admin-Aktivität.',
-        'system-actor' => 'System (Konsole)',
-        'detail' => [
-            'empty' => 'Keine weiteren Details erfasst.',
-        ],
-        'columns' => [
-            'when' => 'Wann',
-            'actor' => 'Akteur',
-            'event' => 'Ereignis',
-            'description' => 'Beschreibung',
-        ],
     ],
     'users' => [
         'heading' => 'Benutzer',

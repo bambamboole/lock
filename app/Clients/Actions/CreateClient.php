@@ -7,7 +7,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\CreatesClient;
 use App\Shared\Clients\Data\ClientAttributes;
-use App\Shared\Clients\Enums\ClientAuditEvent;
+use App\Shared\Clients\Enums\ClientAdminEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
@@ -29,7 +29,7 @@ final readonly class CreateClient implements CreatesClient
 
             $client->forceFill($attributes->toArray())->save();
 
-            Audit::record(ClientAuditEvent::ClientCreated, $client, $realm, [
+            Audit::record(ClientAdminEvent::ClientCreated, $client, $realm, [
                 'realm' => $realm->slug,
                 'client_id' => $client->client_id,
                 'name' => $client->name,

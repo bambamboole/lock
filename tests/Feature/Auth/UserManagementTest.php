@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Auth\Ui\Actions\BlockUserAction;
 use App\Auth\Ui\Actions\DeleteUserAction;
@@ -16,8 +17,7 @@ use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
-use App\Shared\Audit\Models\Activity;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;
@@ -85,7 +85,7 @@ test('a users-manage admin creates a user and invites them to set a password', f
 
     Notification::assertSentTo($user, ResetPassword::class);
     expect($user->hasVerifiedEmail())->toBeFalse()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserCreated->eventName())->sole()->getProperty('invited'))->toBeTrue();
+        ->and(data_get(AdminEvent::global()->where('type', UserAdminEvent::UserCreated->type())->sole()->context, 'invited'))->toBeTrue();
 });
 
 test('a user can be created with an initial password and a verified address', function () {
@@ -158,20 +158,16 @@ test('each profile row saves on its own and records only what it changed', funct
     $this->submitForm(UpdateUserVerificationForm::class, ['email_verified' => true], $context)->assertRedirect();
 
     $target->refresh();
-    $changes = Activity::global()->where('event', UserAuditEvent::UserUpdated->eventName())->orderBy('id')->get();
+    $changes = AdminEvent::global()->where('type', UserAdminEvent::UserUpdated->type())->get()
+        ->map(fn (AdminEvent $event): array => [data_get($event->context, 'before'), data_get($event->context, 'after')]);
 
     expect($target->name)->toBe('New Name')
         ->and($target->email)->toBe('new@example.com')
         ->and($target->hasVerifiedEmail())->toBeTrue()
-        ->and($changes->map(fn (Activity $activity): mixed => $activity->getProperty('before'))->all())->toBe([
-            ['name' => 'Old Name'],
-            ['email' => 'old@example.com'],
-            ['verified' => false],
-        ])
-        ->and($changes->map(fn (Activity $activity): mixed => $activity->getProperty('after'))->all())->toBe([
-            ['name' => 'New Name'],
-            ['email' => 'new@example.com'],
-            ['verified' => true],
+        ->and($changes->all())->toEqualCanonicalizing([
+            [['name' => 'Old Name'], ['name' => 'New Name']],
+            [['email' => 'old@example.com'], ['email' => 'new@example.com']],
+            [['verified' => false], ['verified' => true]],
         ]);
 });
 
@@ -207,13 +203,13 @@ test('blocking ends the sessions, notifies the relying parties and unblocking li
     expect($target->refresh()->isBlocked())->toBeTrue()
         ->and($session->refresh()->revoked_at)->not->toBeNull()
         ->and(DB::table('sessions')->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserBlocked->eventName())->exists())->toBeTrue();
+        ->and(AdminEvent::global()->where('type', UserAdminEvent::UserBlocked->type())->exists())->toBeTrue();
     Bus::assertDispatched(SendBackChannelLogout::class);
 
     $this->callAction(UnblockUserAction::class, [], ['realm' => 'acme', 'user' => $target->id])->assertOk();
 
     expect($target->refresh()->isBlocked())->toBeFalse()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserUnblocked->eventName())->exists())->toBeTrue();
+        ->and(AdminEvent::global()->where('type', UserAdminEvent::UserUnblocked->type())->exists())->toBeTrue();
 });
 
 test('an admin cannot block themselves and one without users-manage cannot block anyone', function () {
@@ -243,7 +239,7 @@ test('resetting MFA removes authenticator apps, recovery codes and passkeys', fu
         ->and($target->recoveryCodes()->exists())->toBeFalse()
         ->and($target->passkeys()->exists())->toBeFalse()
         ->and($target->refresh()->hasSecondFactor())->toBeFalse()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserMfaReset->eventName())->exists())->toBeTrue();
+        ->and(AdminEvent::global()->where('type', UserAdminEvent::UserMfaReset->type())->exists())->toBeTrue();
 });
 
 test('resetting MFA is forbidden without users-manage', function () {
@@ -273,7 +269,7 @@ test('deleting a user tells relying parties, then removes the user with what was
         ->and(DB::table('passkeys')->where('user_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('role_user')->where('user_id', $target->id)->exists())->toBeFalse()
         ->and(Role::query()->whereKey($role->id)->exists())->toBeTrue()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserDeleted->eventName())->sole()->getProperty('email'))->toBe($target->email);
+        ->and(data_get(AdminEvent::global()->where('type', UserAdminEvent::UserDeleted->type())->sole()->context, 'email'))->toBe($target->email);
     Bus::assertDispatched(SendBackChannelLogout::class);
 });
 
@@ -317,7 +313,7 @@ test('a single session can be ended and the relying party is told', function () 
 
     expect($ended->refresh()->revoked_at)->not->toBeNull()
         ->and($kept->refresh()->revoked_at)->toBeNull()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserSessionEnded->eventName())->sole()->getProperty('sid'))->toBe($ended->id);
+        ->and(data_get(AdminEvent::global()->where('type', UserAdminEvent::UserSessionEnded->type())->sole()->context, 'sid'))->toBe($ended->id);
     Bus::assertDispatched(SendBackChannelLogout::class, fn (SendBackChannelLogout $job): bool => $job->sid === $ended->id);
 
     $this->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->id])->assertStatus(422);
@@ -334,7 +330,7 @@ test('ending all sessions revokes every active one', function () {
     expect($first->refresh()->revoked_at)->not->toBeNull()
         ->and($second->refresh()->revoked_at)->not->toBeNull()
         ->and($someoneElse->refresh()->revoked_at)->toBeNull()
-        ->and(Activity::global()->where('event', UserAuditEvent::UserSessionsEnded->eventName())->sole()->getProperty('count'))->toBe(2);
+        ->and(data_get(AdminEvent::global()->where('type', UserAdminEvent::UserSessionsEnded->type())->sole()->context, 'count'))->toBe(2);
 });
 
 test('ending sessions is forbidden without users-manage', function () {

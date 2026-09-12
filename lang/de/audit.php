@@ -2,91 +2,102 @@
 declare(strict_types=1);
 
 return [
-    'categories' => [
-        'auth' => 'Authentifizierung',
-        'oauth' => 'OAuth',
-        'admin' => 'Administration',
-    ],
-    'types' => [
-        'auth' => [
-            'login' => [
-                'succeeded' => 'Anmeldung erfolgreich',
-                'failed' => 'Anmeldung fehlgeschlagen',
-            ],
-            'logout' => 'Abgemeldet',
-            'password' => ['reset' => 'Passwort zurückgesetzt', 'changed' => 'Passwort geändert'],
-            'registration' => ['succeeded' => 'Registrierung abgeschlossen'],
-            'mfa' => [
-                'challenge-succeeded' => 'Zweiter Faktor akzeptiert',
-                'challenge-failed' => 'Zweiter Faktor abgelehnt',
-                'factor-enrollment-started' => 'Faktor-Einrichtung gestartet',
-                'factor-confirmed' => 'Faktor bestätigt',
-                'factor-revoked' => 'Faktor entfernt',
-                'recovery-code-used' => 'Wiederherstellungscode verwendet',
-            ],
+    'admin' => [
+        'categories' => [
+            'realm' => 'Realm',
+            'user' => 'Benutzer',
+            'client' => 'Client',
+            'role' => 'Rolle',
+            'resource' => 'Resource',
         ],
-        'oauth' => [
-            'token' => [
-                'issued' => 'Token ausgestellt',
-                'failed' => 'Token-Anfrage fehlgeschlagen',
-                'revoked' => 'Token widerrufen',
+        'types' => [
+            'role' => [
+                'created' => 'Rolle angelegt',
+                'updated' => 'Rolle aktualisiert',
+                'deleted' => 'Rolle gelöscht',
+                'assignments-updated' => 'Rollen einem Benutzer zugewiesen',
             ],
-            'consent' => [
-                'approved' => 'Zustimmung erteilt',
-                'denied' => 'Zustimmung verweigert',
-            ],
-            'client-auth' => ['failed' => 'Client-Authentifizierung fehlgeschlagen'],
-        ],
-        'admin' => [
             'client' => [
-                'provisioned' => 'Client bereitgestellt',
-                'registered' => 'Client registriert',
+                'created' => 'Client angelegt',
+                'updated' => 'Client aktualisiert',
+                'secret-rotated' => 'Client-Secret rotiert',
+                'revoked' => 'Client gesperrt',
+                'restored' => 'Client entsperrt',
+                'deleted' => 'Client gelöscht',
             ],
-            'keys' => ['rotated' => 'Signaturschlüssel rotiert'],
+            'realm' => [
+                'created' => 'Realm angelegt',
+                'updated' => 'Realm aktualisiert',
+                'deleted' => 'Realm gelöscht',
+            ],
+            'resource' => [
+                'created' => 'Resource angelegt',
+                'updated' => 'Resource geändert',
+                'deleted' => 'Resource gelöscht',
+                'scope' => [
+                    'created' => 'Resource-Scope angelegt',
+                    'updated' => 'Resource-Scope geändert',
+                    'deleted' => 'Resource-Scope gelöscht',
+                ],
+            ],
+            'user' => [
+                'created' => 'Benutzer angelegt',
+                'updated' => 'Benutzer aktualisiert',
+                'blocked' => 'Benutzer gesperrt',
+                'unblocked' => 'Sperre aufgehoben',
+                'deleted' => 'Benutzer gelöscht',
+                'mfa-reset' => 'Mehrfaktor-Authentifizierung zurückgesetzt',
+                'session-ended' => 'Sitzung beendet',
+                'sessions-ended' => 'Alle Sitzungen beendet',
+                'password-reset' => ['sent' => 'Passwort-Reset gesendet'],
+                'super-admin-granted' => 'Super Admin vergeben',
+                'verification' => ['resent' => 'Bestätigungs-E-Mail erneut gesendet'],
+            ],
         ],
     ],
-    'events' => [
-        'role' => [
-            'created' => 'Rolle angelegt',
-            'updated' => 'Rolle aktualisiert',
-            'deleted' => 'Rolle gelöscht',
-            'assignments-updated' => 'Rollen einem Benutzer zugewiesen',
+    'user' => [
+        'categories' => [
+            'auth' => 'Authentifizierung',
+            'oauth' => 'OAuth',
+            'admin' => 'Administration',
         ],
-        'client' => [
-            'created' => 'Client angelegt',
-            'updated' => 'Client aktualisiert',
-            'secret-rotated' => 'Client-Secret rotiert',
-            'revoked' => 'Client gesperrt',
-            'restored' => 'Client entsperrt',
-            'deleted' => 'Client gelöscht',
-        ],
-        'realm' => [
-            'created' => 'Realm angelegt',
-            'updated' => 'Realm aktualisiert',
-            'deleted' => 'Realm gelöscht',
-        ],
-        'resource' => [
-            'created' => 'Resource angelegt',
-            'updated' => 'Resource geändert',
-            'deleted' => 'Resource gelöscht',
-            'scope' => [
-                'created' => 'Resource-Scope angelegt',
-                'updated' => 'Resource-Scope geändert',
-                'deleted' => 'Resource-Scope gelöscht',
+        'types' => [
+            'auth' => [
+                'login' => [
+                    'succeeded' => 'Anmeldung erfolgreich',
+                    'failed' => 'Anmeldung fehlgeschlagen',
+                ],
+                'logout' => 'Abgemeldet',
+                'password' => ['reset' => 'Passwort zurückgesetzt', 'changed' => 'Passwort geändert'],
+                'registration' => ['succeeded' => 'Registrierung abgeschlossen'],
+                'mfa' => [
+                    'challenge-succeeded' => 'Zweiter Faktor akzeptiert',
+                    'challenge-failed' => 'Zweiter Faktor abgelehnt',
+                    'factor-enrollment-started' => 'Faktor-Einrichtung gestartet',
+                    'factor-confirmed' => 'Faktor bestätigt',
+                    'factor-revoked' => 'Faktor entfernt',
+                    'recovery-code-used' => 'Wiederherstellungscode verwendet',
+                ],
             ],
-        ],
-        'user' => [
-            'created' => 'Benutzer angelegt',
-            'updated' => 'Benutzer aktualisiert',
-            'blocked' => 'Benutzer gesperrt',
-            'unblocked' => 'Sperre aufgehoben',
-            'deleted' => 'Benutzer gelöscht',
-            'mfa-reset' => 'Mehrfaktor-Authentifizierung zurückgesetzt',
-            'session-ended' => 'Sitzung beendet',
-            'sessions-ended' => 'Alle Sitzungen beendet',
-            'password-reset' => ['sent' => 'Passwort-Reset gesendet'],
-            'super-admin-granted' => 'Super Admin vergeben',
-            'verification' => ['resent' => 'Bestätigungs-E-Mail erneut gesendet'],
+            'oauth' => [
+                'token' => [
+                    'issued' => 'Token ausgestellt',
+                    'failed' => 'Token-Anfrage fehlgeschlagen',
+                    'revoked' => 'Token widerrufen',
+                ],
+                'consent' => [
+                    'approved' => 'Zustimmung erteilt',
+                    'denied' => 'Zustimmung verweigert',
+                ],
+                'client-auth' => ['failed' => 'Client-Authentifizierung fehlgeschlagen'],
+            ],
+            'admin' => [
+                'client' => [
+                    'provisioned' => 'Client bereitgestellt',
+                    'registered' => 'Client registriert',
+                ],
+                'keys' => ['rotated' => 'Signaturschlüssel rotiert'],
+            ],
         ],
     ],
 ];

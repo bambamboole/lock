@@ -7,7 +7,7 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -34,7 +34,7 @@ final class EndAllUserSessionsAction extends ActionDefinition
 
         $ended = $this->endSessions->handle($user);
 
-        Audit::record(UserAuditEvent::UserSessionsEnded, $user, properties: ['count' => $ended]);
+        Audit::record(UserAdminEvent::UserSessionsEnded, $user, context: ['count' => $ended]);
 
         return ActionResult::success()
             ->toast(__('admin.users.detail.sessions.end-all.done', ['count' => $ended]), Variant::Success)

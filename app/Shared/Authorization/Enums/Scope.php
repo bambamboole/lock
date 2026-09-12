@@ -32,7 +32,9 @@ enum Scope: string
 
     case ResourcesWrite = 'resources:write';
 
-    case ActivityRead = 'activity:read';
+    case AdminEventsRead = 'admin-events:read';
+
+    case UserEventsRead = 'user-events:read';
 
     public function description(): string
     {
@@ -47,7 +49,8 @@ enum Scope: string
             self::RolesWrite => 'Create, edit and delete roles, and assign them to users.',
             self::ResourcesRead => 'Read the protected resources of a realm and their scopes.',
             self::ResourcesWrite => 'Create, edit and delete protected resources and their scopes.',
-            self::ActivityRead => 'Read the audit trail and the security events of a realm.',
+            self::AdminEventsRead => 'Read the trail of what administrators changed.',
+            self::UserEventsRead => 'Read the sign-in, multi-factor and token events of a realm.',
         };
     }
 

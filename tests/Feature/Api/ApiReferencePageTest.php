@@ -50,5 +50,5 @@ it('refuses to mint a token for an admin who cannot write realms', function () {
 });
 
 it('closes the page to an admin without realms:read', function () {
-    $this->actingAs(globalAdminWith(Scope::ActivityRead))->get(route('admin.api'))->assertForbidden();
+    $this->actingAs(globalAdminWith(Scope::AdminEventsRead))->get(route('admin.api'))->assertForbidden();
 });

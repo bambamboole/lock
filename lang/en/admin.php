@@ -3,9 +3,7 @@ declare(strict_types=1);
 
 return [
     'events' => [
-        'heading' => 'Security events',
-        'description' => 'Sign-ins, multi-factor challenges and token activity in :realm.',
-        'empty' => 'No security events recorded yet.',
+        'system-actor' => 'System (console)',
         'columns' => [
             'when' => 'When',
             'actor' => 'Actor',
@@ -26,37 +24,23 @@ return [
             'user-agent' => 'User agent',
         ],
     ],
-    'realm-activity' => [
-        'heading' => 'Realm activity',
+    'admin-events' => [
+        'heading' => 'Admin events',
+        'empty' => 'No admin events yet.',
+    ],
+    'realm-admin-events' => [
+        'heading' => 'Admin events',
         'description' => 'Configuration changes made to :realm.',
-        'empty' => 'No realm activity yet.',
-        'detail' => [
-            'empty' => 'No additional details recorded.',
-        ],
-        'columns' => [
-            'when' => 'When',
-            'actor' => 'Actor',
-            'event' => 'Event',
-            'description' => 'Description',
-        ],
+        'empty' => 'No admin events for this realm yet.',
+    ],
+    'realm-user-events' => [
+        'heading' => 'User events',
+        'description' => 'Sign-ins, multi-factor challenges and token activity in :realm.',
+        'empty' => 'No user events recorded yet.',
     ],
     'api' => [
         'heading' => 'API',
         'description' => 'The management API of this instance. Execute a request straight from an operation to try it with your own permissions.',
-    ],
-    'activity' => [
-        'heading' => 'Admin activity',
-        'empty' => 'No admin activity yet.',
-        'system-actor' => 'System (console)',
-        'detail' => [
-            'empty' => 'No additional details recorded.',
-        ],
-        'columns' => [
-            'when' => 'When',
-            'actor' => 'Actor',
-            'event' => 'Event',
-            'description' => 'Description',
-        ],
     ],
     'users' => [
         'heading' => 'Users',

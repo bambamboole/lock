@@ -8,7 +8,7 @@ use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Roles\Contracts\CreatesRole;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -27,7 +27,7 @@ final class CreateRole implements CreatesRole
 
             $role->scopes()->sync($this->ownScopeIds($realm, $scopeIds));
 
-            Audit::record(RoleAuditEvent::RoleCreated, $role, $realm, [
+            Audit::record(RoleAdminEvent::RoleCreated, $role, $realm, [
                 'realm' => $realm->slug,
                 'name' => $role->name,
                 'scopes' => $role->load('scopes')->scopeValues(),

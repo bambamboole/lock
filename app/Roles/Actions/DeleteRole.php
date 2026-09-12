@@ -6,7 +6,7 @@ namespace App\Roles\Actions;
 use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Roles\Contracts\DeletesRole;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 use Illuminate\Support\Facades\DB;
 
 final class DeleteRole implements DeletesRole
@@ -18,7 +18,7 @@ final class DeleteRole implements DeletesRole
 
             $role->delete();
 
-            Audit::record(RoleAuditEvent::RoleDeleted, $role, $role->realm, [
+            Audit::record(RoleAdminEvent::RoleDeleted, $role, $role->realm, [
                 'realm' => $role->realm->slug,
                 'name' => $role->name,
                 'users-detached' => $detached,

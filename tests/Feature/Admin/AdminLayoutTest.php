@@ -14,7 +14,7 @@ it('shows the instance areas while no realm is selected', function () {
     $response = $this->actingAs(globalAdmin())->get(route('admin.realms'))->assertOk();
 
     expect(menuItemHrefs(latticeSchema($response, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
-        ->toBe(['/admin/realms', '/admin/api', '/admin/activity']);
+        ->toBe(['/admin/realms', '/admin/api', '/admin/events']);
 });
 
 it('turns the sidebar into the selected realm console, showing only what the admin may open', function (string $roleName, array $areas) {
@@ -25,8 +25,8 @@ it('turns the sidebar into the selected realm console, showing only what the adm
     expect(menuItemHrefs(latticeSchema($response, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
         ->toBe(array_map(fn (string $area): string => "/admin/realms/acme/{$area}", $areas));
 })->with([
-    'super admin' => [ManagementRoles::SUPER_ADMIN, ['users', 'clients', 'roles', 'resources', 'events', 'activity', 'settings']],
-    'support admin' => [ManagementRoles::SUPPORT, ['users', 'roles', 'events', 'activity', 'settings']],
+    'super admin' => [ManagementRoles::SUPER_ADMIN, ['users', 'clients', 'roles', 'resources', 'user-events', 'admin-events', 'settings']],
+    'support admin' => [ManagementRoles::SUPPORT, ['users', 'roles', 'user-events', 'settings']],
 ]);
 
 it('lists every realm in the switcher and marks the selected one', function () {
