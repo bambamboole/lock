@@ -12,14 +12,14 @@ use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmDomain;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use LogicException;
+use Illuminate\Validation\ValidationException;
 
 final class UpdateRealmDomain implements UpdatesRealmDomain
 {
     public function handle(Realm $realm, string $domain): void
     {
         if ($realm->isMaster()) {
-            throw new LogicException('The administration realm is served from APP_URL.');
+            throw ValidationException::withMessages(['domain' => [__('admin.realms.domain.master-fixed')]]);
         }
 
         $domain = strtolower(trim($domain));

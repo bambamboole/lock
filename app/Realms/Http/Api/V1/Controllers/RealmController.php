@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace App\Realms\Http\Api\V1\Controllers;
 
-use App\Realms\Http\Api\V1\Requests\CreateRealmRequest;
-use App\Realms\Http\Api\V1\Requests\UpdateRealmRequest;
 use App\Realms\Http\Api\V1\Resources\RealmResource;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
@@ -12,10 +10,13 @@ use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\DeletesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
+use App\Shared\Realms\Data\CreateRealmData;
+use App\Shared\Realms\Data\UpdateRealmData;
 use Bambamboole\Spectacular\QueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\ValidationException;
+use Spatie\LaravelData\Optional;
 use Spatie\QueryBuilder\AllowedFilter;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -66,16 +67,11 @@ final readonly class RealmController
      * The realm gets its own signing keypair, and its domain is checked right
      * away. A domain that does not reach this instance yet is reported through
      * `domain_status` rather than refused — DNS and the proxy usually follow.
-     * Settings left out of `configuration` follow the instance defaults.
+     * Settings left out of `settings` follow the instance defaults.
      */
-    public function store(CreateRealmRequest $request): JsonResponse
+    public function store(CreateRealmData $data): JsonResponse
     {
-        $realm = $this->reportingConfigurationErrors(fn (): Realm => $this->createRealm->handle(
-            $request->string('name')->toString(),
-            $request->string('domain')->toString(),
-            $request->string('slug')->toString(),
-            $request->array('configuration'),
-        ));
+        $realm = $this->reportingSettingErrors(fn (): Realm => $this->createRealm->handle($data));
 
         $this->checkDomain->handle($realm);
 
@@ -85,23 +81,16 @@ final readonly class RealmController
     /**
      * Update a realm
      *
-     * A realm's slug is immutable. Settings left out of `configuration` keep
+     * A realm's slug is immutable. Settings left out of `settings` keep
      * their current value. Re-pointing the domain changes the issuer of every
      * token the realm mints and restarts the domain check.
      */
-    public function update(UpdateRealmRequest $request, Realm $realm): RealmResource
+    public function update(UpdateRealmData $data, Realm $realm): RealmResource
     {
-        $submitted = [
-            ...$request->has('name') ? ['name' => $request->string('name')->toString()] : [],
-            ...$request->array('configuration'),
-        ];
+        $this->reportingSettingErrors(fn () => $this->updateRealm->handle($realm, $data));
 
-        if ($submitted !== []) {
-            $this->reportingConfigurationErrors(fn () => $this->updateRealm->handle($realm, $submitted));
-        }
-
-        if ($request->has('domain')) {
-            $this->updateDomain->handle($realm, $request->string('domain')->toString());
+        if (! $data->domain instanceof Optional) {
+            $this->updateDomain->handle($realm, $data->domain);
             $this->checkDomain->handle($realm);
         }
 
@@ -112,14 +101,14 @@ final readonly class RealmController
      * Both actions validate the submission merged into a whole configuration —
      * the realm's current values, or the defaults for one being created — so
      * they report a setting under its own name. On the wire the settings live
-     * under `configuration`, and an error has to point there.
+     * under `settings`, and an error has to point there.
      *
      * @template TReturn
      *
      * @param  callable(): TReturn  $write
      * @return TReturn
      */
-    private function reportingConfigurationErrors(callable $write): mixed
+    private function reportingSettingErrors(callable $write): mixed
     {
         try {
             return $write();
@@ -127,7 +116,7 @@ final readonly class RealmController
             $errors = [];
 
             foreach ($exception->errors() as $key => $messages) {
-                $errors[in_array($key, ['name', 'slug', 'domain'], true) ? $key : 'configuration.'.$key] = $messages;
+                $errors[in_array($key, ['name', 'slug', 'domain'], true) ? $key : 'settings.'.$key] = $messages;
             }
 
             throw ValidationException::withMessages($errors);

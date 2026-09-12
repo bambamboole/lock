@@ -6,7 +6,6 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Forms\EmailForm;
 use App\Auth\Ui\Forms\NameForm;
 use App\Auth\Ui\Forms\PasswordForm;
-use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
@@ -101,7 +100,7 @@ test('updating with an unchanged email keeps the verification status', function 
 
 test('a changed password honours the realm password history and is recorded', function () {
     $user = User::factory()->for(Realm::master())->create();
-    app(UpdateRealmConfiguration::class)->handle($user->realm, ['password_history' => 2]);
+    $user->realm->writeSettings(['password_history' => 2]);
     $change = fn (string $password) => $this->actingAs($user)->submitForm(PasswordForm::class, [
         'current_password' => 'password',
         'password' => $password,

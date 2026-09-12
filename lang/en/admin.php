@@ -426,6 +426,7 @@ return [
         'created' => 'Realm created.',
         'created-unverified' => 'Realm created. :outcome',
         'domain' => [
+            'master-fixed' => 'The administration realm is served from APP_URL and takes no domain of its own.',
             'master' => 'Taken from APP_URL.',
             'status' => [
                 'pending' => 'Not checked',

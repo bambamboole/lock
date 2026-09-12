@@ -120,33 +120,6 @@ final class RealmConfiguration
     }
 
     /**
-     * Rules for a submission carrying the configuration as a nested object with
-     * every setting optional — what both API requests accept. Each setting
-     * validates on its own, so an unknown key or a wrong type is refused before
-     * the domain is touched and the generated document describes what every
-     * setting accepts. A rule comparing one setting against another is left out:
-     * only {@see validate()}, which sees the submission merged into a whole
-     * configuration, can check those.
-     *
-     * @return array<string, list<mixed>>
-     */
-    public static function nestedRules(string $key = 'configuration'): array
-    {
-        $rules = [$key => ['sometimes', Rule::array(array_keys(self::defaults()))]];
-        $all = self::rules();
-
-        foreach (self::settings() as $setting) {
-            $rules[$key.'.'.$setting->name] = ['sometimes', ...$setting->ownRules()];
-
-            if (array_key_exists($setting->name.'.*', $all)) {
-                $rules[$key.'.'.$setting->name.'.*'] = $all[$setting->name.'.*'];
-            }
-        }
-
-        return $rules;
-    }
-
-    /**
      * Validates a whole configuration — a submission merged into the realm's
      * current values, or into {@see defaults()} for a realm being created — so
      * the rules comparing two settings see both of them. The realm is named

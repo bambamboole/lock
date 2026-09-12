@@ -39,12 +39,12 @@ final class RealmResource extends JsonResource
             'master' => $this->isMaster(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
-            'configuration' => $this->configuration(),
+            'settings' => $this->settings(),
         ];
     }
 
     /** The realm's own policy, described by the DTO the column casts to. */
-    private function configuration(): RealmSettings
+    private function settings(): RealmSettings
     {
         return $this->resource->settings;
     }

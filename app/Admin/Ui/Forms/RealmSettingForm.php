@@ -7,6 +7,7 @@ use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Data\RealmSetting;
+use App\Shared\Realms\Data\UpdateRealmData;
 use App\Shared\Realms\Enums\RealmSettingType;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
@@ -55,7 +56,9 @@ final class RealmSettingForm extends FormDefinition
         $setting = $this->setting();
 
         try {
-            $this->updateRealm->handle($realm, [$setting->name => $this->submitted($setting, $data)]);
+            $this->updateRealm->handle($realm, UpdateRealmData::from([
+                'settings' => [$setting->name => $this->submitted($setting, $data)],
+            ]));
         } catch (ValidationException $exception) {
             throw ValidationException::withMessages([
                 $setting->name => array_merge(...array_values($exception->errors())),

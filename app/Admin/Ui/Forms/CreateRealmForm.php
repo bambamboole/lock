@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Forms;
 use App\Admin\Enums\AdminPermission;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Data\CreateRealmData;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Support\RealmDomain;
@@ -49,7 +50,11 @@ final class CreateRealmForm extends FormDefinition
      */
     public function handle(FormData $data): LatticeResponse
     {
-        $realm = $this->createRealm->handle((string) $data->string('name'), (string) $data->string('domain'), (string) $data->string('slug'));
+        $realm = $this->createRealm->handle(CreateRealmData::from([
+            'name' => (string) $data->string('name'),
+            'slug' => (string) $data->string('slug'),
+            'domain' => (string) $data->string('domain'),
+        ]));
         $status = $this->checkDomain->handle($realm);
 
         if ($status === RealmDomainStatus::Verified) {

@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Forms;
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
+use App\Shared\Realms\Data\UpdateRealmData;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Http\Request;
 use Lattice\Facades\Effects;
@@ -42,7 +43,7 @@ final class UpdateRealmForm extends FormDefinition
     {
         $realm = $this->realm();
 
-        $this->updateRealm->handle($realm, ['name' => (string) $data->string('name')]);
+        $this->updateRealm->handle($realm, UpdateRealmData::from(['name' => (string) $data->string('name')]));
 
         return Effects::respond()->toast(__('admin.realms.updated'), Variant::Success)
             ->toRoute('admin.realms.settings', ['realm' => $realm->slug]);

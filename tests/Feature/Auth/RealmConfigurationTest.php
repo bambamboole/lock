@@ -2,18 +2,17 @@
 
 declare(strict_types=1);
 
-use App\Realms\Actions\CreateRealm;
-use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 
+use function Tests\Helpers\createRealm;
 use function Tests\Helpers\realmUrl;
 
 it('serves only persisted realms and keeps their issuer URLs separate', function () {
     $this->getJson('http://partners.lock.test/.well-known/openid-configuration')->assertNotFound();
 
-    app(CreateRealm::class)->handle('Partners', 'partners.lock.test', 'partners');
+    createRealm('Partners', 'partners', 'partners.lock.test');
 
     $this->getJson('http://partners.lock.test/.well-known/openid-configuration')
         ->assertOk()
@@ -25,7 +24,7 @@ it('serves only persisted realms and keeps their issuer URLs separate', function
 
 it('applies database registration rules only to the configured realm', function () {
     $realm = Realm::factory()->create(['slug' => 'partners']);
-    app(UpdateRealmConfiguration::class)->handle($realm, [
+    $realm->writeSettings([
         'dynamic_registration' => true,
         'allowed_redirect_domains' => ['partner.test'],
         'default_scopes' => ['openid', 'profile'],
@@ -41,7 +40,7 @@ it('applies database registration rules only to the configured realm', function 
 
     expect(Client::query()->where('client_id', $response->json('client_id'))->sole()->realm_id)->toBe('partners');
 
-    app(UpdateRealmConfiguration::class)->handle($realm, ['dynamic_registration' => false]);
+    $realm->writeSettings(['dynamic_registration' => false]);
 
     $this->postJson(realmUrl($realm, '/oauth/register'), ['redirect_uris' => ['https://partner.test/callback']])->assertNotFound();
 });
@@ -57,12 +56,12 @@ it('uses each realms persisted token lifetime and rejects clients from another r
         'scope' => 'profile',
     ];
 
-    app(UpdateRealmConfiguration::class)->handle($realm, ['client_credentials_lifetime' => 120]);
+    $realm->writeSettings(['client_credentials_lifetime' => 120]);
 
     $this->postJson(realmUrl($realm, '/oauth/token'), $credentials)->assertOk()->assertJsonPath('expires_in', 120);
     $this->postJson(realmUrl(Realm::master(), '/oauth/token'), $credentials)->assertUnauthorized()->assertJsonPath('error', 'invalid_client');
 
-    app(UpdateRealmConfiguration::class)->handle($realm, ['client_credentials_lifetime' => 240]);
+    $realm->writeSettings(['client_credentials_lifetime' => 240]);
 
     $this->postJson(realmUrl($realm, '/oauth/token'), $credentials)->assertOk()->assertJsonPath('expires_in', 240);
 });

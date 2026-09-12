@@ -2,17 +2,17 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use App\Realms\Actions\CreateRealm;
 use App\Realms\Actions\DeleteRealm;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Database\QueryException;
 
+use function Tests\Helpers\createRealm;
 use function Tests\Helpers\realmRoute;
 
 test('a new realm gets its own signing key and serves it from its own JWKS', function () {
-    $realm = app(CreateRealm::class)->handle('Test Realm', 'test.lock.test', 'test-realm');
+    $realm = createRealm('Test Realm', 'test-realm', 'test.lock.test');
 
     $kid = SigningKey::query()->inRealm($realm->slug)->sole()->kid;
 

@@ -4,17 +4,16 @@ declare(strict_types=1);
 namespace App\Shared\Realms\Contracts;
 
 use App\Realms\Models\Realm;
+use App\Shared\Realms\Data\UpdateRealmData;
 use Illuminate\Validation\ValidationException;
 
 interface UpdatesRealmConfiguration
 {
     /**
-     * Applies the submitted subset of the realm name and configuration keys
-     * from RealmConfiguration::defaults(); unknown keys are ignored.
-     *
-     * @param  array<string, mixed>  $data
+     * Applies what the submission carried — the realm's name, any subset of its
+     * settings — and leaves the rest as it stands.
      *
      * @throws ValidationException
      */
-    public function handle(Realm $realm, array $data): void;
+    public function handle(Realm $realm, UpdateRealmData $data): void;
 }
