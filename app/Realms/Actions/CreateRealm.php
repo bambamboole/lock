@@ -8,7 +8,7 @@ use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
 use App\Shared\Realms\Data\RealmSettings;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Realms\Support\RealmDomain;
 use Bambamboole\LaravelOidc\Server\Shared\SigningKeys\SigningKeyStore;
@@ -48,7 +48,7 @@ final readonly class CreateRealm implements CreatesRealm
 
             $realm->runAsCurrent(fn () => $this->store->rotate($this->keys->generate()));
 
-            Audit::record(RealmAuditEvent::RealmCreated, $realm, properties: $deviations === [] ? [] : ['settings' => $deviations]);
+            Audit::record(RealmAdminEvent::RealmCreated, $realm, context: $deviations === [] ? [] : ['settings' => $deviations]);
 
             return $realm;
         });

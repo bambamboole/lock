@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Forms\CreateRealmForm;
@@ -11,8 +12,7 @@ use App\Realms\Ui\Forms\UpdateRealmForm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
-use App\Shared\Audit\Models\Activity;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
@@ -46,7 +46,7 @@ it('creates an independent realm with default configuration through the admin fo
         ->and($realm->domain_status)->toBe(RealmDomainStatus::Verified)
         ->and($realm->domain_checked_at)->not->toBeNull()
         ->and($realm->tokens()->accessTokenLifetime)->toBe(900)
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmCreated->eventName())->sole()->subject_id)->toBe($realm->id);
+        ->and(AdminEvent::global()->where('type', RealmAdminEvent::RealmCreated->type())->sole()->subject_id)->toBe($realm->id);
     Http::assertSent(fn ($request): bool => $request->url() === 'http://auth.partners.test/.well-known/lock/domain-check');
 });
 
@@ -68,7 +68,7 @@ it('renames a realm without touching its identifier or configuration', function 
     expect($realm->refresh()->name)->toBe('External partners')
         ->and($realm->slug)->toBe('partners')
         ->and($realm->tokens()->accessTokenLifetime)->toBe(300)
-        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.name.new'))->toBe('External partners');
+        ->and(data_get(AdminEvent::forRealm($realm)->where('type', RealmAdminEvent::RealmUpdated->type())->sole()->context, 'changes.name.new'))->toBe('External partners');
 });
 
 it('saves one setting at a time for the signed realm and leaves every other realm alone', function (string $slug) {
@@ -103,10 +103,13 @@ it('saves one setting at a time for the signed realm and leaves every other real
         ->and($realm->clients()->defaultScopes)->toBe(['openid', 'profile'])
         ->and($other->refresh()->tokens()->accessTokenLifetime)->toBe(900);
 
-    $activity = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->orderBy('id')->first();
+    $event = AdminEvent::forRealm($realm)
+        ->where('type', RealmAdminEvent::RealmUpdated->type())
+        ->get()
+        ->sole(fn (AdminEvent $event): bool => data_get($event->context, 'changes.access_token_lifetime') !== null);
 
-    expect($activity?->subject_id)->toBe($realm->id)
-        ->and($activity?->getProperty('changes.access_token_lifetime'))->toBe(['old' => 900, 'new' => 300]);
+    expect($event->subject_id)->toBe($realm->id)
+        ->and(data_get($event->context, 'changes.access_token_lifetime'))->toBe(['old' => 900, 'new' => 300]);
 })->with(['admin', 'partners']);
 
 it('refuses a field the realm configuration does not define', function (string $field) {
@@ -141,8 +144,8 @@ it('saves the password policy of the signed realm and audits the change', functi
         ->and($other->credentials()->password->minLength)->toBe(8)
         ->and($other->credentials()->password->maxAgeDays)->toBeNull();
 
-    $changes = Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->get()
-        ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
+    $changes = AdminEvent::forRealm($realm)->where('type', RealmAdminEvent::RealmUpdated->type())->get()
+        ->flatMap(fn (AdminEvent $event): array => (array) data_get($event->context, 'changes'));
 
     expect($changes['password_min_length'])->toBe(['old' => 8, 'new' => 12])
         ->and($changes['password_max_age_days'])->toBe(['old' => 0, 'new' => 90]);
@@ -168,7 +171,7 @@ it('reports a conflict with a setting the form does not show on the field being 
         ->assertInvalid(['session_token_ttl' => __('admin.realms.fields.session-token-refresh-skew.label')]);
 
     expect($realm->refresh()->sessions()->tokenTtl)->toBe(3600)
-        ->and(Activity::query()->where('event', RealmAuditEvent::RealmUpdated->eventName())->exists())->toBeFalse();
+        ->and(AdminEvent::query()->where('type', RealmAdminEvent::RealmUpdated->type())->exists())->toBeFalse();
 });
 
 it('reports invalid list entries on the matching configuration field', function (string $field, string $value) {
@@ -223,7 +226,7 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
         ->and(Role::query()->whereKey($keptRole->id)->exists())->toBeTrue()
         ->and(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
         ->and(ResourceScope::query()->whereKey($scope->id)->exists())->toBeFalse()
-        ->and(Activity::global()->where('event', RealmAuditEvent::RealmDeleted->eventName())->sole()->getProperty('slug'))->toBe('partners');
+        ->and(data_get(AdminEvent::global()->where('type', RealmAdminEvent::RealmDeleted->type())->sole()->context, 'slug'))->toBe('partners');
 
     domainReachesThisInstance();
 

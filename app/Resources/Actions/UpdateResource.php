@@ -7,7 +7,7 @@ use App\Resources\Models\Resource;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\UpdatesResource;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -33,7 +33,7 @@ final readonly class UpdateResource implements UpdatesResource
             }
 
             if ($changes !== []) {
-                Audit::record(ResourceAuditEvent::ResourceUpdated, $resource, $resource->realm, [
+                Audit::record(ResourceAdminEvent::ResourceUpdated, $resource, $resource->realm, [
                     'realm' => $resource->realm->slug,
                     'identifier' => $resource->identifier,
                     'changes' => $changes,

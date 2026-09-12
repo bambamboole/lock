@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Clients\Ui\Actions\DeleteClient;
 use App\Clients\Ui\Actions\RestoreClient;
@@ -12,8 +13,7 @@ use App\Clients\Ui\Forms\UpdateClientForm;
 use App\Clients\Ui\Tables\ClientsTable;
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementRoles;
-use App\Shared\Audit\Models\Activity;
-use App\Shared\Clients\Enums\ClientAuditEvent;
+use App\Shared\Clients\Enums\ClientAdminEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
@@ -158,11 +158,11 @@ test('creating a confidential client stores a secret the page keeps showing', fu
         ->and($client->post_logout_redirect_uris)->toBe(['https://portal.test/'])
         ->and($client->default_scopes)->toBe(['openid', 'profile']);
 
-    $activity = Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientCreated->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientCreated->type())->sole();
 
-    expect($activity->subject_id)->toBe($client->id)
-        ->and($activity->getProperty('realm'))->toBe('acme')
-        ->and($activity->getProperty('client_id'))->toBe($client->client_id);
+    expect($event->subject_id)->toBe($client->id)
+        ->and(data_get($event->context, 'realm'))->toBe('acme')
+        ->and(data_get($event->context, 'client_id'))->toBe($client->client_id);
 });
 
 test('a public client is created without a secret', function () {
@@ -225,8 +225,8 @@ test('each client row saves on its own and leaves the rest of the client alone',
         ->and($client->backchannel_logout_uri)->toBe('https://rp.test/backchannel')
         ->and($client->confidential())->toBeTrue();
 
-    $changes = Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientUpdated->eventName())->get()
-        ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'));
+    $changes = AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientUpdated->type())->get()
+        ->flatMap(fn (AdminEvent $event): array => (array) data_get($event->context, 'changes'));
 
     expect($changes['name']['new'])->toBe('Renamed app')
         ->and($changes['consent_required']['new'])->toBeFalse();
@@ -282,7 +282,7 @@ test('rotating the secret replaces it and the page shows the new one', function 
         ->and($currentSecret)->not->toBe($previousSecret)
         ->and($secrets[0])->toBe($currentSecret)
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBe($secrets)
-        ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientSecretRotated->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientSecretRotated->type())->sole()->subject_id)->toBe($client->id);
 });
 
 test('a public client has no secret to rotate', function () {
@@ -302,14 +302,14 @@ test('blocking a client stops it from being resolved as active until it is unblo
 
     expect($client->refresh()->isRevoked())->toBeTrue()
         ->and($active())->toBeNull()
-        ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientRevoked->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientRevoked->type())->sole()->subject_id)->toBe($client->id);
 
     $this->callDeniedAction(RevokeClient::class, [], $context)->assertForbidden();
     $this->callAction(RestoreClient::class, [], $context)->assertReloadsPage();
 
     expect($client->refresh()->isRevoked())->toBeFalse()
         ->and($active())->not->toBeNull()
-        ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientRestored->eventName())->sole()->subject_id)->toBe($client->id);
+        ->and(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientRestored->type())->sole()->subject_id)->toBe($client->id);
 });
 
 test('deleting a client removes what was issued to it and records the deletion', function () {
@@ -324,7 +324,7 @@ test('deleting a client removes what was issued to it and records the deletion',
 
     expect(Client::query()->pluck('id')->all())->toContain($survivor->id)->not->toContain($client->id)
         ->and(AccessToken::query()->pluck('client_id')->all())->toBe([$survivor->id])
-        ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientDeleted->eventName())->sole()->getProperty('client_id'))->toBe($client->client_id);
+        ->and(data_get(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientDeleted->type())->sole()->context, 'client_id'))->toBe($client->client_id);
 });
 
 test('a client row opens its detail page and carries the same actions as it', function () {

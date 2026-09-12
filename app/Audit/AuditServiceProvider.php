@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Audit;
 
-use App\Audit\Ui\Pages\ActivityPage;
-use App\Audit\Ui\Pages\RealmActivityPage;
-use App\Audit\Ui\Pages\RealmEventsPage;
+use App\Audit\Listeners\RecordAdminEvent;
+use App\Audit\Ui\Pages\AdminEventsPage;
+use App\Audit\Ui\Pages\RealmAdminEventsPage;
+use App\Audit\Ui\Pages\RealmUserEventsPage;
 use App\Realms\Models\Realm;
+use App\Shared\Audit\Events\AdminActionPerformed;
 use App\Shared\Authorization\Enums\Scope;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Core\Support\Affix;
@@ -19,30 +22,32 @@ final class AuditServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        Event::listen(AdminActionPerformed::class, RecordAdminEvent::class);
+
         Lattice::extend(
             'admin.sidebar.realm',
-            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmEventsPage::class, ['realm' => $realm->slug])
-                ->label(__('navigation.events'))
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmUserEventsPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.user-events'))
                 ->prefix(Affix::icon('shield-alert'))
-                ->can(Scope::ActivityRead),
+                ->can(Scope::UserEventsRead),
             priority: 50,
         );
 
         Lattice::extend(
             'admin.sidebar.realm',
-            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmActivityPage::class, ['realm' => $realm->slug])
-                ->label(__('navigation.activity'))
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmAdminEventsPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.admin-events'))
                 ->prefix(Icon::Clock)
-                ->can(Scope::ActivityRead),
+                ->can(Scope::AdminEventsRead),
             priority: 60,
         );
 
         Lattice::extend(
             'admin.sidebar.instance',
-            static fn (): MenuItem => MenuItem::fromPage(ActivityPage::class)
-                ->label(__('navigation.activity'))
+            static fn (): MenuItem => MenuItem::fromPage(AdminEventsPage::class)
+                ->label(__('navigation.admin-events'))
                 ->prefix(Icon::Clock)
-                ->can(Scope::ActivityRead),
+                ->can(Scope::AdminEventsRead),
             priority: 30,
         );
     }

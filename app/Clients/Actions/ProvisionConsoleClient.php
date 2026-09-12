@@ -6,7 +6,7 @@ namespace App\Clients\Actions;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
-use App\Shared\Clients\Enums\ClientAuditEvent;
+use App\Shared\Clients\Enums\ClientAdminEvent;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use Bambamboole\LaravelOidc\Server\Clients\Actions\ProvisionFirstPartyClient;
 use Bambamboole\LaravelOidc\Server\Clients\Exceptions\FirstPartyClientProvisioningException;
@@ -134,7 +134,7 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
 
         if ($outcome !== BootstrapOutcome::Unchanged) {
             Audit::record(
-                $created ? ClientAuditEvent::ClientCreated : ClientAuditEvent::ClientUpdated,
+                $created ? ClientAdminEvent::ClientCreated : ClientAdminEvent::ClientUpdated,
                 $client,
                 $realm,
                 [

@@ -6,7 +6,7 @@ namespace App\Auth\Ui\Actions;
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -33,7 +33,7 @@ final class ResetUserMfaAction extends ActionDefinition
 
         $this->resetMfa->handle($user);
 
-        Audit::record(UserAuditEvent::UserMfaReset, $user);
+        Audit::record(UserAdminEvent::UserMfaReset, $user);
 
         return ActionResult::success()
             ->toast(__('admin.users.detail.reset-mfa.done'), Variant::Success)

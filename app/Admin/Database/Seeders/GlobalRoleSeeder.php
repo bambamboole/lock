@@ -6,6 +6,7 @@ namespace App\Admin\Database\Seeders;
 
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Audit\Audit;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -21,7 +22,7 @@ final class GlobalRoleSeeder extends Seeder
     {
         $api = app(ManagementApi::class);
 
-        DB::transaction(fn () => activity()->withoutLogging(function () use ($api): void {
+        DB::transaction(fn () => Audit::withoutRecording(function () use ($api): void {
             $realm = Realm::master();
 
             $api->reconcile($realm);

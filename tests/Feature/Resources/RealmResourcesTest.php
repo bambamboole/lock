@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Contracts\CreatesResource;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
 use App\Shared\Resources\Contracts\DeletesResource;
 use App\Shared\Resources\Contracts\DeletesResourceScope;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 
 beforeEach(function () {
     $this->realm = Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
@@ -39,9 +39,9 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
 
     expect($resource->refresh()->identifier)->toBe('orders');
 
-    $updated = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceUpdated->eventName())->sole();
+    $updated = AdminEvent::forRealm($this->realm)->where('type', ResourceAdminEvent::ResourceUpdated->type())->sole();
 
-    expect($updated->getProperty('changes'))->toBe([
+    expect(data_get($updated->context, 'changes'))->toBe([
         'identifier' => ['old' => 'api', 'new' => 'orders'],
         'name' => ['old' => 'Orders API', 'new' => 'Orders'],
     ]);
@@ -52,10 +52,10 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
     expect(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
         ->and(ResourceScope::query()->where('resource_id', $resource->id)->exists())->toBeFalse();
 
-    $deleted = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ResourceDeleted->eventName())->sole();
+    $deleted = AdminEvent::forRealm($this->realm)->where('type', ResourceAdminEvent::ResourceDeleted->type())->sole();
 
-    expect($deleted->getProperty('identifier'))->toBe('orders')
-        ->and($deleted->getProperty('scopes-deleted'))->toBe(1);
+    expect(data_get($deleted->context, 'identifier'))->toBe('orders')
+        ->and(data_get($deleted->context, 'scopes-deleted'))->toBe(1);
 });
 
 test('changing and dropping a scope is recorded against its resource', function () {
@@ -66,10 +66,10 @@ test('changing and dropping a scope is recorded against its resource', function 
 
     expect($scope->refresh()->label())->toBe('Read orders');
 
-    $updated = Activity::forRealm($this->realm)->where('event', ResourceAuditEvent::ScopeUpdated->eventName())->sole();
+    $updated = AdminEvent::forRealm($this->realm)->where('type', ResourceAdminEvent::ScopeUpdated->type())->sole();
 
-    expect($updated->getProperty('resource'))->toBe('api')
-        ->and($updated->getProperty('changes'))->toBe([
+    expect(data_get($updated->context, 'resource'))->toBe('api')
+        ->and(data_get($updated->context, 'changes'))->toBe([
             'description' => ['old' => null, 'new' => 'Read orders'],
         ]);
 

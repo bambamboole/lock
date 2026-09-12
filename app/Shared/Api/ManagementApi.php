@@ -10,8 +10,8 @@ use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Console\Enums\BootstrapOutcome;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Illuminate\Support\Facades\DB;
 
@@ -54,7 +54,7 @@ final readonly class ManagementApi
             $resource->save();
 
             if ($created) {
-                Audit::record(ResourceAuditEvent::ResourceCreated, $resource, $realm, $this->context($realm));
+                Audit::record(ResourceAdminEvent::ResourceCreated, $resource, $realm, $this->context($realm));
             }
 
             $changed = $this->reconcileScopes($resource, $realm) || $changed;
@@ -91,7 +91,7 @@ final readonly class ManagementApi
 
                 if ($isNew || $touched) {
                     Audit::record(
-                        $isNew ? RoleAuditEvent::RoleCreated : RoleAuditEvent::RoleUpdated,
+                        $isNew ? RoleAdminEvent::RoleCreated : RoleAdminEvent::RoleUpdated,
                         $role,
                         $realm,
                         [...$this->context($realm), 'role' => $name],
@@ -153,7 +153,7 @@ final readonly class ManagementApi
                 $changed = true;
 
                 Audit::record(
-                    $created ? ResourceAuditEvent::ScopeCreated : ResourceAuditEvent::ScopeUpdated,
+                    $created ? ResourceAdminEvent::ScopeCreated : ResourceAdminEvent::ScopeUpdated,
                     $row,
                     $realm,
                     [...$this->context($realm), 'value' => $row->value],
@@ -166,7 +166,7 @@ final readonly class ManagementApi
         foreach ($removed as $row) {
             $row->delete();
 
-            Audit::record(ResourceAuditEvent::ScopeDeleted, $row, $realm, [...$this->context($realm), 'value' => $row->value]);
+            Audit::record(ResourceAdminEvent::ScopeDeleted, $row, $realm, [...$this->context($realm), 'value' => $row->value]);
         }
 
         $resource->unsetRelation('scopes');

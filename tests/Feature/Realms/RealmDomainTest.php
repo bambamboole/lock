@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Actions\CheckRealmDomainAction;
 use App\Realms\Ui\Forms\CreateRealmForm;
 use App\Realms\Ui\Forms\UpdateRealmDomainForm;
-use App\Shared\Audit\Models\Activity;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use Illuminate\Support\Facades\Http;
 use Lattice\Ui\Enums\Variant;
@@ -66,7 +66,7 @@ it('moves a realm to another domain, which starts over and is checked right away
 
     expect($realm->refresh()->domain)->toBe('new.partners.test')
         ->and($realm->domain_status)->toBe(RealmDomainStatus::Unreachable)
-        ->and(Activity::forRealm($realm)->where('event', RealmAuditEvent::RealmUpdated->eventName())->sole()->getProperty('changes.domain'))
+        ->and(data_get(AdminEvent::forRealm($realm)->where('type', RealmAdminEvent::RealmUpdated->type())->sole()->context, 'changes.domain'))
         ->toBe(['old' => 'old.partners.test', 'new' => 'new.partners.test']);
 });
 

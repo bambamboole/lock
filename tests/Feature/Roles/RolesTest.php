@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Audit\Models\AdminEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
@@ -11,10 +12,9 @@ use App\Roles\Ui\Actions\UpdateRoleAction;
 use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Roles\Ui\Tables\RolesTable;
 use App\Shared\Api\ManagementRoles;
-use App\Shared\Audit\Models\Activity;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Roles\Contracts\SyncsUserRoles;
-use App\Shared\Roles\Enums\RoleAuditEvent;
+use App\Shared\Roles\Enums\RoleAdminEvent;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -36,11 +36,11 @@ test('a roles-write admin creates a realm role and it is recorded', function () 
         ->and($role->description)->toBe('Standard access')
         ->and($role->realm_id)->toBe($this->realm->id);
 
-    $activity = Activity::forRealm($this->realm)->where('event', RoleAuditEvent::RoleCreated->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', RoleAdminEvent::RoleCreated->type())->sole();
 
-    expect($activity->subject_id)->toBe($role->id)
-        ->and($activity->getProperty('realm'))->toBe('acme')
-        ->and($activity->getProperty('name'))->toBe('member');
+    expect($event->subject_id)->toBe($role->id)
+        ->and(data_get($event->context, 'realm'))->toBe('acme')
+        ->and(data_get($event->context, 'name'))->toBe('member');
 });
 
 test('a realm role name is unique per realm but free in another', function () {
@@ -77,9 +77,9 @@ test('renaming a realm role records the change and renames it on its users', fun
 
     expect($user->refresh()->roleNames())->toBe(['staff']);
 
-    $activity = Activity::forRealm($this->realm)->where('event', RoleAuditEvent::RoleUpdated->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', RoleAdminEvent::RoleUpdated->type())->sole();
 
-    expect($activity->getProperty('changes'))->toBe([
+    expect(data_get($event->context, 'changes'))->toBe([
         'name' => ['old' => 'member', 'new' => 'staff'],
         'description' => ['old' => null, 'new' => 'Renamed'],
     ]);
@@ -98,10 +98,10 @@ test('deleting a realm role detaches every user that holds it', function () {
     expect(Role::query()->whereKey($role->id)->exists())->toBeFalse()
         ->and($user->refresh()->roleNames())->toBe(['admin']);
 
-    $activity = Activity::forRealm($this->realm)->where('event', RoleAuditEvent::RoleDeleted->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', RoleAdminEvent::RoleDeleted->type())->sole();
 
-    expect($activity->getProperty('name'))->toBe('member')
-        ->and($activity->getProperty('users-detached'))->toBe(1);
+    expect(data_get($event->context, 'name'))->toBe('member')
+        ->and(data_get($event->context, 'users-detached'))->toBe(1);
 });
 
 test('the roles table lists only the roles of the selected realm with their user counts', function () {
@@ -134,7 +134,7 @@ test('the roles console is forbidden without a roles scope', function () {
     $role = Role::factory()->for($this->realm)->create(['name' => 'member']);
     $context = ['realm' => 'acme', 'role' => $role->id];
 
-    $this->actingAs(globalAdminWith(Scope::ActivityRead));
+    $this->actingAs(globalAdminWith(Scope::AdminEventsRead));
     $this->get('/admin/realms/acme/roles')->assertForbidden();
     $this->loadDeniedTable(RolesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateRoleAction::class, ['name' => 'other'], ['realm' => 'acme'])->assertForbidden();
@@ -156,11 +156,11 @@ test('assigning realm roles to a user replaces the set and records what changed'
 
     expect($user->refresh()->roleNames())->toBe(['admin']);
 
-    $activity = Activity::forRealm($this->realm)->where('event', RoleAuditEvent::AssignmentsUpdated->eventName())->sole();
+    $event = AdminEvent::forRealm($this->realm)->where('type', RoleAdminEvent::AssignmentsUpdated->type())->sole();
 
-    expect($activity->subject_id)->toBe($user->id)
-        ->and($activity->getProperty('added'))->toBe(['admin'])
-        ->and($activity->getProperty('removed'))->toBe(['member']);
+    expect($event->subject_id)->toBe($user->id)
+        ->and(data_get($event->context, 'added'))->toBe(['admin'])
+        ->and(data_get($event->context, 'removed'))->toBe(['member']);
 });
 
 test('a role of another realm cannot be assigned to a user', function () {
@@ -204,7 +204,7 @@ test('a role update that changes nothing is not logged', function () {
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
-    expect(Activity::global()->count())->toBe(0);
+    expect(AdminEvent::global()->count())->toBe(0);
 });
 
 test('an admin cannot change their own roles', function () {

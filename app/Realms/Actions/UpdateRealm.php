@@ -8,7 +8,7 @@ use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use App\Shared\Realms\Data\UpdateRealmData;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Support\RealmConfiguration;
 use Illuminate\Support\Facades\DB;
 use Spatie\LaravelData\Optional;
@@ -78,6 +78,6 @@ final readonly class UpdateRealm implements UpdatesRealm
         $realm->settings = $settings;
         $realm->save();
 
-        Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => $changes]);
+        Audit::record(RealmAdminEvent::RealmUpdated, $realm, $realm, ['changes' => $changes]);
     }
 }

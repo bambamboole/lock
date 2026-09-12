@@ -2,91 +2,102 @@
 declare(strict_types=1);
 
 return [
-    'categories' => [
-        'auth' => 'Authentication',
-        'oauth' => 'OAuth',
-        'admin' => 'Administration',
-    ],
-    'types' => [
-        'auth' => [
-            'login' => [
-                'succeeded' => 'Sign-in succeeded',
-                'failed' => 'Sign-in failed',
-            ],
-            'logout' => 'Signed out',
-            'password' => ['reset' => 'Password reset', 'changed' => 'Password changed'],
-            'registration' => ['succeeded' => 'Registration completed'],
-            'mfa' => [
-                'challenge-succeeded' => 'Second factor accepted',
-                'challenge-failed' => 'Second factor rejected',
-                'factor-enrollment-started' => 'Factor enrollment started',
-                'factor-confirmed' => 'Factor confirmed',
-                'factor-revoked' => 'Factor revoked',
-                'recovery-code-used' => 'Recovery code used',
-            ],
+    'admin' => [
+        'categories' => [
+            'realm' => 'Realm',
+            'user' => 'User',
+            'client' => 'Client',
+            'role' => 'Role',
+            'resource' => 'Resource',
         ],
-        'oauth' => [
-            'token' => [
-                'issued' => 'Token issued',
-                'failed' => 'Token request failed',
-                'revoked' => 'Token revoked',
+        'types' => [
+            'role' => [
+                'created' => 'Role created',
+                'updated' => 'Role updated',
+                'deleted' => 'Role deleted',
+                'assignments-updated' => 'Roles assigned to a user',
             ],
-            'consent' => [
-                'approved' => 'Consent granted',
-                'denied' => 'Consent denied',
-            ],
-            'client-auth' => ['failed' => 'Client authentication failed'],
-        ],
-        'admin' => [
             'client' => [
-                'provisioned' => 'Client provisioned',
-                'registered' => 'Client registered',
+                'created' => 'Client created',
+                'updated' => 'Client updated',
+                'secret-rotated' => 'Client secret rotated',
+                'revoked' => 'Client blocked',
+                'restored' => 'Client unblocked',
+                'deleted' => 'Client deleted',
             ],
-            'keys' => ['rotated' => 'Signing keys rotated'],
+            'realm' => [
+                'created' => 'Realm created',
+                'updated' => 'Realm updated',
+                'deleted' => 'Realm deleted',
+            ],
+            'resource' => [
+                'created' => 'Resource created',
+                'updated' => 'Resource updated',
+                'deleted' => 'Resource deleted',
+                'scope' => [
+                    'created' => 'Resource scope created',
+                    'updated' => 'Resource scope updated',
+                    'deleted' => 'Resource scope deleted',
+                ],
+            ],
+            'user' => [
+                'created' => 'User created',
+                'updated' => 'User updated',
+                'blocked' => 'User blocked',
+                'unblocked' => 'User unblocked',
+                'deleted' => 'User deleted',
+                'mfa-reset' => 'Multi-factor authentication reset',
+                'session-ended' => 'Session ended',
+                'sessions-ended' => 'All sessions ended',
+                'password-reset' => ['sent' => 'Password reset sent'],
+                'super-admin-granted' => 'Super Admin granted',
+                'verification' => ['resent' => 'Verification email resent'],
+            ],
         ],
     ],
-    'events' => [
-        'role' => [
-            'created' => 'Role created',
-            'updated' => 'Role updated',
-            'deleted' => 'Role deleted',
-            'assignments-updated' => 'Roles assigned to a user',
+    'user' => [
+        'categories' => [
+            'auth' => 'Authentication',
+            'oauth' => 'OAuth',
+            'admin' => 'Administration',
         ],
-        'client' => [
-            'created' => 'Client created',
-            'updated' => 'Client updated',
-            'secret-rotated' => 'Client secret rotated',
-            'revoked' => 'Client blocked',
-            'restored' => 'Client unblocked',
-            'deleted' => 'Client deleted',
-        ],
-        'realm' => [
-            'created' => 'Realm created',
-            'updated' => 'Realm updated',
-            'deleted' => 'Realm deleted',
-        ],
-        'resource' => [
-            'created' => 'Resource created',
-            'updated' => 'Resource updated',
-            'deleted' => 'Resource deleted',
-            'scope' => [
-                'created' => 'Resource scope created',
-                'updated' => 'Resource scope updated',
-                'deleted' => 'Resource scope deleted',
+        'types' => [
+            'auth' => [
+                'login' => [
+                    'succeeded' => 'Sign-in succeeded',
+                    'failed' => 'Sign-in failed',
+                ],
+                'logout' => 'Signed out',
+                'password' => ['reset' => 'Password reset', 'changed' => 'Password changed'],
+                'registration' => ['succeeded' => 'Registration completed'],
+                'mfa' => [
+                    'challenge-succeeded' => 'Second factor accepted',
+                    'challenge-failed' => 'Second factor rejected',
+                    'factor-enrollment-started' => 'Factor enrollment started',
+                    'factor-confirmed' => 'Factor confirmed',
+                    'factor-revoked' => 'Factor revoked',
+                    'recovery-code-used' => 'Recovery code used',
+                ],
             ],
-        ],
-        'user' => [
-            'created' => 'User created',
-            'updated' => 'User updated',
-            'blocked' => 'User blocked',
-            'unblocked' => 'User unblocked',
-            'deleted' => 'User deleted',
-            'mfa-reset' => 'Multi-factor authentication reset',
-            'session-ended' => 'Session ended',
-            'sessions-ended' => 'All sessions ended',
-            'password-reset' => ['sent' => 'Password reset sent'],
-            'super-admin-granted' => 'Super Admin granted',
-            'verification' => ['resent' => 'Verification email resent'],
+            'oauth' => [
+                'token' => [
+                    'issued' => 'Token issued',
+                    'failed' => 'Token request failed',
+                    'revoked' => 'Token revoked',
+                ],
+                'consent' => [
+                    'approved' => 'Consent granted',
+                    'denied' => 'Consent denied',
+                ],
+                'client-auth' => ['failed' => 'Client authentication failed'],
+            ],
+            'admin' => [
+                'client' => [
+                    'provisioned' => 'Client provisioned',
+                    'registered' => 'Client registered',
+                ],
+                'keys' => ['rotated' => 'Signing keys rotated'],
+            ],
         ],
     ],
 ];

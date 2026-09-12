@@ -9,6 +9,7 @@ use App\Admin\Ui\Remote\ApiReferenceTokens;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Audit\Audit;
 use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Http\Request;
 use Lattice\Core\Contracts\SignsComponentReferences;
@@ -22,7 +23,7 @@ function provisionManagementApi(): Resource
 {
     $realm = Realm::master();
 
-    activity()->withoutLogging(fn () => app(ManagementApi::class)->reconcile($realm));
+    Audit::withoutRecording(fn () => app(ManagementApi::class)->reconcile($realm));
 
     return $realm->realmResources()->where('identifier', ManagementApi::RESOURCE)->sole();
 }

@@ -8,7 +8,7 @@ use App\Realms\Models\Realm;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\CreatesRealmUser;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -74,7 +74,7 @@ final readonly class EnsureAdministrator implements EnsuresAdministrator
                 return BootstrapOutcome::Unchanged;
             }
 
-            Audit::record(UserAuditEvent::UserUpdated, $user, properties: [
+            Audit::record(UserAdminEvent::UserUpdated, $user, context: [
                 'actor' => self::Actor,
                 'email' => $user->email,
                 'changed' => $changes,

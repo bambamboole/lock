@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
+use App\Audit\Enums\UserEventType;
+use App\Audit\Models\UserEvent;
 use App\Auth\Models\User;
 use App\Auth\Ui\Forms\EmailForm;
 use App\Auth\Ui\Forms\NameForm;
 use App\Auth\Ui\Forms\PasswordForm;
 use App\Realms\Models\Realm;
-use App\Shared\Audit\Enums\AuditEventType;
-use App\Shared\Audit\Models\AuditEvent;
 use Illuminate\Support\Facades\Hash;
 
 use function Tests\Helpers\realmRoute;
@@ -111,5 +111,5 @@ test('a changed password honours the realm password history and is recorded', fu
     $change('another-secure-password')->assertSessionHasNoErrors();
 
     expect(Hash::check('another-secure-password', $user->refresh()->password))->toBeTrue()
-        ->and(AuditEvent::query()->where('type', AuditEventType::PasswordChanged->value)->where('user_id', $user->id)->exists())->toBeTrue();
+        ->and(UserEvent::query()->where('type', UserEventType::PasswordChanged->value)->where('user_id', $user->id)->exists())->toBeTrue();
 });

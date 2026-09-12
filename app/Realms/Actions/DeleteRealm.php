@@ -7,7 +7,7 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\DeletesRealm;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use Bambamboole\LaravelOidc\Server\Purge\PurgeRealm;
 use Bambamboole\LaravelOidc\Server\Purge\PurgeUser;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +33,7 @@ final readonly class DeleteRealm implements DeletesRealm
 
             $realm->delete();
 
-            Audit::record(RealmAuditEvent::RealmDeleted, $realm, properties: ['name' => $realm->name, 'slug' => $realm->slug]);
+            Audit::record(RealmAdminEvent::RealmDeleted, $realm, context: ['name' => $realm->name, 'slug' => $realm->slug]);
         });
     }
 }

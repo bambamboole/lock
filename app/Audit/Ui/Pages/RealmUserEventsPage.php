@@ -1,0 +1,44 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Audit\Ui\Pages;
+
+use App\Audit\Ui\Tables\RealmUserEventsTable;
+use App\Realms\Models\Realm;
+use App\Shared\Authorization\Enums\Scope;
+use App\Shared\Ui\Components\PageHeader;
+use App\Shared\Ui\Pages\AdminPage;
+use Lattice\Core\Attributes\AsPage;
+use Lattice\Core\Breadcrumb;
+use Lattice\Table\Components\Table;
+use Lattice\Ui\Components\Stack;
+use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
+use Lattice\Ui\PageSchema;
+
+#[AsPage(route: '/admin/realms/{realm}/user-events', name: 'admin.realms.user-events', can: Scope::UserEventsRead)]
+final class RealmUserEventsPage extends AdminPage
+{
+    public function title(): string
+    {
+        return __('admin.realm-user-events.heading');
+    }
+
+    public function render(PageSchema $schema, Realm $realm): PageSchema
+    {
+        $schema->breadcrumbs($this->realmBreadcrumbs(
+            $realm,
+            Breadcrumb::make(__('navigation.user-events'), route('admin.realms.user-events', ['realm' => $realm->slug], false)),
+        ));
+
+        return $schema->schema([
+            Stack::make('admin-realm-user-events-page')
+                ->gap(Gap::Large)
+                ->width(Width::ExtraLarge)
+                ->schema([
+                    PageHeader::make(__('admin.realm-user-events.heading'), __('admin.realm-user-events.description', ['realm' => $realm->name])),
+                    Table::use(RealmUserEventsTable::class),
+                ]),
+        ]);
+    }
+}

@@ -2,14 +2,14 @@
 declare(strict_types=1);
 
 return [
-    'activity' => 'Activity',
+    'admin-events' => 'Admin events',
     'api' => 'API',
     'admin' => 'Admin',
     'clients' => 'Clients',
     'back-to-app' => 'My account',
     'account' => 'Account',
     'all-realms' => 'All realms',
-    'events' => 'Events',
+    'user-events' => 'User events',
     'realms' => 'Realms',
     'resources' => 'Resources',
     'roles' => 'Roles',

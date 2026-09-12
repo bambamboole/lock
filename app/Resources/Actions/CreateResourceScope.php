@@ -8,7 +8,7 @@ use App\Resources\Models\ResourceScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\CreatesResourceScope;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -28,7 +28,7 @@ final readonly class CreateResourceScope implements CreatesResourceScope
                 'description' => $description,
             ]);
 
-            Audit::record(ResourceAuditEvent::ScopeCreated, $scope, $resource->realm, [
+            Audit::record(ResourceAdminEvent::ScopeCreated, $scope, $resource->realm, [
                 'realm' => $resource->realm->slug,
                 'resource' => $resource->identifier,
                 'value' => $scope->value,

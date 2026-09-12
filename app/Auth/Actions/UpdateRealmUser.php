@@ -5,7 +5,7 @@ namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use Illuminate\Support\Facades\DB;
 
 final class UpdateRealmUser
@@ -28,7 +28,7 @@ final class UpdateRealmUser
                 return;
             }
 
-            Audit::record(UserAuditEvent::UserUpdated, $user, properties: [
+            Audit::record(UserAdminEvent::UserUpdated, $user, context: [
                 'before' => array_intersect_key($before, array_flip($changed)),
                 'after' => array_intersect_key($after, array_flip($changed)),
             ]);

@@ -7,7 +7,7 @@ use App\Resources\Models\Resource;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\DeletesResource;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -25,7 +25,7 @@ final readonly class DeleteResource implements DeletesResource
             $resource->scopes()->delete();
             $resource->delete();
 
-            Audit::record(ResourceAuditEvent::ResourceDeleted, $resource, $resource->realm, [
+            Audit::record(ResourceAdminEvent::ResourceDeleted, $resource, $resource->realm, [
                 'realm' => $resource->realm->slug,
                 'identifier' => $resource->identifier,
                 'scopes-deleted' => count($scopes),

@@ -6,7 +6,7 @@ namespace App\Clients\Actions;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\RotatesClientSecret;
-use App\Shared\Clients\Enums\ClientAuditEvent;
+use App\Shared\Clients\Enums\ClientAdminEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
@@ -25,7 +25,7 @@ final readonly class RotateClientSecret implements RotatesClientSecret
         DB::transaction(function () use ($client): void {
             $this->clients->regenerateSecret($client);
 
-            Audit::record(ClientAuditEvent::ClientSecretRotated, $client, Realm::ofClient($client), [
+            Audit::record(ClientAdminEvent::ClientSecretRotated, $client, Realm::ofClient($client), [
                 'realm' => $client->realm,
                 'client_id' => $client->client_id,
             ]);

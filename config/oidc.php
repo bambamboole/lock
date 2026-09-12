@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use App\Audit\Support\DatabaseAuditSink;
 use App\Resources\Support\ResourceScopeCatalog;
-use App\Shared\Audit\Support\DatabaseAuditSink;
 
 return [
     // Null, so the origin comes from `app.url`: every realm host shares its

@@ -6,7 +6,7 @@ namespace App\Admin\Actions;
 use App\Auth\Models\User;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Audit;
-use App\Shared\Auth\Enums\UserAuditEvent;
+use App\Shared\Auth\Enums\UserAdminEvent;
 use RuntimeException;
 
 final class GrantSuperAdmin
@@ -27,9 +27,9 @@ final class GrantSuperAdmin
         $user->roles()->syncWithoutDetaching([$role->id]);
 
         Audit::record(
-            UserAuditEvent::SuperAdminGranted,
+            UserAdminEvent::SuperAdminGranted,
             $user,
-            properties: ['actor' => $actor, 'added' => [$role->name], 'removed' => []],
+            context: ['actor' => $actor, 'added' => [$role->name], 'removed' => []],
         );
 
         return true;

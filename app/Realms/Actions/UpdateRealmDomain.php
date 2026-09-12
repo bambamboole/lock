@@ -7,7 +7,7 @@ namespace App\Realms\Actions;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
-use App\Shared\Realms\Enums\RealmAuditEvent;
+use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmDomain;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +38,7 @@ final class UpdateRealmDomain implements UpdatesRealmDomain
                 'domain_check_error' => null,
             ])->save();
 
-            Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm, ['changes' => ['domain' => ['old' => $before, 'new' => $domain]]]);
+            Audit::record(RealmAdminEvent::RealmUpdated, $realm, $realm, ['changes' => ['domain' => ['old' => $before, 'new' => $domain]]]);
         });
     }
 }

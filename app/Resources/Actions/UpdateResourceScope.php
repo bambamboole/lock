@@ -7,7 +7,7 @@ use App\Resources\Models\ResourceScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
-use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -33,7 +33,7 @@ final readonly class UpdateResourceScope implements UpdatesResourceScope
             }
 
             if ($changes !== []) {
-                Audit::record(ResourceAuditEvent::ScopeUpdated, $scope, $scope->resource->realm, [
+                Audit::record(ResourceAdminEvent::ScopeUpdated, $scope, $scope->resource->realm, [
                     'realm' => $scope->resource->realm->slug,
                     'resource' => $scope->resource->identifier,
                     'value' => $scope->value,
