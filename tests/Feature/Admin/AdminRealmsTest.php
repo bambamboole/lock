@@ -41,7 +41,7 @@ test('only realms-manage admins see the editing tabs', function () {
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 
     expect(renderedTabKeys($support))->toBe(['general'])
-        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'login', 'tokens', 'sessions', 'mfa', 'passwords', 'clients']);
+        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'login', 'social', 'tokens', 'sessions', 'mfa', 'passwords', 'clients']);
 });
 
 test('only a realms-manage admin can delete a realm, and never the admin realm', function () {

@@ -9,6 +9,7 @@ use App\Admin\Enums\AdminPermission;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Realms\Models\RealmSocialProvider;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
@@ -40,6 +41,7 @@ final class AdminServiceProvider extends ServiceProvider
 
         Lattice::context('client', fn (string $value): Client => Client::query()->findOrFail($value));
         Lattice::context('realmRole', fn (string $value): RealmRole => RealmRole::query()->findOrFail($value));
+        Lattice::context('socialProvider', fn (string $value): RealmSocialProvider => RealmSocialProvider::query()->findOrFail($value));
         Lattice::context('resource', fn (string $value): Resource => Resource::query()->findOrFail($value));
         Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
 
