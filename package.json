@@ -12,7 +12,7 @@
         "types:check": "tsc --noEmit"
     },
     "devDependencies": {
-        "@inertiajs/vite": "^3.7.0",
+        "@inertiajs/vite": "^3.7.1",
         "@tailwindcss/vite": "^4.3.3",
         "@types/node": "^26.5.0",
         "@types/react": "^19.3.0",
@@ -27,7 +27,7 @@
     },
     "dependencies": {
         "@fontsource-variable/instrument-sans": "^5.3.0",
-        "@inertiajs/react": "^3.7.0",
+        "@inertiajs/react": "^3.7.1",
         "@laravel/passkeys": "^0.4.0",
         "@lattice-php/api-reference": "^0.77.0",
         "@lattice-php/core": "^0.77.0",

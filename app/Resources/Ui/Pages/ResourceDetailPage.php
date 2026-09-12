@@ -25,6 +25,7 @@ use Lattice\Ui\Components\Entries\TextEntry;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/resources/{resource}', name: 'admin.realms.resources.show', can: Scope::ResourcesRead)]
@@ -43,6 +44,7 @@ final class ResourceDetailPage extends AdminPage
         return $schema->schema([
             Stack::make('admin-resource-detail-page')
                 ->gap(Gap::Large)
+                ->width(Width::ExtraLarge)
                 ->schema([
                     PageHeader::make($resource->name, __('admin.resources.detail.description', ['realm' => $realm->name]), ActionBar::make(
                         primary: [Action::use(CreateResourceScopeAction::class)],

@@ -16,6 +16,7 @@ use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/clients', name: 'admin.realms.clients', can: Scope::ClientsRead)]
@@ -36,6 +37,7 @@ final class RealmClientsPage extends AdminPage
         return $schema->schema([
             Stack::make('admin-realm-clients-page')
                 ->gap(Gap::Large)
+                ->width(Width::ExtraLarge)
                 ->schema([
                     PageHeader::make(__('admin.clients.heading'), __('admin.clients.description', ['realm' => $realm->name]), ActionBar::make(primary: [
                         Button::make(__('admin.clients.create.submit'))

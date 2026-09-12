@@ -15,7 +15,7 @@
         "bambamboole/laravel-i18next": "^0.6.0",
         "bambamboole/laravel-oidc": "^0.32.0",
         "bambamboole/spectacular": "^0.27.0",
-        "inertiajs/inertia-laravel": "^3.3.3",
+        "inertiajs/inertia-laravel": "^3.3.4",
         "laravel/framework": "^13.31.0",
         "laravel/octane": "^2.19.1",
         "laravel/tinker": "^3.0.2",

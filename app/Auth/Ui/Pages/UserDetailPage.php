@@ -122,7 +122,6 @@ final class UserDetailPage extends AdminPage
             overflow: [
                 ...($user->hasVerifiedEmail() || $user->isBlocked() ? [] : [Action::use(ResendUserVerification::class)]),
                 ...($user->hasSecondFactor() ? [Action::use(ResetUserMfaAction::class)] : []),
-                Action::use(EndAllUserSessionsAction::class),
                 Action::use(DeleteUserAction::class),
             ],
             key: 'admin-user',
@@ -131,8 +130,9 @@ final class UserDetailPage extends AdminPage
 
     private function sessionsCard(): Card
     {
-        return Card::make(__('admin.users.detail.sessions.heading'), __('admin.users.detail.sessions.subtitle'))->schema([
-            Table::use(UserSessionsTable::class),
-        ]);
+        return Card::make(__('admin.users.detail.sessions.heading'), __('admin.users.detail.sessions.subtitle'))
+            ->headerActions([Action::use(EndAllUserSessionsAction::class)])
+            ->schema([Table::use(UserSessionsTable::class),
+            ]);
     }
 }

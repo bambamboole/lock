@@ -16,6 +16,7 @@ use Lattice\Core\Breadcrumb;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/roles', name: 'admin.realms.roles', can: Scope::RolesRead)]
@@ -35,6 +36,7 @@ final class RolesPage extends AdminPage
 
         return $schema->schema([
             Stack::make('admin-realm-roles-page')
+                ->width(Width::ExtraLarge)
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.roles.heading'), __('admin.roles.description', ['realm' => $realm->name]), ActionBar::make(primary: [
