@@ -1,9 +1,17 @@
 ---
 paths:
     - "app/Shared/Audit/**"
+    - "app/Audit/**"
 ---
 
 # Audit
+
+## Writing lives in Shared, reading lives in the domain
+
+Every domain writes audit rows, so `Audit::record()`, the two models and the sink stay in `app/Shared/Audit` as the
+surface they all reach for. `app/Audit` is what reads them back: the instance and realm trails, the security event
+log, and the fragments that render a row's changes. Nothing outside `app/Audit/Ui` queries `Activity` or
+`AuditEvent`.
 
 ## Two audit trails: activity_log for the admin trail, audit_events for security events
 

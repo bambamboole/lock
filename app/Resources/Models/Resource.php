@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * Unscoped like RealmRole: the console reads a realm's resources while the
+ * Unscoped like Role: the console reads a realm's resources while the
  * administrator's own realm is current.
  *
  * `resource` is a PHP type keyword, so Pint's phpdoc_types fixer lowercases a

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementRoles;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\grantGlobalRole;
@@ -33,7 +33,7 @@ it('offers the realm end-session as logout and the console only to admins', func
     $user = User::factory()->for(Realm::master())->create();
     $hrefsBefore = accountUserMenuHrefs($user);
 
-    grantGlobalRole($user, GlobalRoles::SUPPORT);
+    grantGlobalRole($user, ManagementRoles::SUPPORT);
     $hrefsAfter = accountUserMenuHrefs($user->refresh());
 
     expect($hrefsBefore)->toBe(['/oauth/logout'])

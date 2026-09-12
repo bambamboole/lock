@@ -13,14 +13,32 @@ child of a module except its `Ui` slice and service provider.
 
 ## The admin console is the only management UI
 
-Realms, their configuration and their users are managed from `app/Admin/Ui/**` by users of the master realm; a
+Realms, their configuration and their users are managed from the `/admin/…` console by users of the master realm; a
 realm user gets account pages, never a console. A module that wants to contribute UI to a page it does not own
 hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` instead of importing the page.
 
+Its shell — `App\Shared\Ui\Layouts\AdminLayout` and the `App\Shared\Ui\Pages\AdminPage` base class — lives in
+`app/Shared/Ui/**` so any domain may contribute a console page. A domain owns the pages for its own records
+(`app/Realms/Ui/**` for the realm record, `app/Clients/Ui/**` for its OAuth clients, `app/Resources/Ui/**` for its
+protected resources, `app/Auth/Ui/**` for its users, `app/Roles/Ui/**` for its roles,
+`app/Audit/Ui/**` for the trail and the security events); the pages whose domain has no
+`Ui` slice yet stay in `app/Admin/Ui/**`.
+
+The shell owns no navigation of its own. Its sidebar is two slots a domain fills from its provider —
+`admin.sidebar.realm`, which carries the selected `Realm` in its context, and `admin.sidebar.instance` — and
+`admin.users.detail.cards` is how the roles card reaches the user page. Order is the `priority:` argument, and an
+entry gates itself with `MenuItem::…->can(Scope::…)` rather than the shell testing the user. Because the module
+registering an entry owns the page, it builds it with `MenuItem::fromPage()`; only the realm switcher is built in
+the shell, and it links by route name because importing `App\Realms\Ui\Pages\…` there would make the shared layer
+depend on a domain.
+
 The console is Keycloak-shaped: a realm-scoped page lives under `/admin/realms/{realm}/…` and takes the bound
-`Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide whether the sidebar shows
-the instance areas (realms, activity) or the selected realm's areas (users, settings) below the realm switcher.
+`Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide which of the two sidebar
+slots it renders below the realm switcher.
 Instance-wide pages stay directly under `/admin/…`. There is no cross-realm user list on purpose.
+
+A definition's id is the endpoint every client already calls, so it does not follow the class between namespaces:
+the realm definitions moved to `App\Realms\Ui` keep their `admin.realms.*` ids.
 
 ## Resolve models through registered context, never route parameters or session state
 
@@ -32,8 +50,8 @@ is genuinely needed; do not query from `contextString()` or read `$request->rout
 definition endpoints may run after the page request, so the registered context remains the source of truth.
 
 Give closure resolvers a concrete model return type. Lattice uses it to map bound route models to registered context
-keys. The `realm` resolver in `AdminServiceProvider` is a plain lookup: every realm definition gates itself on an
-`AdminPermission`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
+keys. The `realm` resolver in `RealmsServiceProvider` is a plain lookup: every realm definition gates itself on an
+`Scope`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
 may not see anyway. A resolver for data that is not admin-only has to check the signed-in user itself.
 
 Context resolvers are pure lookups. A resolver also runs while components are merely being built, once per distinct
@@ -42,7 +60,7 @@ about. Request-wide state keyed to the context belongs in `Definition::activated
 signed endpoint after the gate has passed; a page has no `activated()`.
 
 Declare simple authorization on the definition attribute:
-`#[AsForm('admin.realms.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]`. With a registered
+`#[AsForm('admin.realms.update', can: Scope::RealmsWrite)]`. With a registered
 subject key (`on: 'realm'`) Lattice resolves the subject before the definition runs and denies a missing subject. Keep `authorize()` only for conditions a gate
 subject cannot express, and use the nullable context accessor inside it.
 

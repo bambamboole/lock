@@ -9,15 +9,17 @@ paths:
 
 Every concern (models, enums, UI, HTTP, policies, actions) lives under `app/{Domain}/`, subdivided by technical role
 only within that module — never a shared top-level technical folder (`app/Models`, `app/Http`, …) for domain code.
-The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
+The existing modules are `Admin`, `Audit`, `Auth`, `Clients`, `Realms`, `Resources`, `Roles`, and `Shared`.
 
 ## A domain reaches another domain only through app/Shared/{Domain}
 
 `app/Shared/{Domain}/` is the public surface of a domain: the contracts, attributes, traits, and DTOs other modules
 may depend on (`app/Shared/Auth/Contracts/PermissionEnum`,
-`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — the audit trail, the API's own OAuth surface — is a whole
-module there (`app/Shared/Audit`, `app/Shared/Api`). It imports nothing from `app/{Domain}/`; the domain provider binds each
-contract to its implementation. `App\Auth\Models\User`, `App\Realms\Models\Realm`, `App\Realms\Models\RealmRole`, `App\Admin\Models\Role`,
+`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — the API's own OAuth surface, the scope
+vocabulary — is a whole module there (`app/Shared/Api`, `app/Shared/Authorization`). So is a record every domain
+writes: `app/Shared/Audit` holds the `Audit::record()` seam, the audit models and the sink, while `app/Audit` reads
+those rows and presents them. It imports nothing from `app/{Domain}/`; the domain provider binds each
+contract to its implementation. `App\Auth\Models\User`, `App\Realms\Models\Realm`, `App\Roles\Models\Role`,
 `App\Resources\Models\Resource` and `App\Resources\Models\ResourceScope` are the shared kernel and may be imported anywhere — relations, route bindings, and policies need the concrete class. Behaviour a neighbour
 needs is a contract there (`App\Shared\Auth\Contracts\DeletesUser`, `App\Shared\Realms\Contracts\CreatesRealm`),
 bound to its implementation in the owning domain's provider. Everything else crossing a

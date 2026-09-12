@@ -5,39 +5,26 @@ declare(strict_types=1);
 namespace App\Realms;
 
 use App\Realms\Actions\CheckRealmDomain;
-use App\Realms\Actions\CreateClient;
 use App\Realms\Actions\CreateRealm;
-use App\Realms\Actions\CreateRealmRole;
-use App\Realms\Actions\DeleteClient;
 use App\Realms\Actions\DeleteRealm;
-use App\Realms\Actions\DeleteRealmRole;
-use App\Realms\Actions\ProvisionConsoleClient;
-use App\Realms\Actions\RotateClientSecret;
-use App\Realms\Actions\SetClientRevocation;
-use App\Realms\Actions\SyncUserRealmRoles;
-use App\Realms\Actions\UpdateClient;
 use App\Realms\Actions\UpdateRealm;
 use App\Realms\Actions\UpdateRealmDomain;
-use App\Realms\Actions\UpdateRealmRole;
+use App\Realms\Models\Realm;
 use App\Realms\Support\RealmHostGate;
+use App\Realms\Ui\Pages\RealmSettingsPage;
+use App\Realms\Ui\Pages\RealmsPage;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
-use App\Shared\Realms\Contracts\CreatesClient;
 use App\Shared\Realms\Contracts\CreatesRealm;
-use App\Shared\Realms\Contracts\CreatesRealmRole;
-use App\Shared\Realms\Contracts\DeletesClient;
 use App\Shared\Realms\Contracts\DeletesRealm;
-use App\Shared\Realms\Contracts\DeletesRealmRole;
-use App\Shared\Realms\Contracts\ProvisionsConsoleClient;
-use App\Shared\Realms\Contracts\RotatesClientSecret;
-use App\Shared\Realms\Contracts\SetsClientRevocation;
-use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
-use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
-use App\Shared\Realms\Contracts\UpdatesRealmRole;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Lattice\Core\Facades\Lattice;
+use Lattice\Ui\Components\MenuItem;
+use Lattice\Ui\Enums\Icon;
 
 final class RealmsServiceProvider extends ServiceProvider
 {
@@ -48,20 +35,37 @@ final class RealmsServiceProvider extends ServiceProvider
         $this->app->bind(UpdatesRealmDomain::class, UpdateRealmDomain::class);
         $this->app->bind(ChecksRealmDomain::class, CheckRealmDomain::class);
         $this->app->bind(DeletesRealm::class, DeleteRealm::class);
-        $this->app->bind(CreatesClient::class, CreateClient::class);
-        $this->app->bind(ProvisionsConsoleClient::class, ProvisionConsoleClient::class);
-        $this->app->bind(UpdatesClient::class, UpdateClient::class);
-        $this->app->bind(RotatesClientSecret::class, RotateClientSecret::class);
-        $this->app->bind(SetsClientRevocation::class, SetClientRevocation::class);
-        $this->app->bind(DeletesClient::class, DeleteClient::class);
-        $this->app->bind(CreatesRealmRole::class, CreateRealmRole::class);
-        $this->app->bind(UpdatesRealmRole::class, UpdateRealmRole::class);
-        $this->app->bind(DeletesRealmRole::class, DeleteRealmRole::class);
-        $this->app->bind(SyncsUserRealmRoles::class, SyncUserRealmRoles::class);
     }
 
     public function boot(): void
     {
+        Lattice::extend(
+            'admin.sidebar.realm',
+            static fn (Realm $realm): MenuItem => MenuItem::fromPage(RealmSettingsPage::class, ['realm' => $realm->slug])
+                ->label(__('navigation.settings'))
+                ->prefix(Icon::Settings)
+                ->can(Scope::RealmsRead),
+            priority: 70,
+        );
+
+        Lattice::extend(
+            'admin.sidebar.instance',
+            static fn (): MenuItem => MenuItem::fromPage(RealmsPage::class)
+                ->label(__('navigation.realms'))
+                ->prefix(Icon::List)
+                ->can(Scope::RealmsRead),
+            priority: 10,
+        );
+
+        /*
+         * Every realm definition gates itself on a management scope, so the
+         * resolver is a plain lookup.
+         */
+        Lattice::context(
+            'realm',
+            fn (string $value): Realm => Realm::where('slug', $value)->firstOrFail(),
+            keyBy: fn (Realm $realm): string => $realm->slug,
+        );
 
         Route::matched(fn (RouteMatched $event) => app(RealmHostGate::class)->guard($event->request, $event->route));
     }

@@ -27,7 +27,7 @@ a subclass would never be the hydrated model. Read its rows through the package 
 ## Realm-owned models are reached through their realm
 
 The console reads a realm's rows while the administrator's own realm is current, so realm-owned models carry no
-global scope. `RealmRole`, `App\Resources\Models\Resource` and its `ResourceScope` are plain models reached through
+global scope. `App\Roles\Models\Role`, `App\Resources\Models\Resource` and its `ResourceScope` are plain models reached through
 `$realm->realmRoles()` and `$realm->realmResources()`, never a hand-written `realm_id` constraint. `Resource` and
 `ResourceScope` are listed in `architectureSharedKernel()` because the admin console binds a `Resource` by route and
 names it in contracts. `Realm::resources()` is the package's settings

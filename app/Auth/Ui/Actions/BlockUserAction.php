@@ -1,0 +1,51 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Auth\Ui\Actions;
+
+use App\Auth\Actions\BlockUser;
+use App\Auth\Models\User;
+use App\Shared\Authorization\Enums\Scope;
+use App\Shared\Concerns\ResolvesCurrentUser;
+use Illuminate\Http\Request;
+use Lattice\Actions\ActionDefinition;
+use Lattice\Actions\ActionResult;
+use Lattice\Actions\Components\Action;
+use Lattice\Core\Attributes\AsAction;
+use Lattice\Ui\Enums\Variant;
+
+#[AsAction('admin.users.block', can: Scope::UsersWrite)]
+final class BlockUserAction extends ActionDefinition
+{
+    use ResolvesCurrentUser;
+
+    public function __construct(private readonly BlockUser $blockUser) {}
+
+    public function definition(Action $action): Action
+    {
+        return $action
+            ->label(__('admin.users.detail.block.label'))
+            ->confirm(__('admin.users.detail.block.confirm.title'), __('admin.users.detail.block.confirm.description'));
+    }
+
+    #[\Override]
+    public function authorize(Request $request): bool
+    {
+        $target = $this->contextStringOrNull('user');
+
+        return $target !== null && $target !== $this->currentUser()->id;
+    }
+
+    public function handle(Request $request): ActionResult
+    {
+        $user = $this->contextModel('user', User::class);
+
+        abort_if($user->isBlocked(), 422, __('admin.users.already-blocked'));
+
+        $this->blockUser->handle($user);
+
+        return ActionResult::success()
+            ->toast(__('admin.users.detail.block.done'), Variant::Success)
+            ->reloadPage();
+    }
+}

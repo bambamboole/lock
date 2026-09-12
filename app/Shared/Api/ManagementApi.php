@@ -6,16 +6,18 @@ namespace App\Shared\Api;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Api\Enums\ApiScope;
+use App\Roles\Models\Role;
 use App\Shared\Audit\Audit;
+use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Roles\Enums\RoleAuditEvent;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Lock's own management API as an OAuth protected resource: a resource row of
- * the master realm carrying the scopes of {@see ApiScope}. The rows are real,
+ * the master realm carrying the scopes of {@see Scope}. The rows are real,
  * so the console lists them and a token request resolves them like any other
  * resource, but `app:deploy` owns them and the console refuses to change them.
  */
@@ -65,6 +67,49 @@ final readonly class ManagementApi
         });
     }
 
+    /**
+     * The protected roles, as the deploy leaves them. Runs after
+     * {@see self::reconcile()}: a role points at scope rows, so those have to
+     * exist first.
+     */
+    public function reconcileRoles(Realm $realm): BootstrapOutcome
+    {
+        return DB::transaction(function () use ($realm): BootstrapOutcome {
+            $scopes = $this->scopeRows($realm);
+            $created = false;
+            $changed = false;
+
+            foreach (ManagementRoles::grants() as $name => $granted) {
+                $role = $realm->roles()->firstOrNew(['name' => $name]);
+                $isNew = ! $role->exists;
+                $role->save();
+
+                $wanted = array_map(fn (Scope $scope): string => $scopes[$scope->value], $granted);
+
+                $synced = $role->scopes()->sync($wanted);
+                $touched = $synced['attached'] !== [] || $synced['detached'] !== [];
+
+                if ($isNew || $touched) {
+                    Audit::record(
+                        $isNew ? RoleAuditEvent::RoleCreated : RoleAuditEvent::RoleUpdated,
+                        $role,
+                        $realm,
+                        [...$this->context($realm), 'role' => $name],
+                    );
+                }
+
+                $created = $created || $isNew;
+                $changed = $changed || $touched;
+            }
+
+            return match (true) {
+                $created => BootstrapOutcome::Created,
+                $changed => BootstrapOutcome::Updated,
+                default => BootstrapOutcome::Unchanged,
+            };
+        });
+    }
+
     /** `app:deploy` owns these rows, so nothing else may rename or delete them. */
     public function owns(Resource $resource): bool
     {
@@ -76,11 +121,28 @@ final readonly class ManagementApi
         return $this->owns($scope->resource);
     }
 
+    public function ownsRole(Role $role): bool
+    {
+        return $role->realm->isMaster() && in_array($role->name, ManagementRoles::names(), true);
+    }
+
+    /**
+     * @return array<string, string> scope value to its row id
+     */
+    private function scopeRows(Realm $realm): array
+    {
+        $resource = $realm->realmResources()->where('identifier', self::RESOURCE)->sole();
+
+        return $resource->scopes()->pluck('id', 'value')
+            ->map(fn (mixed $id): string => (string) $id)
+            ->all();
+    }
+
     private function reconcileScopes(Resource $resource, Realm $realm): bool
     {
         $changed = false;
 
-        foreach (ApiScope::cases() as $scope) {
+        foreach (Scope::cases() as $scope) {
             $row = $resource->scopes()->firstOrNew(['value' => $scope->value]);
             $created = ! $row->exists;
 
@@ -99,7 +161,7 @@ final readonly class ManagementApi
             }
         }
 
-        $removed = $resource->scopes()->whereNotIn('value', ApiScope::values())->get();
+        $removed = $resource->scopes()->whereNotIn('value', Scope::values())->get();
 
         foreach ($removed as $row) {
             $row->delete();

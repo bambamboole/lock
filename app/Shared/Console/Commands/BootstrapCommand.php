@@ -7,8 +7,8 @@ namespace App\Shared\Console\Commands;
 use App\Realms\Models\Realm;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
 use App\Shared\Console\Enums\BootstrapOutcome;
-use App\Shared\Realms\Contracts\ProvisionsConsoleClient;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -20,7 +20,7 @@ use RuntimeException;
  * The environment is the source of truth on every run and an unset variable
  * means unmanaged, which keeps this safe to repeat on every deploy.
  */
-#[Description('Reconcile the console client and the first administrator with the environment.')]
+#[Description('Reconcile the management API, the protected roles, the console client and the first administrator.')]
 #[Signature('app:bootstrap')]
 final class BootstrapCommand extends Command
 {
@@ -35,6 +35,7 @@ final class BootstrapCommand extends Command
             $outcomes = DB::transaction(fn (): array => [
                 'console client' => $this->provisionClient($clients, $realm),
                 'management api' => $api->reconcile($realm),
+                'protected roles' => $api->reconcileRoles($realm),
                 'administrator' => $this->ensureAdministrator($administrators),
             ]);
         } catch (ValidationException $exception) {

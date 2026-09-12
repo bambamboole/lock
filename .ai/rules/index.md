@@ -10,17 +10,17 @@ Every glob is a code span. Bare `*` in a table cell reads as markdown emphasis, 
 | `app/*/Actions/**` | .ai/rules/actions.md |
 | `app/*/*ServiceProvider.php` | .ai/rules/app.md |
 | `app/**` | .ai/rules/architecture.md |
-| `app/Shared/Audit/**` | .ai/rules/audit.md |
+| `app/Shared/Audit/**`, `app/Audit/**` | .ai/rules/audit.md |
 | `app/*/Concerns/**`, `app/*/Ui/Concerns/**` | .ai/rules/concerns.md |
 | `database/data-migrations/**` | .ai/rules/data-migrations.md |
-| `app/**/Enums/*Permission.php`, `app/*/Policies/**` | .ai/rules/enums.md |
+| `app/Shared/Authorization/**`, `app/*/Policies/**` | .ai/rules/enums.md |
 | `resources/css/**`, `composer.json` | .ai/rules/css.md |
 | `vite.config.ts`, `resources/css/**`, `resources/js/**` | .ai/rules/general.md |
 | `resources/icons/**` | .ai/rules/icons.md |
 | `app/*/Http/**` | .ai/rules/http.md |
 | `database/migrations/**` | .ai/rules/migrations.md |
 | `app/*/Models/**` | .ai/rules/models.md |
-| `app/Auth/**`, `app/Admin/**`, `app/Realms/**`, `config/auth.php` | .ai/rules/realms.md |
+| `app/Auth/**`, `app/Admin/**`, `app/Realms/**`, `app/Clients/**`, `app/Roles/**`, `config/auth.php` | .ai/rules/realms.md |
 | `routes/*.php` | .ai/rules/routes.md |
 | `app/*/Services/**`, `app/*/Support/**`, `app/*/Data/**` | .ai/rules/services.md |
 | `app/*/Ui/Tables/**` | .ai/rules/tables.md |

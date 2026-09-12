@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Actions\ResendUserVerification;
-use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Auth\Models\User;
+use App\Auth\Ui\Actions\ResendUserVerification;
+use App\Auth\Ui\Actions\SendUserPasswordReset;
 use App\Realms\Models\Realm;
 use App\Realms\Support\DomainCheckToken;
 use Illuminate\Mail\Events\MessageSent;

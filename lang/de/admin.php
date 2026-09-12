@@ -111,9 +111,6 @@ return [
                 'heading' => 'Profil',
                 'subtitle' => 'Name, E-Mail-Adresse, Verifizierungsstatus und Realm-Zugehörigkeit.',
             ],
-            'admin-roles' => [
-                'heading' => 'Admin-Rollen',
-            ],
             'realm-roles' => [
                 'heading' => 'Realm-Rollen',
                 'subtitle' => 'Werden als roles-Claim in jedem ID- und Access-Token dieses Benutzers ausgegeben.',
@@ -125,13 +122,6 @@ return [
                 'update' => 'Realm-Rollen aktualisieren',
                 'updated' => 'Realm-Rollen aktualisiert.',
             ],
-            'roles' => [
-                'field' => [
-                    'label' => 'Globale Rollen',
-                ],
-            ],
-            'update-roles' => 'Rollen aktualisieren',
-            'roles-updated' => 'Globale Rollen aktualisiert.',
             'resend-verification' => 'Verifizierung erneut senden',
             'verification-sent' => 'Verifizierungs-E-Mail gesendet.',
             'send-password-reset' => 'Passwort-Reset senden',
@@ -665,6 +655,10 @@ return [
             ],
             'description' => [
                 'label' => 'Beschreibung',
+            ],
+            'scopes' => [
+                'label' => 'Scopes',
+                'help-text' => 'Was die Rolle gewährt. Ein Scope gehört zu einer Resource dieses Realms; eine Rolle, die schreiben darf, braucht auch den passenden Lese-Scope.',
             ],
         ],
         'validation' => [

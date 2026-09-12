@@ -46,26 +46,24 @@ return [
         ],
     ],
     'events' => [
+        'role' => [
+            'created' => 'Role created',
+            'updated' => 'Role updated',
+            'deleted' => 'Role deleted',
+            'assignments-updated' => 'Roles assigned to a user',
+        ],
+        'client' => [
+            'created' => 'Client created',
+            'updated' => 'Client updated',
+            'secret-rotated' => 'Client secret rotated',
+            'revoked' => 'Client blocked',
+            'restored' => 'Client unblocked',
+            'deleted' => 'Client deleted',
+        ],
         'realm' => [
             'created' => 'Realm created',
             'updated' => 'Realm updated',
             'deleted' => 'Realm deleted',
-            'client' => [
-                'created' => 'Client created',
-                'updated' => 'Client updated',
-                'secret-rotated' => 'Client secret rotated',
-                'revoked' => 'Client blocked',
-                'restored' => 'Client unblocked',
-                'deleted' => 'Client deleted',
-            ],
-            'role' => [
-                'created' => 'Realm role created',
-                'updated' => 'Realm role updated',
-                'deleted' => 'Realm role deleted',
-            ],
-            'user' => [
-                'roles-updated' => 'Realm roles updated',
-            ],
         ],
         'resource' => [
             'created' => 'Resource created',
@@ -77,23 +75,18 @@ return [
                 'deleted' => 'Resource scope deleted',
             ],
         ],
-        'admin' => [
-            'roles' => [
-                'updated' => 'Global roles updated',
-                'granted' => 'Super Admin granted',
-            ],
+        'user' => [
+            'created' => 'User created',
+            'updated' => 'User updated',
+            'blocked' => 'User blocked',
+            'unblocked' => 'User unblocked',
+            'deleted' => 'User deleted',
+            'mfa-reset' => 'Multi-factor authentication reset',
+            'session-ended' => 'Session ended',
+            'sessions-ended' => 'All sessions ended',
             'password-reset' => ['sent' => 'Password reset sent'],
+            'super-admin-granted' => 'Super Admin granted',
             'verification' => ['resent' => 'Verification email resent'],
-            'user' => [
-                'created' => 'User created',
-                'updated' => 'User updated',
-                'blocked' => 'User blocked',
-                'unblocked' => 'User unblocked',
-                'deleted' => 'User deleted',
-                'mfa-reset' => 'Multi-factor authentication reset',
-                'session-ended' => 'Session ended',
-                'sessions-ended' => 'All sessions ended',
-            ],
         ],
     ],
 ];

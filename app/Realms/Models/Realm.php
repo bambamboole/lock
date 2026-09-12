@@ -6,6 +6,7 @@ namespace App\Realms\Models;
 use App\Auth\Models\User;
 use App\Realms\Casts\AsRealmSettings;
 use App\Resources\Models\Resource;
+use App\Roles\Models\Role;
 use App\Shared\Realms\Data\RealmSettings;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
@@ -52,8 +53,8 @@ use LogicException;
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
- * @property-read Collection<int, RealmRole> $realmRoles
- * @property-read int|null $realm_roles_count
+ * @property-read Collection<int, Role> $roles
+ * @property-read int|null $roles_count
  * @property-read Collection<int, \App\Resources\Models\Resource> $realmResources
  * @property-read int|null $realm_resources_count
  *
@@ -180,11 +181,11 @@ final class Realm extends Model implements RealmContract
     }
 
     /**
-     * @return HasMany<RealmRole, $this>
+     * @return HasMany<Role, $this>
      */
-    public function realmRoles(): HasMany
+    public function roles(): HasMany
     {
-        return $this->hasMany(RealmRole::class);
+        return $this->hasMany(Role::class);
     }
 
     /**

@@ -3,11 +3,10 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Remote;
 
-use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
-use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Auth\Support\RequestUser;
+use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\AccessTokenMinter;
 use DateInterval;
 use Illuminate\Http\Request;
@@ -21,7 +20,7 @@ use RuntimeException;
  * minted by opening the page: the browser asks for one the first time a request
  * runs, for exactly the scopes that operation declares.
  */
-#[AsRemoteSource(ApiReferenceTokens::KEY, can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsRemoteSource(ApiReferenceTokens::KEY, can: Scope::RealmsWrite)]
 final class ApiReferenceTokens extends RemoteSourceDefinition
 {
     public const string KEY = 'admin.api-reference.tokens';
@@ -75,7 +74,7 @@ final class ApiReferenceTokens extends RemoteSourceDefinition
     {
         $requested = array_filter($request->array('scopes'), is_string(...));
 
-        return array_values(array_intersect($requested, ApiScope::values()));
+        return array_values(array_intersect($requested, Scope::values()));
     }
 
     private function consoleClientId(): string

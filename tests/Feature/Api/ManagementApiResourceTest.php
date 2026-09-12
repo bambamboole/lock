@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Actions\CreateResourceScopeAction;
-use App\Admin\Ui\Actions\DeleteResourceAction;
-use App\Admin\Ui\Actions\DeleteResourceScopeAction;
-use App\Admin\Ui\Actions\UpdateResourceAction;
-use App\Admin\Ui\Actions\UpdateResourceScopeAction;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
-use App\Shared\Api\Enums\ApiScope;
+use App\Resources\Ui\Actions\CreateResourceScopeAction;
+use App\Resources\Ui\Actions\DeleteResourceAction;
+use App\Resources\Ui\Actions\DeleteResourceScopeAction;
+use App\Resources\Ui\Actions\UpdateResourceAction;
+use App\Resources\Ui\Actions\UpdateResourceScopeAction;
 use App\Shared\Api\ManagementApi;
+use App\Shared\Authorization\Enums\Scope;
 use Illuminate\Support\Facades\Artisan;
 
 use function Tests\Helpers\globalAdmin;
@@ -18,14 +18,14 @@ use function Tests\Helpers\provisionManagementApi;
 
 beforeEach(function () {
     $this->resource = provisionManagementApi();
-    $this->scope = $this->resource->scopes()->where('value', ApiScope::RealmsRead->value)->sole();
+    $this->scope = $this->resource->scopes()->where('value', Scope::RealmsRead->value)->sole();
     $this->context = ['realm' => Realm::master()->slug, 'resource' => $this->resource->id];
 });
 
 it('reconciles the resource and its scopes, and reports a repeat run as unchanged', function () {
     expect($this->resource->name)->toBe(ManagementApi::NAME)
-        ->and($this->resource->scopes->pluck('value')->sort()->values()->all())->toBe(ApiScope::values())
-        ->and($this->scope->description)->toBe(ApiScope::RealmsRead->description())
+        ->and($this->resource->scopes->pluck('value')->all())->toEqualCanonicalizing(Scope::values())
+        ->and($this->scope->description)->toBe(Scope::RealmsRead->description())
         ->and(app(ManagementApi::class)->reconcile(Realm::master())->value)->toBe('unchanged');
 });
 
@@ -34,8 +34,8 @@ it('restores a scope an administrator changed in the database', function () {
     $this->resource->scopes()->create(['value' => 'realms:everything']);
 
     expect(app(ManagementApi::class)->reconcile(Realm::master())->value)->toBe('updated')
-        ->and($this->scope->refresh()->description)->toBe(ApiScope::RealmsRead->description())
-        ->and($this->resource->refresh()->scopes->pluck('value')->sort()->values()->all())->toBe(ApiScope::values());
+        ->and($this->scope->refresh()->description)->toBe(Scope::RealmsRead->description())
+        ->and($this->resource->refresh()->scopes->pluck('value')->all())->toEqualCanonicalizing(Scope::values());
 });
 
 it('offers a console admin no way to rename, delete or extend the resource', function () {
@@ -54,7 +54,7 @@ it('offers a console admin no way to rename, delete or extend the resource', fun
     ], $this->context);
 
     expect($this->resource->refresh()->identifier)->toBe(ManagementApi::RESOURCE)
-        ->and($this->resource->scopes()->count())->toBe(count(ApiScope::values()));
+        ->and($this->resource->scopes()->count())->toBe(count(Scope::values()));
 });
 
 it('offers a console admin no way to change or delete one of its scopes', function () {
@@ -68,7 +68,7 @@ it('offers a console admin no way to change or delete one of its scopes', functi
 
     $this->actingAs($admin)->callDeniedAction(DeleteResourceScopeAction::class, [], $context);
 
-    expect($this->scope->refresh()->value)->toBe(ApiScope::RealmsRead->value);
+    expect($this->scope->refresh()->value)->toBe(Scope::RealmsRead->value);
 });
 
 it('leaves another realm’s resource of the same identifier editable', function () {
