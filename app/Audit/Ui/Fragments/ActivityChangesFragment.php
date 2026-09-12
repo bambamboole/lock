@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Ui\Fragments;
+namespace App\Audit\Ui\Fragments;
 
+use App\Audit\Ui\Concerns\RendersActivityChanges;
 use App\Shared\Audit\Models\Activity;
-use App\Shared\Ui\Concerns\RendersActivityChanges;
 use Lattice\Fragments\FragmentDefinition;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;

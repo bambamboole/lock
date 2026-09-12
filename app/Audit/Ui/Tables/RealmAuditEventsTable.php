@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Audit\Ui\Tables;
 
-use App\Admin\Ui\Fragments\AuditEventContextFragment;
+use App\Audit\Ui\Fragments\AuditEventContextFragment;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Enums\AuditEventCategory;
 use App\Shared\Audit\Enums\AuditEventType;

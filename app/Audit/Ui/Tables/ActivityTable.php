@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Ui\Tables;
+namespace App\Audit\Ui\Tables;
 
 use App\Shared\Audit\Models\Activity;
 use Illuminate\Database\Eloquent\Builder;

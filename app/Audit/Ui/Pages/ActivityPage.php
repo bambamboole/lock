@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Audit\Ui\Pages;
 
-use App\Admin\Ui\Tables\AdminActivityTable;
+use App\Audit\Ui\Tables\InstanceActivityTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -29,7 +29,7 @@ final class ActivityPage extends AdminPage
                 ->gap(Gap::Large)
                 ->schema([
                     PageHeader::make(__('admin.activity.heading')),
-                    Table::use(AdminActivityTable::class),
+                    Table::use(InstanceActivityTable::class),
                 ]),
         ]);
     }

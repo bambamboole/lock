@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Audit\Ui\Pages;
 
-use App\Admin\Ui\Tables\RealmAuditEventsTable;
+use App\Audit\Ui\Tables\RealmActivityTable;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\PageHeader;
@@ -16,27 +16,27 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/events', name: 'admin.realms.events', can: Scope::ActivityRead)]
-final class RealmEventsPage extends AdminPage
+#[AsPage(route: '/admin/realms/{realm}/activity', name: 'admin.realms.activity', can: Scope::ActivityRead)]
+final class RealmActivityPage extends AdminPage
 {
     public function title(): string
     {
-        return __('admin.events.heading');
+        return __('admin.realm-activity.heading');
     }
 
     public function render(PageSchema $schema, Realm $realm): PageSchema
     {
         $schema->breadcrumbs($this->realmBreadcrumbs(
             $realm,
-            Breadcrumb::make(__('navigation.events'), route('admin.realms.events', ['realm' => $realm->slug], false)),
+            Breadcrumb::make(__('navigation.activity'), route('admin.realms.activity', ['realm' => $realm->slug], false)),
         ));
 
         return $schema->schema([
-            Stack::make('admin-realm-events-page')
+            Stack::make('admin-realm-activity-page')
                 ->gap(Gap::Large)
                 ->schema([
-                    PageHeader::make(__('admin.events.heading'), __('admin.events.description', ['realm' => $realm->name])),
-                    Table::use(RealmAuditEventsTable::class),
+                    PageHeader::make(__('admin.realm-activity.heading'), __('admin.realm-activity.description', ['realm' => $realm->name])),
+                    Table::use(RealmActivityTable::class),
                 ]),
         ]);
     }

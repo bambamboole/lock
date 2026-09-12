@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Audit\Ui\Tables;
 
-use App\Admin\Ui\Fragments\RealmActivityChangesFragment;
+use App\Audit\Ui\Fragments\RealmActivityChangesFragment;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
-use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
 use Lattice\Table\Attributes\AsTable;

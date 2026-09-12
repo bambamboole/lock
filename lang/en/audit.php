@@ -75,9 +75,6 @@ return [
                 'deleted' => 'Resource scope deleted',
             ],
         ],
-        'admin' => [
-            'roles' => ['granted' => 'Super Admin granted'],
-        ],
         'user' => [
             'created' => 'User created',
             'updated' => 'User updated',
@@ -88,6 +85,7 @@ return [
             'session-ended' => 'Session ended',
             'sessions-ended' => 'All sessions ended',
             'password-reset' => ['sent' => 'Password reset sent'],
+            'super-admin-granted' => 'Super Admin granted',
             'verification' => ['resent' => 'Verification email resent'],
         ],
     ],

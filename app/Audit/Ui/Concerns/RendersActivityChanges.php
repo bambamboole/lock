@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Shared\Ui\Concerns;
+namespace App\Audit\Ui\Concerns;
 
 use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Size;

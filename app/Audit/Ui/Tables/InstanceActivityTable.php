@@ -2,20 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Audit\Ui\Tables;
 
-use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
+use App\Audit\Ui\Fragments\InstanceActivityChangesFragment;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
 use Lattice\Table\Attributes\AsTable;
 
 #[AsTable('admin.activity', can: Scope::ActivityRead)]
-final class AdminActivityTable extends ActivityTable
+final class InstanceActivityTable extends ActivityTable
 {
     /**
      * @return Builder<Activity>
@@ -34,7 +32,7 @@ final class AdminActivityTable extends ActivityTable
     {
         $options = [];
 
-        foreach ([...AdminAuditEvent::cases(), ...UserAuditEvent::cases()] as $event) {
+        foreach (UserAuditEvent::cases() as $event) {
             $options[$event->value] = __($event->translationKey());
         }
 
@@ -46,6 +44,6 @@ final class AdminActivityTable extends ActivityTable
      */
     protected function changesFragment(array $row): Fragment
     {
-        return Fragment::lazy(AdminActivityChangesFragment::class, ['activity' => $row['id']]);
+        return Fragment::lazy(InstanceActivityChangesFragment::class, ['activity' => $row['id']]);
     }
 }

@@ -20,7 +20,8 @@ hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` 
 Its shell — `App\Shared\Ui\Layouts\AdminLayout` and the `App\Shared\Ui\Pages\AdminPage` base class — lives in
 `app/Shared/Ui/**` so any domain may contribute a console page. A domain owns the pages for its own records
 (`app/Realms/Ui/**` for the realm record, `app/Clients/Ui/**` for its OAuth clients, `app/Resources/Ui/**` for its
-protected resources, `app/Auth/Ui/**` for its users, `app/Roles/Ui/**` for its roles); the pages whose domain has no
+protected resources, `app/Auth/Ui/**` for its users, `app/Roles/Ui/**` for its roles,
+`app/Audit/Ui/**` for the trail and the security events); the pages whose domain has no
 `Ui` slice yet stay in `app/Admin/Ui/**`.
 
 The shell owns no navigation of its own. Its sidebar is two slots a domain fills from its provider —

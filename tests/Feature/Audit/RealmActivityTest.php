@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Tables\RealmActivityTable;
+use App\Audit\Ui\Tables\RealmActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;

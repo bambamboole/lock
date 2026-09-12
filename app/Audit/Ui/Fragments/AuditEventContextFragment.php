@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Fragments;
+namespace App\Audit\Ui\Fragments;
 
+use App\Audit\Ui\Concerns\RendersActivityChanges;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Models\AuditEvent;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Concerns\RendersActivityChanges;
 use Lattice\Core\Attributes\AsFragment;
 use Lattice\Fragments\FragmentDefinition;
 use Lattice\Ui\Components\Stack;

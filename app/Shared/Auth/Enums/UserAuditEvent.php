@@ -20,4 +20,5 @@ enum UserAuditEvent: string implements AuditEvent
     case UserSessionsEnded = 'user.sessions-ended';
     case PasswordResetSent = 'user.password-reset.sent';
     case VerificationResent = 'user.verification.resent';
+    case SuperAdminGranted = 'user.super-admin-granted';
 }

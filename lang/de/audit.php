@@ -75,9 +75,6 @@ return [
                 'deleted' => 'Resource-Scope gelöscht',
             ],
         ],
-        'admin' => [
-            'roles' => ['granted' => 'Super Admin vergeben'],
-        ],
         'user' => [
             'created' => 'Benutzer angelegt',
             'updated' => 'Benutzer aktualisiert',
@@ -88,6 +85,7 @@ return [
             'session-ended' => 'Sitzung beendet',
             'sessions-ended' => 'Alle Sitzungen beendet',
             'password-reset' => ['sent' => 'Passwort-Reset gesendet'],
+            'super-admin-granted' => 'Super Admin vergeben',
             'verification' => ['resent' => 'Bestätigungs-E-Mail erneut gesendet'],
         ],
     ],

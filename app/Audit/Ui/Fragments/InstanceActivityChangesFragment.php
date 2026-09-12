@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Fragments;
+namespace App\Audit\Ui\Fragments;
 
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Fragments\ActivityChangesFragment;
 use Lattice\Core\Attributes\AsFragment;
 
 #[AsFragment('admin.activity-changes', can: Scope::ActivityRead)]
-final class AdminActivityChangesFragment extends ActivityChangesFragment
+final class InstanceActivityChangesFragment extends ActivityChangesFragment
 {
     protected function activity(): ?Activity
     {

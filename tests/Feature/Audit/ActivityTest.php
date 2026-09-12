@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
-use App\Admin\Ui\Tables\AdminActivityTable;
+use App\Audit\Ui\Fragments\InstanceActivityChangesFragment;
+use App\Audit\Ui\Tables\InstanceActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
@@ -30,12 +30,12 @@ test('any admin can read the activity trail', function (string $roleName) {
     $admin = globalAdmin($roleName);
 
     $this->actingAs($admin)->get('/admin/activity')->assertOk();
-    $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk();
+    $this->actingAs($admin)->loadTable(InstanceActivityTable::class)->assertOk();
 })->with([ManagementRoles::SUPER_ADMIN, ManagementRoles::SUPPORT]);
 
 test('a non-admin cannot read the activity trail', function () {
     $this->actingAs(User::factory()->create())->get('/admin/activity')->assertForbidden();
-    $this->actingAs(User::factory()->create())->loadDeniedTable(AdminActivityTable::class)->assertForbidden();
+    $this->actingAs(User::factory()->create())->loadDeniedTable(InstanceActivityTable::class)->assertForbidden();
 });
 
 test('the activity table shows admin rows and hides realm rows', function () {
@@ -43,28 +43,28 @@ test('the activity table shows admin rows and hides realm rows', function () {
     $realm = Realm::factory()->create();
 
     Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
-    Audit::record(AdminAuditEvent::SuperAdminGranted, User::factory()->create());
+    Audit::record(UserAuditEvent::SuperAdminGranted, User::factory()->create());
 
-    $rows = $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk()->json('data');
+    $rows = $this->actingAs($admin)->loadTable(InstanceActivityTable::class)->assertOk()->json('data');
 
-    expect(collect(is_array($rows) ? $rows : [])->pluck('event')->all())->toBe(['admin.roles.granted']);
+    expect(collect(is_array($rows) ? $rows : [])->pluck('event')->all())->toBe(['user.super-admin-granted']);
 });
 
 test('the row detail renders the recorded properties for an admin', function () {
     $admin = globalAdmin();
-    Audit::record(AdminAuditEvent::SuperAdminGranted, User::factory()->create(), properties: ['added' => ['Super Admin']]);
+    Audit::record(UserAuditEvent::SuperAdminGranted, User::factory()->create(), properties: ['added' => ['Super Admin']]);
 
     $activity = Activity::global()->sole();
 
     $this->actingAs($admin)
-        ->loadFragment(AdminActivityChangesFragment::class, ['activity' => $activity->id])
+        ->loadFragment(InstanceActivityChangesFragment::class, ['activity' => $activity->id])
         ->assertOk()
         ->assertSee('Super Admin');
 });
 
 test('a non-admin cannot read an activity row detail', function () {
     $this->actingAs(User::factory()->create())
-        ->loadDeniedFragment(AdminActivityChangesFragment::class, ['activity' => 1])
+        ->loadDeniedFragment(InstanceActivityChangesFragment::class, ['activity' => 1])
         ->assertForbidden();
 });
 
@@ -77,7 +77,7 @@ test('a realm-scoped activity row is not readable through the admin fragment', f
     $activity = Activity::query()->sole();
 
     $this->actingAs($admin)
-        ->loadFragment(AdminActivityChangesFragment::class, ['activity' => $activity->id])
+        ->loadFragment(InstanceActivityChangesFragment::class, ['activity' => $activity->id])
         ->assertOk()
         ->assertDontSee('realm-only-sentinel')
         ->assertSee(__('admin.activity.detail.empty'));
