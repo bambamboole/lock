@@ -83,6 +83,7 @@ return [
             ],
         ],
         'detail' => [
+            'description' => 'User of :realm.',
             'created-at' => 'Joined',
             'blocked-at' => 'Blocked since',
             'status' => 'Status',
@@ -237,11 +238,13 @@ return [
             ],
             'redirect-uris' => [
                 'label' => 'Redirect URIs',
-                'help-text' => 'One absolute URI per line. Required for the authorization code grant.',
+                'help-text' => 'Add each absolute URI separately. Required for the authorization code grant.',
+                'add' => 'Add redirect URI',
             ],
             'post-logout-redirect-uris' => [
                 'label' => 'Post-logout redirect URIs',
-                'help-text' => 'One absolute URI per line. Where the client may send users after logging out.',
+                'help-text' => 'Add each absolute URI the client may use after logout separately.',
+                'add' => 'Add post-logout URI',
             ],
             'consent-required' => [
                 'label' => 'Require consent',
@@ -264,7 +267,8 @@ return [
             'scopes' => 'Scopes',
             'secret' => [
                 'heading' => 'Client secret',
-                'subtitle' => 'Stored encrypted, so it stays readable here. Rotate it if it leaks.',
+                'subtitle' => 'Reveal the secret when you need to copy it. Rotate it if it leaks.',
+                'reveal' => 'Reveal client secret',
                 'label' => 'Client secret',
             ],
             'settings' => [
@@ -276,7 +280,7 @@ return [
                 'done' => 'Client secret rotated.',
                 'confirm' => [
                     'title' => 'Rotate the client secret?',
-                    'description' => 'The current secret stops working immediately. The new one is shown once.',
+                    'description' => 'The current secret stops working immediately. You can reveal the new one on this page.',
                 ],
             ],
             'revoke' => [
@@ -342,6 +346,7 @@ return [
             'identifier-uri' => 'The identifier must be an absolute URI with a host and no fragment.',
         ],
         'detail' => [
+            'scopes' => ['heading' => 'Scopes'],
             'description' => 'Resource of :realm.',
             'audience' => 'Audience',
             'settings' => [

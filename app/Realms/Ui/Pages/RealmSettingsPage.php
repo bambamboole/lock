@@ -15,7 +15,6 @@ use App\Realms\Ui\Forms\UpdateRealmForm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\ActionBar;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Illuminate\Http\Request;
 use Lattice\Actions\Components\Action;
@@ -57,15 +56,12 @@ final class RealmSettingsPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-realm-detail-page')
-                ->gap(Gap::Large)
-                ->width(Width::Large)
-                ->schema([
-                    PageHeader::make(
-                        __('admin.realms.settings.heading'),
-                        __('admin.realms.settings.description', ['realm' => $realm->name]),
-                        ActionBar::make(overflow: [$this->deleteRealmTrigger($realm->slug)], key: 'admin-realm'),
-                    ),
+            $this->stack(
+                key: 'admin-realm-detail-page',
+                heading: __('admin.realms.settings.heading'),
+                description: __('admin.realms.settings.description', ['realm' => $realm->name]),
+                headerActions: ActionBar::make(overflow: [$this->deleteRealmTrigger($realm->slug)], key: 'admin-realm'),
+                schema: [
                     Tabs::make('realm-tabs')
                         ->orientation(Orientation::Vertical)
                         ->defaultValue('general')
@@ -78,7 +74,9 @@ final class RealmSettingsPage extends AdminPage
                                 RealmSettingSection::cases(),
                             ),
                         ]),
-                ]),
+                ],
+                width: Width::Large,
+            ),
         ]);
     }
 

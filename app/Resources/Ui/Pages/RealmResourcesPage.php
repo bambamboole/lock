@@ -8,15 +8,11 @@ use App\Resources\Ui\Actions\CreateResourceAction;
 use App\Resources\Ui\Tables\ResourcesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Table\Components\Table;
-use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Enums\Gap;
-use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/resources', name: 'admin.realms.resources', can: Scope::ResourcesRead)]
@@ -35,15 +31,17 @@ final class RealmResourcesPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-realm-resources-page')
-                ->width(Width::ExtraLarge)
-                ->gap(Gap::Large)
-                ->schema([
-                    PageHeader::make(__('admin.resources.heading'), __('admin.resources.description', ['realm' => $realm->name]), ActionBar::make(primary: [
-                        Action::use(CreateResourceAction::class),
-                    ])),
-                    Table::use(ResourcesTable::class),
+            $this->stack(
+                key: 'admin-realm-resources-page',
+                heading: __('admin.resources.heading'),
+                description: __('admin.resources.description', ['realm' => $realm->name]),
+                headerActions: ActionBar::make(primary: [
+                    Action::use(CreateResourceAction::class),
                 ]),
+                schema: [
+                    Table::use(ResourcesTable::class),
+                ],
+            ),
         ]);
     }
 }

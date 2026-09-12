@@ -8,15 +8,11 @@ use App\Roles\Ui\Actions\CreateRoleAction;
 use App\Roles\Ui\Tables\RolesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Table\Components\Table;
-use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Enums\Gap;
-use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/roles', name: 'admin.realms.roles', can: Scope::RolesRead)]
@@ -35,15 +31,17 @@ final class RolesPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-realm-roles-page')
-                ->width(Width::ExtraLarge)
-                ->gap(Gap::Large)
-                ->schema([
-                    PageHeader::make(__('admin.roles.heading'), __('admin.roles.description', ['realm' => $realm->name]), ActionBar::make(primary: [
-                        Action::use(CreateRoleAction::class),
-                    ])),
-                    Table::use(RolesTable::class),
+            $this->stack(
+                key: 'admin-realm-roles-page',
+                heading: __('admin.roles.heading'),
+                description: __('admin.roles.description', ['realm' => $realm->name]),
+                headerActions: ActionBar::make(primary: [
+                    Action::use(CreateRoleAction::class),
                 ]),
+                schema: [
+                    Table::use(RolesTable::class),
+                ],
+            ),
         ]);
     }
 }

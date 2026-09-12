@@ -12,8 +12,8 @@ use Closure;
 use Illuminate\Validation\Rule;
 use Lattice\Form\Components\CheckboxGroup;
 use Lattice\Form\Components\Field;
+use Lattice\Form\Components\Repeater;
 use Lattice\Form\Components\Select;
-use Lattice\Form\Components\Textarea;
 use Lattice\Form\Components\TextInput;
 use Lattice\Form\Components\Toggle;
 use Lattice\Form\FormData;
@@ -61,19 +61,12 @@ trait BuildsClientFields
                 ->helperText(__('admin.clients.fields.grant-types.help-text'))
                 ->required()->rules(['array', 'min:1', Rule::in(ClientAttributes::GRANT_TYPES)])
                 ->rules(fn (FormData $data): array => [$this->clientConsistencyRule($data, $client)]),
-            'redirect_uris' => Textarea::make('redirect_uris', __('admin.clients.fields.redirect-uris.label'))
-                ->value(implode("\n", $client->redirect_uris ?? []), editable: true)->rows(3)
-                ->helperText(__('admin.clients.fields.redirect-uris.help-text'))
-                ->rules(['nullable', 'string', 'max:20000', new AbsoluteUris])
-                ->rules(fn (FormData $data): array => [
-                    Rule::requiredIf(fn (): bool => in_array('authorization_code', $this->clientValues($data, $client)['grant_types'], true)),
-                    $this->clientConsistencyRule($data, $client),
-                ])
+            'redirect_uris' => $this->uriRepeater('redirect_uris', 'redirect-uris', $client->redirect_uris ?? [])
+                ->required(in_array('authorization_code', $client->grant_types ?? [], true))
+                ->dependsOn(['grant_types'], fn (Repeater $field, FormData $data): Repeater => $field
+                    ->required(in_array('authorization_code', $this->clientValues($data, $client)['grant_types'], true)))
                 ->message('required', __('admin.clients.validation.redirect-uri-required')),
-            'post_logout_redirect_uris' => Textarea::make('post_logout_redirect_uris', __('admin.clients.fields.post-logout-redirect-uris.label'))
-                ->value(implode("\n", $client->post_logout_redirect_uris ?? []), editable: true)->rows(2)
-                ->helperText(__('admin.clients.fields.post-logout-redirect-uris.help-text'))
-                ->rules(['nullable', 'string', 'max:20000', new AbsoluteUris]),
+            'post_logout_redirect_uris' => $this->uriRepeater('post_logout_redirect_uris', 'post-logout-redirect-uris', $client->post_logout_redirect_uris ?? []),
             'consent_required' => Toggle::make('consent_required', __('admin.clients.fields.consent-required.label'))
                 ->value($client->consent_required ?? true, editable: true)
                 ->helperText(__('admin.clients.fields.consent-required.help-text'))
@@ -101,8 +94,8 @@ trait BuildsClientFields
         return new ClientAttributes(
             name: $values['name'],
             tokenEndpointAuthMethod: TokenEndpointAuthMethod::from($values['token_endpoint_auth_method']),
-            redirectUris: $this->lines($values['redirect_uris']),
-            postLogoutRedirectUris: $this->lines($values['post_logout_redirect_uris']),
+            redirectUris: $values['redirect_uris'],
+            postLogoutRedirectUris: $values['post_logout_redirect_uris'],
             grantTypes: $values['grant_types'],
             consentRequired: $values['consent_required'],
             backchannelLogoutUri: $backchannelLogoutUri === '' ? null : $backchannelLogoutUri,
@@ -113,7 +106,7 @@ trait BuildsClientFields
      * A key the payload omits keeps the stored value; a key it carries as null
      * clears it.
      *
-     * @return array{name: string, token_endpoint_auth_method: string, grant_types: list<string>, redirect_uris: string, post_logout_redirect_uris: string, consent_required: bool, backchannel_logout_uri: string}
+     * @return array{name: string, token_endpoint_auth_method: string, grant_types: list<string>, redirect_uris: list<string>, post_logout_redirect_uris: list<string>, consent_required: bool, backchannel_logout_uri: string}
      */
     private function clientValues(FormData $data, ?Client $client): array
     {
@@ -121,8 +114,8 @@ trait BuildsClientFields
             'name' => $client->name ?? '',
             'token_endpoint_auth_method' => $client?->token_endpoint_auth_method->value ?? TokenEndpointAuthMethod::ClientSecretBasic->value,
             'grant_types' => $client->grant_types ?? [],
-            'redirect_uris' => implode("\n", $client->redirect_uris ?? []),
-            'post_logout_redirect_uris' => implode("\n", $client->post_logout_redirect_uris ?? []),
+            'redirect_uris' => $this->uriRows($client->redirect_uris ?? []),
+            'post_logout_redirect_uris' => $this->uriRows($client->post_logout_redirect_uris ?? []),
             'consent_required' => $client->consent_required ?? true,
             'backchannel_logout_uri' => $client->backchannel_logout_uri ?? '',
         ];
@@ -133,8 +126,8 @@ trait BuildsClientFields
             'name' => (string) $merged['name'],
             'token_endpoint_auth_method' => (string) $merged['token_endpoint_auth_method'],
             'grant_types' => array_values(array_filter((array) $merged['grant_types'], is_string(...))),
-            'redirect_uris' => (string) $merged['redirect_uris'],
-            'post_logout_redirect_uris' => (string) $merged['post_logout_redirect_uris'],
+            'redirect_uris' => $this->uris((array) $merged['redirect_uris']),
+            'post_logout_redirect_uris' => $this->uris((array) $merged['post_logout_redirect_uris']),
             'consent_required' => (bool) $merged['consent_required'],
             'backchannel_logout_uri' => (string) $merged['backchannel_logout_uri'],
         ];
@@ -156,13 +149,37 @@ trait BuildsClientFields
     }
 
     /**
+     * @param  array<int, string>  $uris
+     */
+    private function uriRepeater(string $name, string $translation, array $uris): Repeater
+    {
+        return Repeater::make($name, __('admin.clients.fields.'.$translation.'.label'))
+            ->value($this->uriRows($uris), editable: true)
+            ->defaultItems(0)
+            ->reorderable(false)
+            ->addLabel(__('admin.clients.fields.'.$translation.'.add'))
+            ->helperText(__('admin.clients.fields.'.$translation.'.help-text'))
+            ->schema([
+                TextInput::make('uri', 'URI')
+                    ->required()->rules(['string', 'max:2048', 'not_regex:/[\\r\\n]/', new AbsoluteUris]),
+            ]);
+    }
+
+    /**
+     * @param  array<int, string>  $uris
+     * @return list<array{uri: string}>
+     */
+    private function uriRows(array $uris): array
+    {
+        return array_map(fn (string $uri): array => ['uri' => $uri], array_values($uris));
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $rows
      * @return list<string>
      */
-    private function lines(string $value): array
+    private function uris(array $rows): array
     {
-        return array_values(array_unique(array_filter(
-            array_map(trim(...), preg_split('/\R/u', $value) ?: []),
-            fn (string $line): bool => $line !== '',
-        )));
+        return array_values(array_unique(AbsoluteUris::list(array_column($rows, 'uri'))));
     }
 }

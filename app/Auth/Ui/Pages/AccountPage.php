@@ -14,7 +14,6 @@ use App\Auth\Ui\Forms\PasswordForm;
 use App\Auth\Ui\Forms\TimezoneForm;
 use App\Auth\Ui\Tables\BrowserSessionsTable;
 use App\Shared\Concerns\ResolvesCurrentUser;
-use App\Shared\Ui\Components\PageHeader;
 use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
 use Bambamboole\LaravelOidc\Server\Authentication\PasswordConfirmation;
 use Bambamboole\LaravelOidc\Server\Credentials\FactorRegistry;
@@ -88,7 +87,16 @@ final class AccountPage extends Page
                 ->gap(Gap::Large)
                 ->width(Width::Medium)
                 ->schema([
-                    PageHeader::make(__('user.title'), __('user.profile.subtitle')),
+                    Stack::make('page-header')
+                        ->direction(Orientation::Horizontal)
+                        ->align(Align::Start)
+                        ->class('max-sm:flex-col max-sm:items-stretch')
+                        ->schema([
+                            Stack::make('page-header-copy')->width(Width::Fill)->gap(Gap::Small)->schema([
+                                Heading::make(__('user.title'), 1),
+                                Text::make(__('user.profile.subtitle')),
+                            ]),
+                        ]),
                     $this->profileCard($user),
                     $this->preferencesCard($user, $this->currentAppearance($request)),
                     $this->securityCard($securityUnlocked, $twoFactorEnabled),

@@ -6,14 +6,11 @@ namespace App\Auth\Ui\Pages;
 use App\Auth\Ui\Forms\CreateUserForm;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Card;
-use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
@@ -34,12 +31,17 @@ final class CreateUserPage extends AdminPage
         ));
 
         return $schema->schema([
-            Stack::make('admin-create-user-page')->gap(Gap::Large)->width(Width::Medium)->schema([
-                PageHeader::make(__('admin.users.create.heading'), __('admin.users.create.description', ['realm' => $realm->name])),
-                Card::make(__('admin.users.detail.profile.heading'))->schema([
-                    Form::use(CreateUserForm::class),
-                ]),
-            ]),
+            $this->stack(
+                key: 'admin-create-user-page',
+                heading: __('admin.users.create.heading'),
+                description: __('admin.users.create.description', ['realm' => $realm->name]),
+                schema: [
+                    Card::make(__('admin.users.detail.profile.heading'))->schema([
+                        Form::use(CreateUserForm::class),
+                    ]),
+                ],
+                width: Width::Medium,
+            ),
         ]);
     }
 }

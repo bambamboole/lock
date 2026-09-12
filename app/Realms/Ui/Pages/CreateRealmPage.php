@@ -5,13 +5,11 @@ namespace App\Realms\Ui\Pages;
 
 use App\Realms\Ui\Forms\CreateRealmForm;
 use App\Shared\Authorization\Enums\Scope;
-use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
+use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Card;
-use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
@@ -25,13 +23,23 @@ final class CreateRealmPage extends AdminPage
 
     public function render(PageSchema $schema): PageSchema
     {
+        $schema->breadcrumbs([
+            Breadcrumb::make(__('navigation.realms'), route('admin.realms', [], false)),
+            Breadcrumb::make(__('admin.realms.create.heading'), route('admin.realms.create', [], false)),
+        ]);
+
         return $schema->schema([
-            Stack::make('admin-create-realm-page')->gap(Gap::Large)->width(Width::Medium)->schema([
-                PageHeader::make(__('admin.realms.create.heading'), __('admin.realms.create.description')),
-                Card::make(__('admin.realms.sections.general'))->schema([
-                    Form::use(CreateRealmForm::class),
-                ]),
-            ]),
+            $this->stack(
+                key: 'admin-create-realm-page',
+                heading: __('admin.realms.create.heading'),
+                description: __('admin.realms.create.description'),
+                schema: [
+                    Card::make(__('admin.realms.sections.general'))->schema([
+                        Form::use(CreateRealmForm::class),
+                    ]),
+                ],
+                width: Width::Medium,
+            ),
         ]);
     }
 }
