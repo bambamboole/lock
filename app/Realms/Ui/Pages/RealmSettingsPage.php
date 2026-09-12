@@ -7,11 +7,13 @@ namespace App\Realms\Ui\Pages;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Actions\CheckRealmDomainAction;
+use App\Realms\Ui\Actions\CreateSocialProviderAction;
 use App\Realms\Ui\Concerns\BuildsRealmSettingRows;
 use App\Realms\Ui\Concerns\OpensRealmDeletion;
 use App\Realms\Ui\Concerns\PresentsRealmDomainStatus;
 use App\Realms\Ui\Forms\UpdateRealmDomainForm;
 use App\Realms\Ui\Forms\UpdateRealmForm;
+use App\Realms\Ui\Tables\SocialProvidersTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\ActionBar;
@@ -21,6 +23,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Form\Components\Form;
+use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Badge;
 use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\DescriptionList;
@@ -83,12 +86,23 @@ final class RealmSettingsPage extends AdminPage
     private function sectionTab(Realm $realm, RealmSettingSection $section, bool $manages): Tab
     {
         return Tab::make($section->value, __('admin.realms.sections.'.$section->value))
-            ->visible($manages)
+            ->visible($manages || $section === RealmSettingSection::Social)
             ->schema([
-                Card::make(__('admin.realms.sections.'.$section->value))->schema([
-                    $this->settingRows($realm, $section, $manages),
-                ]),
+                ...($section === RealmSettingSection::Social ? [$this->socialProvidersCard($manages)] : []),
+                Card::make($section === RealmSettingSection::Social
+                    ? __('admin.social-providers.linking.heading')
+                    : __('admin.realms.sections.'.$section->value))->schema([
+                        $this->settingRows($realm, $section, $manages),
+                    ]),
             ]);
+    }
+
+    private function socialProvidersCard(bool $manages): Card
+    {
+        return Card::make(__('admin.social-providers.heading'), __('admin.social-providers.description'))->schema([
+            ...($manages ? ActionBar::make(primary: [Action::use(CreateSocialProviderAction::class)], key: 'admin-social-providers') : []),
+            Table::use(SocialProvidersTable::class),
+        ]);
     }
 
     private function generalCard(Realm $realm, bool $manages): Card

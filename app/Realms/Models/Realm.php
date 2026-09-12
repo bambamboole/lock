@@ -53,6 +53,7 @@ use LogicException;
  * @property CarbonImmutable|null $updated_at
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
+ * @property-read Collection<int, RealmSocialProvider> $socialProviders
  * @property-read Collection<int, Role> $roles
  * @property-read int|null $roles_count
  * @property-read Collection<int, \App\Resources\Models\Resource> $realmResources
@@ -314,9 +315,21 @@ final class Realm extends Model implements RealmContract
         );
     }
 
+    /** @return HasMany<RealmSocialProvider, $this> */
+    public function socialProviders(): HasMany
+    {
+        return $this->hasMany(RealmSocialProvider::class);
+    }
+
     public function brokering(): BrokeringSettings
     {
-        return BrokeringSettings::fromConfig();
+        return new BrokeringSettings(
+            providers: $this->socialProviders()->where('enabled', true)->get()
+                ->mapWithKeys(fn (RealmSocialProvider $provider): array => [$provider->key => $provider->brokeringConfig()])
+                ->all(),
+            linkByVerifiedEmail: $this->settings->linkByVerifiedEmail,
+            autoProvision: $this->settings->autoProvision,
+        );
     }
 
     public function resources(): ResourceSettings

@@ -13,4 +13,7 @@ enum RealmAdminEvent: string implements AdminEventType
     case RealmCreated = 'realm.created';
     case RealmUpdated = 'realm.updated';
     case RealmDeleted = 'realm.deleted';
+    case SocialProviderCreated = 'realm.social-provider-created';
+    case SocialProviderUpdated = 'realm.social-provider-updated';
+    case SocialProviderDeleted = 'realm.social-provider-deleted';
 }

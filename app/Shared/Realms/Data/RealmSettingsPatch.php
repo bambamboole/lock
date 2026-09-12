@@ -49,6 +49,10 @@ final class RealmSettingsPatch extends ApiData
         public Optional|array $loginMethods,
         #[SpecProperty('Whether an unverified address blocks sign-in.')]
         public Optional|bool $emailVerificationRequired,
+        #[SpecProperty('Link an upstream identity to a local user with the same verified email address.')]
+        public Optional|bool $linkByVerifiedEmail,
+        #[SpecProperty('Create a realm user on their first verified upstream sign-in.')]
+        public Optional|bool $autoProvision,
         #[SpecProperty('When a second factor is demanded: `never`, `if_enrolled`, `always`.')]
         public Optional|string $mfaRequirement,
         #[SpecProperty('The second factors on offer: `totp`, `webauthn`.')]

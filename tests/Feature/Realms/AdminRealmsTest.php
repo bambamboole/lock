@@ -34,14 +34,14 @@ test('a realm user reaches neither the realms list nor a realm', function () {
     $this->get("/admin/realms/{$realm->slug}/settings")->assertForbidden();
 });
 
-test('only realms-manage admins see the editing tabs', function () {
+test('realm readers can inspect providers while editing tabs require write access', function () {
     $realm = Realm::factory()->create();
 
     $support = $this->actingAs(globalAdmin(ManagementRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 
-    expect(renderedTabKeys($support))->toBe(['general'])
-        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'login', 'tokens', 'sessions', 'mfa', 'passwords', 'clients']);
+    expect(renderedTabKeys($support))->toBe(['general', 'social'])
+        ->and(renderedTabKeys($superAdmin))->toBe(['general', 'login', 'social', 'tokens', 'sessions', 'mfa', 'passwords', 'clients']);
 });
 
 test('only a realms-manage admin can delete a realm, and never the admin realm', function () {
