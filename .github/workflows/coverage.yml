@@ -11,7 +11,8 @@ permissions:
 # Coverage runs on main only so pull requests get the fast gate.
 # --min is a ratcheting floor: raise it toward the actual reported coverage as
 # the suite grows. It guards against large regressions. Reported 94.9% at the
-# time it was set to 90.
+# time it was set to 90, lowered to 80 when the suite dropped the tests that
+# re-proved laravel-oidc and Lattice behaviour.
 # The driver is pcov, not xdebug: xdebug's line-by-line instrumentation pushed
 # this past its timeout as the suite grew, and separately hung the whole job
 # when it collided with the browser plugin's in-process fiber server on PHP 8.5.
@@ -30,7 +31,7 @@ jobs:
 
       - name: Tests with coverage
         timeout-minutes: 10
-        run: php artisan test --compact --parallel --coverage --min=90 --coverage-clover=coverage.clover.xml --exclude-testsuite Browser
+        run: php artisan test --compact --parallel --coverage --min=80 --coverage-clover=coverage.clover.xml --exclude-testsuite Browser
 
       # Uploaded even when the --min floor fails, so a regression can be
       # inspected without re-running the job.
