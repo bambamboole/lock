@@ -12,6 +12,12 @@ final readonly class ClientAttributes
     /** @var list<string> */
     public array $grantTypes;
 
+    /** @var list<string> */
+    public array $redirectUris;
+
+    /** @var list<string> */
+    public array $postLogoutRedirectUris;
+
     /**
      * @param  list<string>  $redirectUris
      * @param  list<string>  $postLogoutRedirectUris
@@ -20,13 +26,27 @@ final readonly class ClientAttributes
     public function __construct(
         public string $name,
         public TokenEndpointAuthMethod $tokenEndpointAuthMethod,
-        public array $redirectUris,
-        public array $postLogoutRedirectUris,
+        array $redirectUris,
+        array $postLogoutRedirectUris,
         array $grantTypes,
         public bool $consentRequired = true,
         public ?string $backchannelLogoutUri = null,
     ) {
         $this->grantTypes = array_values(array_intersect(self::GRANT_TYPES, $grantTypes));
+        $this->redirectUris = self::uris($redirectUris);
+        $this->postLogoutRedirectUris = self::uris($postLogoutRedirectUris);
+    }
+
+    /**
+     * @param  list<string>  $uris
+     * @return list<string>
+     */
+    private static function uris(array $uris): array
+    {
+        return array_values(array_unique(array_filter(
+            array_map(trim(...), $uris),
+            fn (string $uri): bool => $uri !== '',
+        )));
     }
 
     public function confidential(): bool
