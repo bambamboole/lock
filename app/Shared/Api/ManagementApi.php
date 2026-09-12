@@ -4,14 +4,14 @@ declare(strict_types=1);
 namespace App\Shared\Api;
 
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Console\Enums\BootstrapOutcome;
-use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
+use App\Shared\Roles\Enums\RoleAuditEvent;
 use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Illuminate\Support\Facades\DB;
 
@@ -80,7 +80,7 @@ final readonly class ManagementApi
             $changed = false;
 
             foreach (ManagementRoles::grants() as $name => $granted) {
-                $role = $realm->realmRoles()->firstOrNew(['name' => $name]);
+                $role = $realm->roles()->firstOrNew(['name' => $name]);
                 $isNew = ! $role->exists;
                 $role->save();
 
@@ -91,7 +91,7 @@ final readonly class ManagementApi
 
                 if ($isNew || $touched) {
                     Audit::record(
-                        $isNew ? RealmAuditEvent::RoleCreated : RealmAuditEvent::RoleUpdated,
+                        $isNew ? RoleAuditEvent::RoleCreated : RoleAuditEvent::RoleUpdated,
                         $role,
                         $realm,
                         [...$this->context($realm), 'role' => $name],
@@ -121,7 +121,7 @@ final readonly class ManagementApi
         return $this->owns($scope->resource);
     }
 
-    public function ownsRole(RealmRole $role): bool
+    public function ownsRole(Role $role): bool
     {
         return $role->realm->isMaster() && in_array($role->name, ManagementRoles::names(), true);
     }

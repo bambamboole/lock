@@ -14,7 +14,7 @@ use Lattice\Core\Discovery\DiscoveryManifest;
 it('runs every deploy step and leaves the app state primed', function () {
     Realm::factory()->create(['slug' => 'partners']);
     SigningKey::query()->delete();
-    Realm::master()->realmRoles()->delete();
+    Realm::master()->roles()->delete();
     config([
         'lock.console_client' => ['id' => 'lock-console', 'secret' => 'console-secret'],
         'lock.admin' => ['email' => 'root@lock.test', 'name' => 'Root', 'password' => 'CorrectHorse42'],
@@ -25,7 +25,7 @@ it('runs every deploy step and leaves the app state primed', function () {
 
         expect(SigningKey::query()->whereNull('retired_at')->pluck('realm_id')->all())
             ->toEqualCanonicalizing(['admin', 'partners'])
-            ->and(Realm::master()->realmRoles()->pluck('name')->all())
+            ->and(Realm::master()->roles()->pluck('name')->all())
             ->toEqualCanonicalizing(ManagementRoles::names())
             ->and(Client::query()->where('client_id', 'lock-console')->exists())->toBeTrue()
             ->and(Realm::master()->users()->where('email', 'root@lock.test')->exists())->toBeTrue()

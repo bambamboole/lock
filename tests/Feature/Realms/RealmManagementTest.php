@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Realms\Ui\Forms\CreateRealmForm;
 use App\Realms\Ui\Forms\DeleteRealmForm;
 use App\Realms\Ui\Forms\RealmSettingForm;
 use App\Realms\Ui\Forms\UpdateRealmForm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Roles\Models\Role;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
@@ -202,9 +202,9 @@ it('only trusts active clients belonging to the configured realm', function () {
 it('deletes a realm with its users, clients, sessions, roles and resources and frees the identifier', function () {
     $realm = Realm::factory()->create(['name' => 'Partners', 'slug' => 'partners']);
     $user = User::factory()->for($realm)->create();
-    $role = RealmRole::factory()->for($realm)->create(['name' => 'member']);
-    $user->realmRoles()->attach($role);
-    $keptRole = RealmRole::factory()->for(Realm::master())->create(['name' => 'elsewhere']);
+    $role = Role::factory()->for($realm)->create(['name' => 'member']);
+    $user->roles()->attach($role);
+    $keptRole = Role::factory()->for(Realm::master())->create(['name' => 'elsewhere']);
     $resource = Resource::factory()->for($realm)->create();
     $scope = ResourceScope::factory()->for($resource)->create();
     $client = realmClient($realm, 'Partner app');
@@ -219,9 +219,9 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
         ->and(Client::query()->whereKey($client->id)->exists())->toBeFalse()
         ->and(Client::query()->whereKey($masterClient->id)->exists())->toBeTrue()
         ->and(OidcSession::query()->where('realm_id', 'partners')->exists())->toBeFalse()
-        ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeFalse()
-        ->and(DB::table('realm_role_user')->where('realm_role_id', $role->id)->exists())->toBeFalse()
-        ->and(RealmRole::query()->whereKey($keptRole->id)->exists())->toBeTrue()
+        ->and(Role::query()->whereKey($role->id)->exists())->toBeFalse()
+        ->and(DB::table('role_user')->where('role_id', $role->id)->exists())->toBeFalse()
+        ->and(Role::query()->whereKey($keptRole->id)->exists())->toBeTrue()
         ->and(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
         ->and(ResourceScope::query()->whereKey($scope->id)->exists())->toBeFalse()
         ->and(Activity::global()->where('event', RealmAuditEvent::RealmDeleted->eventName())->sole()->getProperty('slug'))->toBe('partners');

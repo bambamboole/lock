@@ -1,11 +1,11 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Auth\Models\User;
 use App\Auth\Ui\Actions\ResendUserVerification;
 use App\Auth\Ui\Actions\SendUserPasswordReset;
 use App\Realms\Models\Realm;
+use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
@@ -20,9 +20,9 @@ use function Tests\Helpers\globalAdminWith;
 test('a roles-write admin grants a master realm role, and the console opens for its holder', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdmin = Realm::master()->realmRoles()->where('name', ManagementRoles::SUPER_ADMIN)->sole();
+    $superAdmin = Realm::master()->roles()->where('name', ManagementRoles::SUPER_ADMIN)->sole();
 
-    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
+    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
         'role_ids' => [$superAdmin->id],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
@@ -33,7 +33,7 @@ test('clearing a user\'s roles revokes their console access', function () {
     $admin = globalAdmin();
     $target = globalAdmin();
 
-    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
+    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
@@ -43,7 +43,7 @@ test('clearing a user\'s roles revokes their console access', function () {
 test('an admin cannot change their own roles', function () {
     $admin = globalAdmin();
 
-    $this->actingAs($admin)->callDeniedAction(UpdateUserRealmRoles::class, [
+    $this->actingAs($admin)->callDeniedAction(UpdateUserRoles::class, [
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
 });
@@ -52,7 +52,7 @@ test('support cannot manage roles', function () {
     $support = globalAdmin(ManagementRoles::SUPPORT);
     $target = User::factory()->for(Realm::master())->create();
 
-    $this->actingAs($support)->callDeniedAction(UpdateUserRealmRoles::class, [
+    $this->actingAs($support)->callDeniedAction(UpdateUserRoles::class, [
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertForbidden();
 });

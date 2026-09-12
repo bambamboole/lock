@@ -6,8 +6,8 @@ namespace Tests\Helpers;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Resources\Models\ResourceScope;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Api\ManagementRoles;
@@ -23,7 +23,7 @@ function globalAdmin(string $roleName = ManagementRoles::SUPER_ADMIN): User
 
 function grantGlobalRole(User $user, string $name): void
 {
-    $user->realmRoles()->attach(Realm::master()->realmRoles()->where('name', $name)->sole());
+    $user->roles()->attach(Realm::master()->roles()->where('name', $name)->sole());
 }
 
 /**
@@ -33,10 +33,10 @@ function globalAdminWith(ApiScope ...$scopes): User
 {
     $realm = Realm::master();
     $admin = User::factory()->for($realm)->create();
-    $role = RealmRole::factory()->for($realm)->create();
+    $role = Role::factory()->for($realm)->create();
 
     $role->scopes()->sync(managementScopeIds(...$scopes));
-    $admin->realmRoles()->attach($role);
+    $admin->roles()->attach($role);
 
     return $admin;
 }
@@ -58,7 +58,7 @@ function managementScopeIds(ApiScope ...$scopes): array
 /**
  * @return list<string>
  */
-function scopeValuesOf(RealmRole $role): array
+function scopeValuesOf(Role $role): array
 {
     return array_values($role->scopes()->pluck('value')->map(fn (mixed $value): string => (string) $value)->sort()->values()->all());
 }

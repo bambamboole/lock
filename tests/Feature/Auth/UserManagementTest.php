@@ -15,7 +15,7 @@ use App\Auth\Ui\Forms\UpdateUserVerificationForm;
 use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Auth\Enums\UserAuditEvent;
@@ -259,8 +259,8 @@ test('resetting MFA is forbidden without users-manage', function () {
 test('deleting a user tells relying parties, then removes the user with what was issued to them', function () {
     Bus::fake([SendBackChannelLogout::class]);
     $target = User::factory()->for($this->realm)->create();
-    $role = RealmRole::factory()->for($this->realm)->create();
-    $target->realmRoles()->attach($role);
+    $role = Role::factory()->for($this->realm)->create();
+    $target->roles()->attach($role);
     createPasskey($target);
     $client = backChannelClientFor($this->realm);
     activeSessionFor($target, $client);
@@ -271,8 +271,8 @@ test('deleting a user tells relying parties, then removes the user with what was
     expect(User::query()->whereKey($target->id)->exists())->toBeFalse()
         ->and(AccessToken::query()->where('user_id', $target->id)->exists())->toBeFalse()
         ->and(DB::table('passkeys')->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(DB::table('realm_role_user')->where('user_id', $target->id)->exists())->toBeFalse()
-        ->and(RealmRole::query()->whereKey($role->id)->exists())->toBeTrue()
+        ->and(DB::table('role_user')->where('user_id', $target->id)->exists())->toBeFalse()
+        ->and(Role::query()->whereKey($role->id)->exists())->toBeTrue()
         ->and(Activity::global()->where('event', UserAuditEvent::UserDeleted->eventName())->sole()->getProperty('email'))->toBe($target->email);
     Bus::assertDispatched(SendBackChannelLogout::class);
 });

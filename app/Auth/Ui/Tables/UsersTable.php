@@ -53,7 +53,7 @@ final class UsersTable extends EloquentTableDefinition
                 .' or exists (select 1 from passkeys where passkeys.user_id = users.id)) as mfa',
                 [new User()->getMorphClass()],
             )
-            ->withExists(['realmRoles as administrates' => fn (Builder $roles): Builder => $roles
+            ->withExists(['roles as administrates' => fn (Builder $roles): Builder => $roles
                 ->whereHas('scopes.resource', fn (Builder $resource): Builder => $resource->where('identifier', ManagementApi::RESOURCE))])
             ->withCasts(['email_verified' => 'boolean', 'blocked' => 'boolean', 'mfa' => 'boolean']);
 

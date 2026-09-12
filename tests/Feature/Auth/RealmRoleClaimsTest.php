@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
+use App\Roles\Models\Role;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentPrompt;
 use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentView;
@@ -30,9 +30,9 @@ beforeEach(function () {
 });
 
 it('carries the sorted realm roles in the id token, the access token and userinfo', function () {
-    $this->user->realmRoles()->attach(RealmRole::factory()->for(Realm::master())->create(['name' => 'member']));
-    $this->user->realmRoles()->attach(RealmRole::factory()->for(Realm::master())->create(['name' => 'admin']));
-    RealmRole::factory()->for(Realm::master())->create(['name' => 'unassigned']);
+    $this->user->roles()->attach(Role::factory()->for(Realm::master())->create(['name' => 'member']));
+    $this->user->roles()->attach(Role::factory()->for(Realm::master())->create(['name' => 'admin']));
+    Role::factory()->for(Realm::master())->create(['name' => 'unassigned']);
 
     $tokens = $this->authorizeAndApprove($this->user, $this->client, 'openid profile');
     $tokens->response->assertOk();
@@ -57,7 +57,7 @@ it('reflects a role change on the refreshed access token', function () {
     $tokens = $this->authorizeAndApprove($this->user, $this->client, 'openid');
     $tokens->response->assertOk();
 
-    $this->user->realmRoles()->attach(RealmRole::factory()->for(Realm::master())->create(['name' => 'admin']));
+    $this->user->roles()->attach(Role::factory()->for(Realm::master())->create(['name' => 'admin']));
 
     $refreshed = $this->post(route('oidc.token'), [
         'grant_type' => 'refresh_token',

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -142,7 +142,7 @@ function architectureSharedKernel(): array
     return [
         User::class,
         Realm::class,
-        RealmRole::class,
+        Role::class,
         Resource::class,
         ResourceScope::class,
     ];

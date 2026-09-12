@@ -23,7 +23,7 @@ final readonly class DeleteRealm implements DeletesRealm
     public function handle(Realm $realm): void
     {
         DB::transaction(function () use ($realm): void {
-            $realm->realmRoles()->delete();
+            $realm->roles()->delete();
             $realm->users()->each(function (User $user): void {
                 ($this->purgeUser)($user);
                 $user->delete();

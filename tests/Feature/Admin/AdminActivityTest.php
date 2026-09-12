@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
 use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Roles\Ui\Actions\UpdateUserRoles;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
@@ -19,7 +19,7 @@ test('a role update that changes nothing is not logged', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
 
-    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
+    $this->actingAs($admin)->callAction(UpdateUserRoles::class, [
         'role_ids' => [],
     ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 

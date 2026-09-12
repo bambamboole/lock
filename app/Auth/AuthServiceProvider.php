@@ -12,8 +12,8 @@ use App\Auth\Actions\ResetUserMfa;
 use App\Auth\Actions\ResetUserPassword;
 use App\Auth\Models\User;
 use App\Auth\Support\DatabaseRealmRepository;
-use App\Auth\Support\RealmRolesTokenClaim;
 use App\Auth\Support\RealmUserProvider;
+use App\Auth\Support\RolesTokenClaim;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
 use App\Auth\Ui\Pages\SetupTwoFactorPage;
@@ -82,6 +82,6 @@ final class AuthServiceProvider extends ServiceProvider
             }
         });
 
-        RealmRolesTokenClaim::register($this->app->make(AccessTokenPipeline::class));
+        RolesTokenClaim::register($this->app->make(AccessTokenPipeline::class));
     }
 }

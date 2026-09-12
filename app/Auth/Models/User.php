@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Auth\Models;
 
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
 use App\Resources\Models\ResourceScope;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
@@ -49,8 +49,8 @@ use Laravel\Passkeys\Passkey;
  * @property-read int|null $notifications_count
  * @property-read Collection<int, Passkey> $passkeys
  * @property-read int|null $passkeys_count
- * @property-read Collection<int, RealmRole> $realmRoles
- * @property-read int|null $realm_roles_count
+ * @property-read Collection<int, Role> $roles
+ * @property-read int|null $roles_count
  *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
@@ -84,21 +84,21 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     }
 
     /**
-     * @return BelongsToMany<RealmRole, $this>
+     * @return BelongsToMany<Role, $this>
      */
-    public function realmRoles(): BelongsToMany
+    public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(RealmRole::class, 'realm_role_user')->withTimestamps();
+        return $this->belongsToMany(Role::class, 'role_user')->withTimestamps();
     }
 
     /**
      * @return list<string>
      */
-    public function realmRoleNames(): array
+    public function roleNames(): array
     {
-        return array_values($this->realmRoles()
-            ->orderBy('realm_roles.name')
-            ->pluck('realm_roles.name')
+        return array_values($this->roles()
+            ->orderBy('roles.name')
+            ->pluck('roles.name')
             ->map(fn (mixed $name): string => (string) $name)
             ->all());
     }
@@ -145,7 +145,7 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
      *
      * Loaded rather than queried: a users table ran over three hundred queries
      * when every gate check re-read the pivot. `loadMissing` walks the whole
-     * chain, because `refresh()` restores `realmRoles` without its nested
+     * chain, because `refresh()` restores `roles` without its nested
      * relations. `refresh()` picks up a role change made after a check.
      *
      * @return SupportCollection<int, string>
@@ -156,10 +156,10 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
             return new SupportCollection;
         }
 
-        $this->loadMissing(['realmRoles.scopes.resource']);
+        $this->loadMissing(['roles.scopes.resource']);
 
-        return $this->realmRoles
-            ->flatMap(fn (RealmRole $role): array => $role->scopes->all())
+        return $this->roles
+            ->flatMap(fn (Role $role): array => $role->scopes->all())
             ->filter(fn (ResourceScope $scope): bool => $scope->resource->identifier === ManagementApi::RESOURCE)
             ->map(fn (ResourceScope $scope): string => $scope->value)
             ->unique()

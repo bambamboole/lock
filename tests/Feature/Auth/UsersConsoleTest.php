@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
-use App\Realms\Models\RealmRole;
+use App\Roles\Models\Role;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 
@@ -123,7 +123,7 @@ test('an admin cannot block or delete themselves from the users table', function
 
 test('the detail page shows the realm roles a user holds, contributed to its slot', function () {
     $user = User::factory()->for($this->realm)->create();
-    $user->realmRoles()->attach(RealmRole::factory()->for($this->realm)->create(['name' => 'member']));
+    $user->roles()->attach(Role::factory()->for($this->realm)->create(['name' => 'member']));
 
     $this->actingAs(globalAdmin())
         ->get("/admin/realms/acme/users/{$user->id}")

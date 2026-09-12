@@ -26,7 +26,7 @@ final class UserClaimsResolver implements ClaimsResolver
 
         return [
             ...$this->scopedClaims($user, $request),
-            RealmRolesTokenClaim::CLAIM => $user->realmRoleNames(),
+            RolesTokenClaim::CLAIM => $user->roleNames(),
         ];
     }
 

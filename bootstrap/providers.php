@@ -6,6 +6,7 @@ use App\Auth\AuthServiceProvider;
 use App\Clients\ClientsServiceProvider;
 use App\Realms\RealmsServiceProvider;
 use App\Resources\ResourcesServiceProvider;
+use App\Roles\RolesServiceProvider;
 use App\Shared\AppServiceProvider;
 
 return [
@@ -13,6 +14,7 @@ return [
     RealmsServiceProvider::class,
     ClientsServiceProvider::class,
     AuthServiceProvider::class,
+    RolesServiceProvider::class,
     ResourcesServiceProvider::class,
     AdminServiceProvider::class,
 ];

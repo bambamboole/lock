@@ -46,6 +46,12 @@ return [
         ],
     ],
     'events' => [
+        'role' => [
+            'created' => 'Role created',
+            'updated' => 'Role updated',
+            'deleted' => 'Role deleted',
+            'assignments-updated' => 'Roles assigned to a user',
+        ],
         'client' => [
             'created' => 'Client created',
             'updated' => 'Client updated',
@@ -58,14 +64,6 @@ return [
             'created' => 'Realm created',
             'updated' => 'Realm updated',
             'deleted' => 'Realm deleted',
-            'role' => [
-                'created' => 'Realm role created',
-                'updated' => 'Realm role updated',
-                'deleted' => 'Realm role deleted',
-            ],
-            'user' => [
-                'roles-updated' => 'Realm roles updated',
-            ],
         ],
         'resource' => [
             'created' => 'Resource created',

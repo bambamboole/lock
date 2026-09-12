@@ -16,7 +16,7 @@ requested RFC 8707 resource to laravel-oidc. The same scope value under two reso
 `ManagementApi` reconciles those rows on `app:bootstrap`, so adding a case reaches the database on the next deploy,
 and `App\Shared\Api\ManagementRoles` maps the protected `Super Admin`/`Support` roles to their cases.
 
-A role is a container for scope rows: `RealmRole::scopes()` over `realm_role_scope`, always scopes of the role's own
+A role is a container for scope rows: `App\Roles\Models\Role::scopes()` over `role_scope`, always scopes of the role's own
 realm. Because the management API's resource exists only on the master realm, a role outside it cannot reach the
 console, and there is no master-realm special case to write.
 

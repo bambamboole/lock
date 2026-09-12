@@ -17,14 +17,14 @@ final class GrantSuperAdmin
      */
     public function handle(User $user, string $actor): bool
     {
-        $role = $user->realm->realmRoles()->where('name', ManagementRoles::SUPER_ADMIN)->first()
+        $role = $user->realm->roles()->where('name', ManagementRoles::SUPER_ADMIN)->first()
             ?? throw new RuntimeException('The Super Admin role is not seeded. Run `php artisan app:bootstrap` first.');
 
-        if ($user->realmRoles()->where('realm_roles.id', $role->id)->exists()) {
+        if ($user->roles()->where('roles.id', $role->id)->exists()) {
             return false;
         }
 
-        $user->realmRoles()->syncWithoutDetaching([$role->id]);
+        $user->roles()->syncWithoutDetaching([$role->id]);
 
         Audit::record(
             AdminAuditEvent::SuperAdminGranted,

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Admin;
 
 use App\Admin\Actions\EnsureAdministrator;
-use App\Admin\Ui\Components\UserRealmRolesCard;
 use App\Auth\Models\User;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use App\Shared\Api\Enums\ApiScope;
@@ -13,7 +12,6 @@ use App\Shared\Auth\Support\RequestUser;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
-use Lattice\Ui\Components\Card;
 use Lattice\Ui\Components\MenuItem;
 use Lattice\Ui\Enums\Icon;
 
@@ -31,11 +29,6 @@ final class AdminServiceProvider extends ServiceProvider
 
             return $scope === null ? null : $user->hasManagementScope($scope);
         });
-
-        Lattice::extend(
-            'admin.users.detail.cards',
-            static fn (User $target): Card => UserRealmRolesCard::make($target),
-        );
 
         Lattice::extend('app.user-menu', static fn (): MenuItem => MenuItem::make(__('navigation.admin'))
             ->href(route('admin.realms', absolute: false))
