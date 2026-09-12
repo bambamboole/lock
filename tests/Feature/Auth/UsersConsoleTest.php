@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
+use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
+use App\Realms\Models\RealmRole;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 
@@ -20,13 +21,13 @@ beforeEach(function () {
 test('a users-manage admin can open the realm users page and load its table', function (string $roleName) {
     $this->actingAs(globalAdmin($roleName));
     $this->get('/admin/realms/acme/users')->assertOk();
-    $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
+    $this->loadTable(UsersTable::class, context: ['realm' => 'acme'])->assertOk();
 })->with([ManagementRoles::SUPER_ADMIN, ManagementRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
     $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
     $this->get('/admin/realms/acme/users')->assertForbidden();
-    $this->loadDeniedTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
+    $this->loadDeniedTable(UsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
 });
 
 test('the users table lists only the selected realm and searches name and email', function () {
@@ -35,7 +36,7 @@ test('the users table lists only the selected realm and searches name and email'
     User::factory()->for($this->realm)->create(['name' => 'Someone Else', 'email' => 'someone@example.com']);
     User::factory()->create(['name' => 'Needle Elsewhere']);
 
-    $rows = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, ['q' => 'needle'], ['realm' => 'acme'])->assertOk()->json('data');
+    $rows = $this->actingAs(globalAdmin())->loadTable(UsersTable::class, ['q' => 'needle'], ['realm' => 'acme'])->assertOk()->json('data');
 
     expect(collect(is_array($rows) ? $rows : [])->pluck('id')->all())
         ->toEqualCanonicalizing([$byName->id, $byEmail->id]);
@@ -55,7 +56,7 @@ test('a user holding a management scope is flagged as admin in the table', funct
     $admin = globalAdmin(ManagementRoles::SUPER_ADMIN);
     grantGlobalRole($admin, ManagementRoles::SUPPORT);
 
-    $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
+    $rows = $this->actingAs($admin)->loadTable(UsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
 
     $row = collect(is_array($rows) ? $rows : [])->firstWhere('id', $admin->id);
 
@@ -87,7 +88,7 @@ test('the user detail page offers its actions in the header, led by the two an o
 test('a user row opens the detail page and carries the same actions as it', function () {
     $target = User::factory()->for($this->realm)->create();
 
-    $row = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->row($target->id);
+    $row = $this->actingAs(globalAdmin())->loadTable(UsersTable::class, context: ['realm' => 'acme'])->assertOk()->row($target->id);
 
     expect($row->clickHref())->toBe("/admin/realms/acme/users/{$target->id}")
         ->and($row->actionIds())->toBe([
@@ -102,7 +103,7 @@ test('a user row menu follows the state of its own user', function () {
     $blocked = User::factory()->for($this->realm)->create(['blocked_at' => now()]);
     $unverified = User::factory()->for($this->realm)->unverified()->create();
 
-    $table = $this->actingAs(globalAdmin())->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
+    $table = $this->actingAs(globalAdmin())->loadTable(UsersTable::class, context: ['realm' => 'acme'])->assertOk();
 
     expect($table->row($blocked->id)->actionIds())
         ->toBe(['admin.users.unblock', 'admin.users.sessions.end-all', 'admin.users.delete'])
@@ -113,9 +114,20 @@ test('a user row menu follows the state of its own user', function () {
 test('an admin cannot block or delete themselves from the users table', function () {
     $admin = globalAdmin();
 
-    $row = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->row($admin->id);
+    $row = $this->actingAs($admin)->loadTable(UsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->row($admin->id);
 
     expect($row->actionIds())
         ->not->toContain('admin.users.block')
         ->not->toContain('admin.users.delete');
+});
+
+test('the detail page shows the realm roles a user holds, contributed to its slot', function () {
+    $user = User::factory()->for($this->realm)->create();
+    $user->realmRoles()->attach(RealmRole::factory()->for($this->realm)->create(['name' => 'member']));
+
+    $this->actingAs(globalAdmin())
+        ->get("/admin/realms/acme/users/{$user->id}")
+        ->assertOk()
+        ->assertSee(__('admin.users.detail.realm-roles.heading'))
+        ->assertSee('member');
 });

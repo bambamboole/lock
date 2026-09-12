@@ -1,11 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Actions;
+namespace App\Auth\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use Illuminate\Support\Facades\DB;
 
 final class UnblockUser
@@ -15,7 +15,7 @@ final class UnblockUser
         DB::transaction(function () use ($user): void {
             $user->forceFill(['blocked_at' => null])->save();
 
-            Audit::record(AdminAuditEvent::UserUnblocked, $user);
+            Audit::record(UserAuditEvent::UserUnblocked, $user);
         });
     }
 }

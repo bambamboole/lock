@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Forms;
+namespace App\Auth\Ui\Forms;
 
-use App\Admin\Actions\UpdateRealmUser;
+use App\Auth\Actions\UpdateRealmUser;
 use App\Auth\Models\User;
 use Lattice\Facades\Effects;
 use Lattice\Form\Components\Form as FormComponent;

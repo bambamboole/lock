@@ -1,12 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Actions;
+namespace App\Auth\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\EndsUserSessions;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,7 +22,7 @@ final readonly class BlockUser
         DB::transaction(function () use ($user): void {
             $user->forceFill(['blocked_at' => now()])->save();
 
-            Audit::record(AdminAuditEvent::UserBlocked, $user);
+            Audit::record(UserAuditEvent::UserBlocked, $user);
         });
 
         $this->endSessions->handle($user);

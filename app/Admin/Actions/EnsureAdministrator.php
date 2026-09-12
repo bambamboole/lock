@@ -3,11 +3,12 @@ declare(strict_types=1);
 
 namespace App\Admin\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
 use App\Shared\Audit\Audit;
+use App\Shared\Auth\Contracts\CreatesRealmUser;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,7 +20,7 @@ final readonly class EnsureAdministrator implements EnsuresAdministrator
     private const string Actor = 'console:app:bootstrap';
 
     public function __construct(
-        private CreateRealmUser $createUser,
+        private CreatesRealmUser $createUser,
         private GrantSuperAdmin $grantSuperAdmin,
     ) {}
 
@@ -73,7 +74,7 @@ final readonly class EnsureAdministrator implements EnsuresAdministrator
                 return BootstrapOutcome::Unchanged;
             }
 
-            Audit::record(AdminAuditEvent::UserUpdated, $user, properties: [
+            Audit::record(UserAuditEvent::UserUpdated, $user, properties: [
                 'actor' => self::Actor,
                 'email' => $user->email,
                 'changed' => $changes,

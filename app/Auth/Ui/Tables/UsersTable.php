@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Auth\Ui\Tables;
 
-use App\Admin\Ui\Actions\BlockUserAction;
-use App\Admin\Ui\Actions\DeleteUserAction;
-use App\Admin\Ui\Actions\EndAllUserSessionsAction;
-use App\Admin\Ui\Actions\ResendUserVerification;
-use App\Admin\Ui\Actions\ResetUserMfaAction;
-use App\Admin\Ui\Actions\SendUserPasswordReset;
-use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Auth\Models\User;
+use App\Auth\Ui\Actions\BlockUserAction;
+use App\Auth\Ui\Actions\DeleteUserAction;
+use App\Auth\Ui\Actions\EndAllUserSessionsAction;
+use App\Auth\Ui\Actions\ResendUserVerification;
+use App\Auth\Ui\Actions\ResetUserMfaAction;
+use App\Auth\Ui\Actions\SendUserPasswordReset;
+use App\Auth\Ui\Actions\UnblockUserAction;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
@@ -35,7 +35,7 @@ use Lattice\Ui\Enums\Size;
  * @extends EloquentTableDefinition<User>
  */
 #[AsTable('admin.users', can: ApiScope::UsersRead)]
-final class AdminUsersTable extends EloquentTableDefinition
+final class UsersTable extends EloquentTableDefinition
 {
     /**
      * @return Builder<User>

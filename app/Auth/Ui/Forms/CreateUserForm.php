@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Forms;
+namespace App\Auth\Ui\Forms;
 
-use App\Admin\Actions\CreateRealmUser;
+use App\Auth\Actions\CreateRealmUser;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;

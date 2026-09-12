@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Tables;
+namespace App\Auth\Ui\Tables;
 
-use App\Admin\Ui\Actions\EndUserSessionAction;
 use App\Auth\Models\User;
+use App\Auth\Ui\Actions\EndUserSessionAction;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;

@@ -2,21 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Auth\Ui\Pages;
 
-use App\Admin\Ui\Actions\BlockUserAction;
-use App\Admin\Ui\Actions\DeleteUserAction;
-use App\Admin\Ui\Actions\EndAllUserSessionsAction;
-use App\Admin\Ui\Actions\ResendUserVerification;
-use App\Admin\Ui\Actions\ResetUserMfaAction;
-use App\Admin\Ui\Actions\SendUserPasswordReset;
-use App\Admin\Ui\Actions\UnblockUserAction;
-use App\Admin\Ui\Actions\UpdateUserRealmRoles;
-use App\Admin\Ui\Forms\UpdateUserEmailForm;
-use App\Admin\Ui\Forms\UpdateUserNameForm;
-use App\Admin\Ui\Forms\UpdateUserVerificationForm;
-use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
+use App\Auth\Ui\Actions\BlockUserAction;
+use App\Auth\Ui\Actions\DeleteUserAction;
+use App\Auth\Ui\Actions\EndAllUserSessionsAction;
+use App\Auth\Ui\Actions\ResendUserVerification;
+use App\Auth\Ui\Actions\ResetUserMfaAction;
+use App\Auth\Ui\Actions\SendUserPasswordReset;
+use App\Auth\Ui\Actions\UnblockUserAction;
+use App\Auth\Ui\Forms\UpdateUserEmailForm;
+use App\Auth\Ui\Forms\UpdateUserNameForm;
+use App\Auth\Ui\Forms\UpdateUserVerificationForm;
+use App\Auth\Ui\Tables\UserSessionsTable;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
@@ -35,14 +34,12 @@ use Lattice\Ui\Components\DescriptionList;
 use Lattice\Ui\Components\Entries\BadgeEntry;
 use Lattice\Ui\Components\Entries\DateEntry;
 use Lattice\Ui\Components\Entries\TextEntry;
-use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Stack;
-use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\DateTimeStyle;
 use Lattice\Ui\Enums\Gap;
-use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
+use Lattice\Ui\Slot;
 
 #[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: ApiScope::UsersRead)]
 final class UserDetailPage extends AdminPage
@@ -69,7 +66,7 @@ final class UserDetailPage extends AdminPage
                         ...$this->headerActions($user),
                     ]),
                     $this->profileCard($user),
-                    $this->realmRolesCard($user),
+                    Slot::make('admin.users.detail.cards')->context(['target' => $user]),
                     $this->sessionsCard(),
                 ]),
         ]);
@@ -103,26 +100,6 @@ final class UserDetailPage extends AdminPage
                 DateEntry::make('created_at', __('admin.users.detail.created-at'), 'user-created-at')
                     ->value($user->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),
-            ]),
-        ]);
-    }
-
-    private function realmRolesCard(User $user): Card
-    {
-        $realm = $user->realm;
-        $names = $user->realmRoleNames();
-
-        return Card::make(__('admin.users.detail.realm-roles.heading'), __('admin.users.detail.realm-roles.subtitle'))->schema([
-            Stack::make()->gap(Gap::Medium)->schema([
-                Stack::make('user-realm-roles')
-                    ->direction(Orientation::Horizontal)
-                    ->gap(Gap::Small)
-                    ->schema($names === []
-                        ? [Text::make(__('admin.users.detail.realm-roles.none'))->color(ColorName::Muted)]
-                        : array_map(fn (string $name): Badge => Badge::make($name), $names)),
-                $realm->realmRoles()->exists()
-                    ? ActionBar::button(Action::use(UpdateUserRealmRoles::class))
-                    : Link::make(__('admin.users.detail.realm-roles.define'))->href(route('admin.realms.roles', ['realm' => $realm->slug], false)),
             ]),
         ]);
     }

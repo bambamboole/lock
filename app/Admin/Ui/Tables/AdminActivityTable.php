@@ -8,6 +8,7 @@ use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
@@ -33,7 +34,7 @@ final class AdminActivityTable extends ActivityTable
     {
         $options = [];
 
-        foreach (AdminAuditEvent::cases() as $event) {
+        foreach ([...AdminAuditEvent::cases(), ...UserAuditEvent::cases()] as $event) {
             $options[$event->value] = __($event->translationKey());
         }
 

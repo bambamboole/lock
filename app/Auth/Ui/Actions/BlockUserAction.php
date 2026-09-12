@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Auth\Ui\Actions;
 
-use App\Admin\Actions\BlockUser;
+use App\Auth\Actions\BlockUser;
 use App\Auth\Models\User;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Concerns\ResolvesCurrentUser;

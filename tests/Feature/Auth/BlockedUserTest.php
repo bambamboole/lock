@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Actions\BlockUser;
+use App\Auth\Actions\BlockUser;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;

@@ -1,18 +1,19 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Actions;
+namespace App\Auth\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
+use App\Shared\Auth\Contracts\CreatesRealmUser;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use SensitiveParameter;
 
-final readonly class CreateRealmUser
+final readonly class CreateRealmUser implements CreatesRealmUser
 {
     public function __construct(private SendPasswordResetLink $sendResetLink) {}
 
@@ -41,7 +42,7 @@ final readonly class CreateRealmUser
                 $user->forceFill(['email_verified_at' => now()])->save();
             }
 
-            Audit::record(AdminAuditEvent::UserCreated, $user, properties: [
+            Audit::record(UserAuditEvent::UserCreated, $user, properties: [
                 'email' => $user->email,
                 'realm' => $realm->slug,
                 'verified' => $verified,

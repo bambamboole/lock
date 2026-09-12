@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Auth\Ui\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -33,7 +33,7 @@ final class SendUserPasswordReset extends ActionDefinition
 
         $user->realm->runAsCurrent(fn (): string => ($this->sendResetLink)($user->email));
 
-        Audit::record(AdminAuditEvent::PasswordResetSent, $user);
+        Audit::record(UserAuditEvent::PasswordResetSent, $user);
 
         return ActionResult::success()
             ->toast(__('admin.users.detail.password-reset-sent'), Variant::Success);

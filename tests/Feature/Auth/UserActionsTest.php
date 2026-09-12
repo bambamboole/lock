@@ -1,15 +1,15 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Ui\Actions\ResendUserVerification;
-use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Auth\Models\User;
+use App\Auth\Ui\Actions\ResendUserVerification;
+use App\Auth\Ui\Actions\SendUserPasswordReset;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Support\Facades\Notification;
@@ -65,7 +65,7 @@ test('a users-manage admin can resend verification for an unverified user', func
     $this->actingAs($admin)->callAction(ResendUserVerification::class, [], ['user' => $target->id])->assertOk();
 
     Notification::assertSentTo($target, VerifyEmail::class);
-    expect(Activity::global()->sole()->event)->toBe(AdminAuditEvent::VerificationResent->eventName());
+    expect(Activity::global()->sole()->event)->toBe(UserAuditEvent::VerificationResent->eventName());
 });
 
 test('resending verification for an already-verified user is rejected', function () {
@@ -88,7 +88,7 @@ test('a users-manage admin can send a password reset', function () {
     $this->actingAs($admin)->callAction(SendUserPasswordReset::class, [], ['user' => $target->id])->assertOk();
 
     Notification::assertSentTo($target, ResetPassword::class);
-    expect(Activity::global()->sole()->event)->toBe(AdminAuditEvent::PasswordResetSent->eventName());
+    expect(Activity::global()->sole()->event)->toBe(UserAuditEvent::PasswordResetSent->eventName());
 });
 
 test('an admin without users-manage cannot resend verification', function () {

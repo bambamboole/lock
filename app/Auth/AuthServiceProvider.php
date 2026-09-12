@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Auth;
 
 use App\Auth\Actions\CreateNewUser;
+use App\Auth\Actions\CreateRealmUser;
 use App\Auth\Actions\DeleteUser;
 use App\Auth\Actions\EndUserSessions;
 use App\Auth\Actions\ResetUserMfa;
@@ -16,6 +17,7 @@ use App\Auth\Support\RealmUserProvider;
 use App\Auth\Support\UserClaimsResolver;
 use App\Auth\Ui\Pages\DevLoginPage;
 use App\Auth\Ui\Pages\SetupTwoFactorPage;
+use App\Shared\Auth\Contracts\CreatesRealmUser;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
@@ -46,6 +48,7 @@ final class AuthServiceProvider extends ServiceProvider
         $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
         $this->app->bind(CreateUser::class, CreateNewUser::class);
         $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
+        $this->app->bind(CreatesRealmUser::class, CreateRealmUser::class);
         $this->app->bind(DeletesUser::class, DeleteUser::class);
         $this->app->bind(EndsUserSessions::class, EndUserSessions::class);
         $this->app->bind(ResetsUserMfa::class, ResetUserMfa::class);

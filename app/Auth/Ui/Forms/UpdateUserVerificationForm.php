@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Forms;
+namespace App\Auth\Ui\Forms;
 
 use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Http\Request;

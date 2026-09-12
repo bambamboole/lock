@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Auth\Ui\Pages;
 
-use App\Admin\Ui\Tables\AdminUsersTable;
+use App\Auth\Ui\Tables\UsersTable;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
@@ -42,7 +42,7 @@ final class RealmUsersPage extends AdminPage
                         Button::make(__('admin.users.create.submit'))
                             ->effects(Effects::redirect(route('admin.realms.users.create', ['realm' => $realm->slug], false))),
                     ])),
-                    Table::use(AdminUsersTable::class),
+                    Table::use(UsersTable::class),
                 ]),
         ]);
     }

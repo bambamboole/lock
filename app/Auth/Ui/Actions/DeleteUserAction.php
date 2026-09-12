@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Actions;
+namespace App\Auth\Ui\Actions;
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\DeletesUser;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -45,7 +45,7 @@ final class DeleteUserAction extends ActionDefinition
         $user = $this->contextModel('user', User::class);
         $realm = $user->realm;
 
-        Audit::record(AdminAuditEvent::UserDeleted, $user, properties: [
+        Audit::record(UserAuditEvent::UserDeleted, $user, properties: [
             'name' => $user->name,
             'email' => $user->email,
             'realm' => $realm->slug,

@@ -78,22 +78,19 @@ return [
             ],
         ],
         'admin' => [
-            'roles' => [
-                'updated' => 'Global roles updated',
-                'granted' => 'Super Admin granted',
-            ],
+            'roles' => ['granted' => 'Super Admin granted'],
+        ],
+        'user' => [
+            'created' => 'User created',
+            'updated' => 'User updated',
+            'blocked' => 'User blocked',
+            'unblocked' => 'User unblocked',
+            'deleted' => 'User deleted',
+            'mfa-reset' => 'Multi-factor authentication reset',
+            'session-ended' => 'Session ended',
+            'sessions-ended' => 'All sessions ended',
             'password-reset' => ['sent' => 'Password reset sent'],
             'verification' => ['resent' => 'Verification email resent'],
-            'user' => [
-                'created' => 'User created',
-                'updated' => 'User updated',
-                'blocked' => 'User blocked',
-                'unblocked' => 'User unblocked',
-                'deleted' => 'User deleted',
-                'mfa-reset' => 'Multi-factor authentication reset',
-                'session-ended' => 'Session ended',
-                'sessions-ended' => 'All sessions ended',
-            ],
         ],
     ],
 ];

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Ui\Tables\RealmActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
+use App\Shared\Auth\Enums\UserAuditEvent;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 
 use function Tests\Helpers\globalAdmin;
@@ -22,7 +22,7 @@ beforeEach(function () {
 test('the realm activity table lists only that realm and leaves the instance trail out', function () {
     Audit::record(RealmAuditEvent::RealmUpdated, $this->realm, $this->realm);
     Audit::record(RealmAuditEvent::RealmUpdated, $this->other, $this->other);
-    Audit::record(AdminAuditEvent::UserBlocked, User::factory()->for($this->realm)->create());
+    Audit::record(UserAuditEvent::UserBlocked, User::factory()->for($this->realm)->create());
 
     $this->actingAs(globalAdmin());
     $this->get('/admin/realms/acme/activity')->assertOk();

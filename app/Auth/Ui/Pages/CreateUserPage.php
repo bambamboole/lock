@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-namespace App\Admin\Ui\Pages;
+namespace App\Auth\Ui\Pages;
 
-use App\Admin\Ui\Forms\CreateUserForm;
+use App\Auth\Ui\Forms\CreateUserForm;
 use App\Realms\Models\Realm;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\PageHeader;
