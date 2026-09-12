@@ -6,6 +6,7 @@ namespace App\Shared;
 use App\Realms\Models\Realm;
 use App\Shared\Settings\SettingsRegistry;
 use Carbon\CarbonImmutable;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\DevCommands;
@@ -21,6 +22,9 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->singleton(SettingsRegistry::class);
 
         $this->configureOidc();
+        // The reference the console renders is the only one; Scramble's own
+        // `docs/api` pages would be a second, unstyled copy of it.
+        Scramble::ignoreDefaultRoutes();
     }
 
     /**
