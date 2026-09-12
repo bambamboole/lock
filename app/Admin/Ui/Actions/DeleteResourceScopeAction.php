@@ -37,7 +37,7 @@ final class DeleteResourceScopeAction extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        return $this->resourceScopeOrNull() instanceof ResourceScope;
+        return $this->mutableResourceScopeOrNull() instanceof ResourceScope;
     }
 
     public function handle(Request $request): ActionResult

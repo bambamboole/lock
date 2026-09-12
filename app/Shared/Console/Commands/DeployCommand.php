@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
  * Every step is idempotent and the migrations run isolated, so concurrently
  * booting instances do not race. Bytecode caches stay with the deploy platform.
  */
-#[Description('Run the deploy steps every release needs: migrations, data migrations, signing keys, permission sync, environment bootstrap, lattice discovery cache.')]
+#[Description('Run the deploy steps every release needs: migrations, data migrations, signing keys, permission sync, environment bootstrap, lattice discovery cache, OpenAPI document cache.')]
 #[Signature('app:deploy')]
 final class DeployCommand extends Command
 {
@@ -27,6 +27,7 @@ final class DeployCommand extends Command
             ['permission:sync', fn (): int => $this->call('permission:sync')],
             ['app:bootstrap', fn (): int => $this->call('app:bootstrap')],
             ['lattice:discover-cache', fn (): int => $this->call('lattice:discover-cache')],
+            ['scramble:cache', fn (): int => $this->call('scramble:cache')],
         ];
 
         foreach ($steps as [$label, $step]) {

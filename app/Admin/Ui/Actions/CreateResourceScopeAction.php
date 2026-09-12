@@ -35,7 +35,7 @@ final class CreateResourceScopeAction extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        return $this->resourceOrNull() instanceof Resource;
+        return $this->mutableResourceOrNull() instanceof Resource;
     }
 
     public function handle(FormData $data): ActionResult
