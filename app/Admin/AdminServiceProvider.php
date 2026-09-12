@@ -31,7 +31,7 @@ final class AdminServiceProvider extends ServiceProvider
                 ->label(__('navigation.api'))
                 ->prefix(Icon::CodeXml)
                 ->can(Scope::RealmsRead),
-            priority: 20,
+            priority: 30,
         );
 
         Gate::before(function (User $user, string $ability): ?bool {

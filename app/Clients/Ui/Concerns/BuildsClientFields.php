@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Clients\Ui\Concerns;
 
 use App\Shared\Clients\Data\ClientAttributes;
+use App\Shared\Clients\Support\AbsoluteUris;
+use App\Shared\Clients\Support\ClientIsConsistent;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Closure;
@@ -62,18 +64,16 @@ trait BuildsClientFields
             'redirect_uris' => Textarea::make('redirect_uris', __('admin.clients.fields.redirect-uris.label'))
                 ->value(implode("\n", $client->redirect_uris ?? []), editable: true)->rows(3)
                 ->helperText(__('admin.clients.fields.redirect-uris.help-text'))
-                ->rules(['nullable', 'string', 'max:20000'])
+                ->rules(['nullable', 'string', 'max:20000', new AbsoluteUris])
                 ->rules(fn (FormData $data): array => [
                     Rule::requiredIf(fn (): bool => in_array('authorization_code', $this->clientValues($data, $client)['grant_types'], true)),
-                    $this->uriListRule(),
                     $this->clientConsistencyRule($data, $client),
                 ])
                 ->message('required', __('admin.clients.validation.redirect-uri-required')),
             'post_logout_redirect_uris' => Textarea::make('post_logout_redirect_uris', __('admin.clients.fields.post-logout-redirect-uris.label'))
                 ->value(implode("\n", $client->post_logout_redirect_uris ?? []), editable: true)->rows(2)
                 ->helperText(__('admin.clients.fields.post-logout-redirect-uris.help-text'))
-                ->rules(['nullable', 'string', 'max:20000'])
-                ->rules(fn (): array => [$this->uriListRule()]),
+                ->rules(['nullable', 'string', 'max:20000', new AbsoluteUris]),
             'consent_required' => Toggle::make('consent_required', __('admin.clients.fields.consent-required.label'))
                 ->value($client->consent_required ?? true, editable: true)
                 ->helperText(__('admin.clients.fields.consent-required.help-text'))
@@ -141,46 +141,17 @@ trait BuildsClientFields
     }
 
     /**
-     * A problem is reported on the field that owns it, or on the edited field
-     * when the owner is not part of the submission.
+     * The console edits one row at a time, so the rule judges the submission
+     * merged into the stored client while the submitted keys stay what decides
+     * which field a problem is reported on. Wrapped in a closure because the
+     * validator would otherwise hand it the raw submission through setData().
      */
     private function clientConsistencyRule(FormData $data, ?Client $client): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail) use ($data, $client): void {
-            $values = $this->clientValues($data, $client);
-            $grantTypes = $values['grant_types'];
-            $method = TokenEndpointAuthMethod::tryFrom($values['token_endpoint_auth_method']);
-
-            $report = function (string $owner, string $message) use ($attribute, $data, $fail): void {
-                if ($attribute === $owner || ! $data->has($owner)) {
-                    $fail($message);
-                }
-            };
-
-            if (in_array('refresh_token', $grantTypes, true) && ! in_array('authorization_code', $grantTypes, true)) {
-                $report('grant_types', __('admin.clients.validation.refresh-token-needs-code'));
-            }
-
-            if (in_array('client_credentials', $grantTypes, true) && $method instanceof TokenEndpointAuthMethod && ! $method->requiresSecret()) {
-                $report('grant_types', __('admin.clients.validation.client-credentials-needs-secret'));
-            }
-
-            if (in_array('authorization_code', $grantTypes, true) && $this->lines($values['redirect_uris']) === []) {
-                $report('redirect_uris', __('admin.clients.validation.redirect-uri-required'));
-            }
-        };
-    }
-
-    private function uriListRule(): Closure
-    {
-        return function (string $attribute, mixed $value, Closure $fail): void {
-            foreach ($this->lines((string) $value) as $uri) {
-                $parts = parse_url($uri);
-
-                if (! is_array($parts) || (string) ($parts['scheme'] ?? '') === '' || (string) ($parts['host'] ?? '') === '' || array_key_exists('fragment', $parts)) {
-                    $fail(__('admin.clients.validation.invalid-uri', ['uri' => $uri]));
-                }
-            }
+            new ClientIsConsistent(array_values($data->keys()))
+                ->setData($this->clientValues($data, $client))
+                ->validate($attribute, $value, $fail);
         };
     }
 

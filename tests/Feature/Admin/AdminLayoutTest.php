@@ -4,17 +4,44 @@ declare(strict_types=1);
 
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementRoles;
+use App\Shared\Authorization\Enums\Scope;
 use Lattice\Support\Testing\ComponentNode;
+use Pest\Expectation;
 
 use function Tests\Helpers\globalAdmin;
+use function Tests\Helpers\globalAdminWith;
 use function Tests\Helpers\latticeSchema;
 use function Tests\Helpers\menuItemHrefs;
 
-it('shows the instance areas while no realm is selected', function () {
+it('keeps the instance areas below the realm the sidebar is showing', function () {
     $response = $this->actingAs(globalAdmin())->get(route('admin.realms'))->assertOk();
+    $layout = latticeSchema($response, 'props.lattice.layout.schema');
 
-    expect(menuItemHrefs(latticeSchema($response, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
-        ->toBe(['/admin/realms', '/admin/api', '/admin/events']);
+    expect(menuItemHrefs($layout->firstOfTypeOrFail('menu', 'admin-sidebar-instance-menu')))
+        ->toBe(['/admin/realms', '/admin/events', '/admin/api']);
+});
+
+it('drops the instance areas an admin may not open', function () {
+    $response = $this->actingAs(globalAdminWith(Scope::UsersRead))->get(route('admin.realms.users', ['realm' => 'admin']))->assertOk();
+
+    expect(latticeSchema($response, 'props.lattice.layout.schema')->firstOfType('menu', 'admin-sidebar-instance-menu'))->toBeNull();
+});
+
+it('shows a realm console on the pages that name no realm, following the realm last opened', function () {
+    Realm::factory()->create(['name' => 'Acme', 'slug' => 'acme']);
+
+    $this->actingAs(globalAdmin());
+
+    $onMaster = $this->get(route('admin.api'))->assertOk();
+
+    expect(menuItemHrefs(latticeSchema($onMaster, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
+        ->each(fn (Expectation $href): Expectation => $href->toStartWith('/admin/realms/admin/'));
+
+    $this->get(route('admin.realms.users', ['realm' => 'acme']))->assertOk();
+    $onAcme = $this->get(route('admin.api'))->assertOk();
+
+    expect(menuItemHrefs(latticeSchema($onAcme, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
+        ->each(fn (Expectation $href): Expectation => $href->toStartWith('/admin/realms/acme/'));
 });
 
 it('turns the sidebar into the selected realm console, showing only what the admin may open', function (string $roleName, array $areas) {

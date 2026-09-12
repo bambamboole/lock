@@ -8,9 +8,11 @@ use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\UpdatesClient;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Clients\Enums\ClientAdminEvent;
+use App\Shared\Clients\Support\ClientIsConsistent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 final readonly class UpdateClient implements UpdatesClient
 {
@@ -18,6 +20,8 @@ final readonly class UpdateClient implements UpdatesClient
 
     public function handle(Client $client, ClientAttributes $attributes): void
     {
+        $this->guardConsistency($attributes);
+
         DB::transaction(function () use ($client, $attributes): void {
             $before = $client->only(array_keys($attributes->toArray()));
             $wasConfidential = $client->confidential();
@@ -50,5 +54,33 @@ final readonly class UpdateClient implements UpdatesClient
                 ]);
             }
         });
+    }
+
+    /**
+     * The same three constraints {@see ClientIsConsistent}
+     * states on the create payload. An update carries only the fields it
+     * changes, so the merged client is the first place the answers exist and a
+     * rule on the payload would be reading half of one.
+     */
+    private function guardConsistency(ClientAttributes $attributes): void
+    {
+        /** @var array<string, list<string>> $problems */
+        $problems = [];
+
+        if (in_array('refresh_token', $attributes->grantTypes, true) && ! $attributes->usesAuthorizationCode()) {
+            $problems['grant_types'][] = __('admin.clients.validation.refresh-token-needs-code');
+        }
+
+        if (in_array('client_credentials', $attributes->grantTypes, true) && ! $attributes->confidential()) {
+            $problems['grant_types'][] = __('admin.clients.validation.client-credentials-needs-secret');
+        }
+
+        if ($attributes->usesAuthorizationCode() && $attributes->redirectUris === []) {
+            $problems['redirect_uris'][] = __('admin.clients.validation.redirect-uri-required');
+        }
+
+        if ($problems !== []) {
+            throw ValidationException::withMessages($problems);
+        }
     }
 }
