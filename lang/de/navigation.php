@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 return [
     'activity' => 'Aktivität',
+    'api' => 'API',
     'admin' => 'Admin',
     'clients' => 'Clients',
     'back-to-app' => 'Mein Konto',

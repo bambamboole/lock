@@ -40,6 +40,10 @@ return [
             'description' => 'Description',
         ],
     ],
+    'api' => [
+        'heading' => 'API',
+        'description' => 'The management API of this instance. Execute a request straight from an operation to try it with your own permissions.',
+    ],
     'activity' => [
         'heading' => 'Admin activity',
         'empty' => 'No admin activity yet.',
