@@ -9,7 +9,7 @@ paths:
 
 Every concern (models, enums, UI, HTTP, policies, actions) lives under `app/{Domain}/`, subdivided by technical role
 only within that module — never a shared top-level technical folder (`app/Models`, `app/Http`, …) for domain code.
-The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
+The existing modules are `Admin`, `Auth`, `Clients`, `Realms`, `Resources`, and `Shared`.
 
 ## A domain reaches another domain only through app/Shared/{Domain}
 

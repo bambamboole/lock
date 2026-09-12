@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Admin\Ui\Tables\AdminClientsTable;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
+use App\Clients\Ui\Tables\ClientsTable;
 use App\Realms\Models\Realm;
 use Lattice\Support\Testing\ComponentNode;
 use Lattice\Support\Testing\TableRow;
@@ -34,7 +34,7 @@ test('every console action that changes something confirms first', function () {
         headerSlot($this->get("/admin/realms/acme/users/{$this->target->id}")->assertOk()),
         headerSlot($this->get("/admin/realms/acme/clients/{$this->client->id}")->assertOk()),
         ...array_map(fn (TableRow $row): ComponentNode => $row->actions(), $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk()->rows()),
-        ...array_map(fn (TableRow $row): ComponentNode => $row->actions(), $this->loadTable(AdminClientsTable::class, context: ['realm' => 'acme'])->assertOk()->rows()),
+        ...array_map(fn (TableRow $row): ComponentNode => $row->actions(), $this->loadTable(ClientsTable::class, context: ['realm' => 'acme'])->assertOk()->rows()),
     ])->filter(fn (mixed $node): bool => $node instanceof ComponentNode);
 
     $unconfirmed = $surfaces

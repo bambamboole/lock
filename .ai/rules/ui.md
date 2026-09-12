@@ -20,8 +20,8 @@ hangs it into a `Slot` from its provider with `Lattice::extend(…, priority:)` 
 Its shell — `App\Shared\Ui\Layouts\AdminLayout` and the `App\Shared\Ui\Pages\AdminPage` base class — lives in
 `app/Shared/Ui/**` so any domain may contribute a console page, and it links the console by route name rather than
 by page class: importing `App\Realms\Ui\Pages\…` there would make the shared layer depend on a domain. A domain
-owns the pages for its own records (`app/Realms/Ui/**` for the realm record itself); the pages whose domain has no
-`Ui` slice yet stay in `app/Admin/Ui/**`.
+owns the pages for its own records (`app/Realms/Ui/**` for the realm record, `app/Clients/Ui/**` for its OAuth
+clients); the pages whose domain has no `Ui` slice yet stay in `app/Admin/Ui/**`.
 
 The console is Keycloak-shaped: a realm-scoped page lives under `/admin/realms/{realm}/…` and takes the bound
 `Realm $realm` as a render parameter; `AdminLayout` reads that route parameter to decide whether the sidebar shows

@@ -46,18 +46,18 @@ return [
         ],
     ],
     'events' => [
+        'client' => [
+            'created' => 'Client angelegt',
+            'updated' => 'Client aktualisiert',
+            'secret-rotated' => 'Client-Secret rotiert',
+            'revoked' => 'Client gesperrt',
+            'restored' => 'Client entsperrt',
+            'deleted' => 'Client gelöscht',
+        ],
         'realm' => [
             'created' => 'Realm angelegt',
             'updated' => 'Realm aktualisiert',
             'deleted' => 'Realm gelöscht',
-            'client' => [
-                'created' => 'Client angelegt',
-                'updated' => 'Client aktualisiert',
-                'secret-rotated' => 'Client-Secret rotiert',
-                'revoked' => 'Client gesperrt',
-                'restored' => 'Client entsperrt',
-                'deleted' => 'Client gelöscht',
-            ],
             'role' => [
                 'created' => 'Realm-Rolle angelegt',
                 'updated' => 'Realm-Rolle aktualisiert',
