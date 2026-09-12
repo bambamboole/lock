@@ -18,7 +18,6 @@ use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\LaravelOidc\Server\Tokens\Models\AccessToken;
-use Illuminate\Support\Facades\Hash;
 use Lattice\Support\Testing\ComponentNode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -53,7 +52,7 @@ function clientFormData(array $overrides = []): array
  */
 function clientSetting(Client $client, string $field, mixed $value): array
 {
-    return [[$field => $value], ['realm' => $client->realm_id, 'client' => $client->id, 'field' => $field]];
+    return [[$field => $value], ['realm' => $client->realm, 'client' => $client->id, 'field' => $field]];
 }
 
 /**
@@ -150,9 +149,9 @@ test('creating a confidential client reveals its secret exactly once', function 
     $secrets = revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk()));
 
     expect($secrets)->toHaveCount(1)
-        ->and(Hash::check($secrets[0], (string) $client->getAttributes()['secret']))->toBeTrue()
+        ->and($secrets[0])->toBe($client->secret)
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty()
-        ->and($client->realm_id)->toBe('acme')
+        ->and($client->realm)->toBe('acme')
         ->and($client->token_endpoint_auth_method)->toBe(TokenEndpointAuthMethod::ClientSecretBasic)
         ->and($client->grant_types)->toBe(['authorization_code', 'refresh_token'])
         ->and($client->redirect_uris)->toBe(['https://portal.test/callback', 'https://portal.test/alt'])
@@ -260,7 +259,7 @@ test('turning a public client confidential mints a secret and back again drops i
 
     expect($secrets)->toHaveCount(1)
         ->and($client->refresh()->confidential())->toBeTrue()
-        ->and(Hash::check($secrets[0], (string) $client->getAttributes()['secret']))->toBeTrue();
+        ->and($secrets[0])->toBe($client->secret);
 
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))->assertRedirect();
 
@@ -270,18 +269,18 @@ test('turning a public client confidential mints a secret and back again drops i
 
 test('rotating the secret replaces it and reveals the new one once', function () {
     $client = realmClient($this->realm);
-    $previousHash = (string) $client->getAttributes()['secret'];
+    $previousSecret = $client->secret;
     $detailUrl = "/admin/realms/acme/clients/{$client->id}";
 
     $this->actingAs(globalAdmin())->callAction(RotateClientSecret::class, [], ['realm' => 'acme', 'client' => $client->id])
         ->assertRedirectsToRoute('admin.realms.clients.show', ['realm' => 'acme', 'client' => $client->id]);
 
     $secrets = revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk()));
-    $currentHash = (string) $client->refresh()->getAttributes()['secret'];
+    $currentSecret = $client->refresh()->secret;
 
     expect($secrets)->toHaveCount(1)
-        ->and($currentHash)->not->toBe($previousHash)
-        ->and(Hash::check($secrets[0], $currentHash))->toBeTrue()
+        ->and($currentSecret)->not->toBe($previousSecret)
+        ->and($secrets[0])->toBe($currentSecret)
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty()
         ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientSecretRotated->eventName())->sole()->subject_id)->toBe($client->id);
 });

@@ -58,7 +58,7 @@ final class ClientDetailPage extends AdminPage
 
     public function render(PageSchema $schema, Realm $realm, Client $client, Request $request): PageSchema
     {
-        abort_unless($client->realm_id === $realm->slug, 404);
+        abort_unless($client->realm === $realm->slug, 404);
 
         $secret = $request->session()->get(self::SECRET_FLASH_KEY);
 

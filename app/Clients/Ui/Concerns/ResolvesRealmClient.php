@@ -32,6 +32,6 @@ trait ResolvesRealmClient
         $realm = $this->contextModelOrNull('realm', Realm::class);
         $client = $this->contextModelOrNull('client', Client::class);
 
-        return $realm instanceof Realm && $client instanceof Client && $client->realm_id === $realm->slug ? $client : null;
+        return $realm instanceof Realm && $client instanceof Client && $client->realm === $realm->slug ? $client : null;
     }
 }

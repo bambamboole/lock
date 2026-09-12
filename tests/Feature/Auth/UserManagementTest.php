@@ -42,7 +42,7 @@ beforeEach(function () {
 
 function activeSessionFor(User $user, ?Client $client = null): OidcSession
 {
-    $session = OidcSession::factory()->forUser($user)->create(['realm_id' => $user->realm->slug]);
+    $session = OidcSession::factory()->forUser($user)->create(['realm' => $user->realm->slug]);
 
     if ($client instanceof Client) {
         SessionParticipant::factory()->inSession($session)->forClient($client)->create();

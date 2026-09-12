@@ -34,7 +34,7 @@ final readonly class UpdateClient implements UpdatesClient
 
             if (! $wasConfidential && $attributes->confidential()) {
                 $this->clients->regenerateSecret($client);
-                $secret = $client->plainSecret;
+                $secret = $client->secret;
             }
 
             $changes = [];
@@ -47,7 +47,7 @@ final readonly class UpdateClient implements UpdatesClient
 
             if ($changes !== []) {
                 Audit::record(ClientAuditEvent::ClientUpdated, $client, Realm::ofClient($client), [
-                    'realm' => $client->realm_id,
+                    'realm' => $client->realm,
                     'client_id' => $client->client_id,
                     'changes' => $changes,
                 ]);

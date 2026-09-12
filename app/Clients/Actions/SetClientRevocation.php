@@ -22,7 +22,7 @@ final class SetClientRevocation implements SetsClientRevocation
             $client->forceFill(['revoked_at' => $revoked ? now() : null])->save();
 
             Audit::record($revoked ? ClientAuditEvent::ClientRevoked : ClientAuditEvent::ClientRestored, $client, Realm::ofClient($client), [
-                'realm' => $client->realm_id,
+                'realm' => $client->realm,
                 'client_id' => $client->client_id,
             ]);
         });

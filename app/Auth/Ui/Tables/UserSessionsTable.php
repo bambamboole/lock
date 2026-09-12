@@ -51,7 +51,7 @@ final class UserSessionsTable extends EloquentTableDefinition
         $user = $this->user();
 
         $builder = OidcSession::query()
-            ->where('oidc_sessions.realm_id', $user->realm->slug)
+            ->where('oidc_sessions.realm', $user->realm->slug)
             ->where('oidc_sessions.user_id', $user->id)
             ->select('oidc_sessions.*')
             ->selectRaw(

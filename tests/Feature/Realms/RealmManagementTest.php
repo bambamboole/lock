@@ -207,7 +207,7 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
     $resource = Resource::factory()->for($realm)->create();
     $scope = ResourceScope::factory()->for($resource)->create();
     $client = realmClient($realm, 'Partner app');
-    OidcSession::factory()->forUser($user)->create(['realm_id' => 'partners']);
+    OidcSession::factory()->forUser($user)->create(['realm' => 'partners']);
     $masterClient = realmClient(Realm::master(), 'Admin app');
 
     $this->submitForm(DeleteRealmForm::class, ['name' => 'Partners'], ['realm' => $realm->slug])
@@ -217,7 +217,7 @@ it('deletes a realm with its users, clients, sessions, roles and resources and f
         ->and(User::query()->whereKey($user->id)->exists())->toBeFalse()
         ->and(Client::query()->whereKey($client->id)->exists())->toBeFalse()
         ->and(Client::query()->whereKey($masterClient->id)->exists())->toBeTrue()
-        ->and(OidcSession::query()->where('realm_id', 'partners')->exists())->toBeFalse()
+        ->and(OidcSession::query()->where('realm', 'partners')->exists())->toBeFalse()
         ->and(Role::query()->whereKey($role->id)->exists())->toBeFalse()
         ->and(DB::table('role_user')->where('role_id', $role->id)->exists())->toBeFalse()
         ->and(Role::query()->whereKey($keptRole->id)->exists())->toBeTrue()

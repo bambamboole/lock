@@ -39,7 +39,7 @@ final class CreateClientForm extends FormDefinition
         $realm = $this->realm();
         $client = $this->createClient->handle($realm, $this->clientAttributes($data, null));
 
-        ClientDetailPage::revealSecret($client->plainSecret);
+        ClientDetailPage::revealSecret($client->secret);
 
         return Effects::respond()->toast(__('admin.clients.created'), Variant::Success)
             ->toRoute('admin.realms.clients.show', ['realm' => $realm->slug, 'client' => $client->id]);

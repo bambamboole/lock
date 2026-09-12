@@ -26,11 +26,11 @@ final readonly class RotateClientSecret implements RotatesClientSecret
             $this->clients->regenerateSecret($client);
 
             Audit::record(ClientAuditEvent::ClientSecretRotated, $client, Realm::ofClient($client), [
-                'realm' => $client->realm_id,
+                'realm' => $client->realm,
                 'client_id' => $client->client_id,
             ]);
 
-            return $client->plainSecret ?? throw new LogicException('The regenerated secret is not readable.');
+            return $client->secret ?? throw new LogicException('The regenerated secret is not readable.');
         });
     }
 }

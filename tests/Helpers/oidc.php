@@ -26,7 +26,7 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
     config()->set([
         'oidc-client.issuer' => app(IssuerResolver::class)->url(),
         'oidc-client.client_id' => $client->client_id,
-        'oidc-client.client_secret' => $client->plainSecret,
+        'oidc-client.client_secret' => $client->secret,
     ]);
 
     $realm = Realm::master();
@@ -45,7 +45,7 @@ function clientCredentialsToken(TestCase $test, array $payload): TestResponse
     return $test->post(route('oidc.token'), [
         'grant_type' => 'client_credentials',
         'client_id' => $test->client->client_id,
-        'client_secret' => $test->client->plainSecret,
+        'client_secret' => $test->client->secret,
         ...$payload,
     ]);
 }

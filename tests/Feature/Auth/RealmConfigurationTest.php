@@ -38,7 +38,7 @@ it('applies database registration rules only to the configured realm', function 
     $response = $this->postJson(realmUrl($realm, '/oauth/register'), ['redirect_uris' => ['https://partner.test/callback']])
         ->assertCreated()->assertJsonPath('scope', 'openid profile');
 
-    expect(Client::query()->where('client_id', $response->json('client_id'))->sole()->realm_id)->toBe('partners');
+    expect(Client::query()->where('client_id', $response->json('client_id'))->sole()->realm)->toBe('partners');
 
     $realm->writeSettings(['dynamic_registration' => false]);
 
@@ -52,7 +52,7 @@ it('uses each realms persisted token lifetime and rejects clients from another r
     $credentials = [
         'grant_type' => 'client_credentials',
         'client_id' => $client->client_id,
-        'client_secret' => $client->plainSecret,
+        'client_secret' => $client->secret,
         'scope' => 'profile',
     ];
 

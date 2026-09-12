@@ -9,9 +9,5 @@ use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 
 interface CreatesClient
 {
-    /**
-     * The returned client carries its plain secret in `plainSecret` when it is
-     * confidential; the column only ever holds the hash.
-     */
     public function handle(Realm $realm, ClientAttributes $attributes): Client;
 }

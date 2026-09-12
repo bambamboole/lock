@@ -7,7 +7,6 @@ use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Hash;
 
 use function Tests\Helpers\readEnvironmentFile;
 
@@ -31,9 +30,9 @@ it('seeds the first administrator and gives a local setup console credentials of
     $client = Client::query()->where('provisioning_key', 'first-party')->sole();
     $environment = readEnvironmentFile(app()->environmentFilePath());
 
-    expect($client->realm_id)->toBe($realm->slug)
+    expect($client->realm)->toBe($realm->slug)
         ->and($environment['LOCK_CONSOLE_CLIENT_ID'])->toBe($client->client_id)
-        ->and(Hash::check((string) $environment['LOCK_CONSOLE_CLIENT_SECRET'], (string) $client->getRawOriginal('secret')))->toBeTrue()
+        ->and($environment['LOCK_CONSOLE_CLIENT_SECRET'])->toBe($client->secret)
         ->and($realm->clients()->firstPartyClientId)->toBe($client->client_id)
         ->and($user->belongsToRealm($realm))->toBeTrue()
         ->and($user->can(Scope::RealmsWrite))->toBeTrue();
@@ -47,6 +46,6 @@ it('provisions the configured console client again after a fresh migration', fun
     $client = Client::query()->where('provisioning_key', 'first-party')->sole();
 
     expect($client->client_id)->toBe('lock-console')
-        ->and(Hash::check('configured-secret', (string) $client->getRawOriginal('secret')))->toBeTrue()
+        ->and($client->secret)->toBe('configured-secret')
         ->and(readEnvironmentFile(app()->environmentFilePath()))->toBeEmpty();
 });

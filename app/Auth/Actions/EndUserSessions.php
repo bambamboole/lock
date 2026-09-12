@@ -20,7 +20,7 @@ final readonly class EndUserSessions implements EndsUserSessions
     public function handle(User $user, ?string $sid = null): int
     {
         $sids = OidcSession::query()
-            ->where('realm_id', $user->realm->slug)
+            ->where('realm', $user->realm->slug)
             ->where('user_id', $user->id)
             ->whereNull('revoked_at')
             ->when($sid !== null, fn ($query) => $query->whereKey($sid))
