@@ -19,6 +19,9 @@ enum RealmAuditEvent: string implements AuditEvent
     case ClientRevoked = 'realm.client.revoked';
     case ClientRestored = 'realm.client.restored';
     case ClientDeleted = 'realm.client.deleted';
+    case SocialProviderCreated = 'realm.social-provider.created';
+    case SocialProviderUpdated = 'realm.social-provider.updated';
+    case SocialProviderDeleted = 'realm.social-provider.deleted';
     case RoleCreated = 'realm.role.created';
     case RoleUpdated = 'realm.role.updated';
     case RoleDeleted = 'realm.role.deleted';

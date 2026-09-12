@@ -6,6 +6,7 @@ use App\Admin\Models\Role;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Realms\Models\RealmSocialProvider;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -144,6 +145,7 @@ function architectureSharedKernel(): array
         User::class,
         Realm::class,
         RealmRole::class,
+        RealmSocialProvider::class,
         Role::class,
         Resource::class,
         ResourceScope::class,

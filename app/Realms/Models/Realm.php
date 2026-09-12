@@ -54,6 +54,8 @@ use LogicException;
  * @property-read int|null $users_count
  * @property-read Collection<int, RealmRole> $realmRoles
  * @property-read int|null $realm_roles_count
+ * @property-read Collection<int, RealmSocialProvider> $socialProviders
+ * @property-read int|null $social_providers_count
  * @property-read Collection<int, \App\Resources\Models\Resource> $realmResources
  * @property-read int|null $realm_resources_count
  *
@@ -163,6 +165,14 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
     public function realmRoles(): HasMany
     {
         return $this->hasMany(RealmRole::class);
+    }
+
+    /**
+     * @return HasMany<RealmSocialProvider, $this>
+     */
+    public function socialProviders(): HasMany
+    {
+        return $this->hasMany(RealmSocialProvider::class);
     }
 
     /**
@@ -299,9 +309,22 @@ final class Realm extends Model implements ProvidesSettings, RealmContract
         );
     }
 
+    /**
+     * Read through the relation, not a query: laravel-oidc's registry asks the
+     * realm for its brokering settings once per provider it resolves.
+     */
     public function brokering(): BrokeringSettings
     {
-        return BrokeringSettings::fromConfig();
+        $settings = $this->settings;
+
+        return new BrokeringSettings(
+            providers: $this->socialProviders
+                ->filter(fn (RealmSocialProvider $provider): bool => $provider->enabled)
+                ->mapWithKeys(fn (RealmSocialProvider $provider): array => [$provider->key => $provider->brokeringConfig()])
+                ->all(),
+            linkByVerifiedEmail: $settings->boolean('realm.link_by_verified_email'),
+            autoProvision: $settings->boolean('realm.auto_provision'),
+        );
     }
 
     public function resources(): ResourceSettings

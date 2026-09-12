@@ -58,6 +58,11 @@ return [
                 'restored' => 'Client entsperrt',
                 'deleted' => 'Client gelöscht',
             ],
+            'social-provider' => [
+                'created' => 'Social-Anbieter hinzugefügt',
+                'updated' => 'Social-Anbieter aktualisiert',
+                'deleted' => 'Social-Anbieter gelöscht',
+            ],
             'role' => [
                 'created' => 'Realm-Rolle angelegt',
                 'updated' => 'Realm-Rolle aktualisiert',

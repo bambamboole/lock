@@ -8,9 +8,11 @@ use App\Realms\Actions\CheckRealmDomain;
 use App\Realms\Actions\CreateClient;
 use App\Realms\Actions\CreateRealm;
 use App\Realms\Actions\CreateRealmRole;
+use App\Realms\Actions\CreateSocialProvider;
 use App\Realms\Actions\DeleteClient;
 use App\Realms\Actions\DeleteRealm;
 use App\Realms\Actions\DeleteRealmRole;
+use App\Realms\Actions\DeleteSocialProvider;
 use App\Realms\Actions\ProvisionConsoleClient;
 use App\Realms\Actions\RotateClientSecret;
 use App\Realms\Actions\SetClientRevocation;
@@ -19,14 +21,17 @@ use App\Realms\Actions\UpdateClient;
 use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Actions\UpdateRealmDomain;
 use App\Realms\Actions\UpdateRealmRole;
+use App\Realms\Actions\UpdateSocialProvider;
 use App\Realms\Support\RealmHostGate;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesClient;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Contracts\CreatesRealmRole;
+use App\Shared\Realms\Contracts\CreatesSocialProvider;
 use App\Shared\Realms\Contracts\DeletesClient;
 use App\Shared\Realms\Contracts\DeletesRealm;
 use App\Shared\Realms\Contracts\DeletesRealmRole;
+use App\Shared\Realms\Contracts\DeletesSocialProvider;
 use App\Shared\Realms\Contracts\ProvisionsConsoleClient;
 use App\Shared\Realms\Contracts\RotatesClientSecret;
 use App\Shared\Realms\Contracts\SetsClientRevocation;
@@ -35,6 +40,7 @@ use App\Shared\Realms\Contracts\UpdatesClient;
 use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
 use App\Shared\Realms\Contracts\UpdatesRealmDomain;
 use App\Shared\Realms\Contracts\UpdatesRealmRole;
+use App\Shared\Realms\Contracts\UpdatesSocialProvider;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Settings\SettingsRegistry;
 use Illuminate\Routing\Events\RouteMatched;
@@ -60,6 +66,9 @@ final class RealmsServiceProvider extends ServiceProvider
         $this->app->bind(UpdatesRealmRole::class, UpdateRealmRole::class);
         $this->app->bind(DeletesRealmRole::class, DeleteRealmRole::class);
         $this->app->bind(SyncsUserRealmRoles::class, SyncUserRealmRoles::class);
+        $this->app->bind(CreatesSocialProvider::class, CreateSocialProvider::class);
+        $this->app->bind(UpdatesSocialProvider::class, UpdateSocialProvider::class);
+        $this->app->bind(DeletesSocialProvider::class, DeleteSocialProvider::class);
     }
 
     public function boot(): void

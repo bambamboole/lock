@@ -58,6 +58,11 @@ return [
                 'restored' => 'Client unblocked',
                 'deleted' => 'Client deleted',
             ],
+            'social-provider' => [
+                'created' => 'Social provider added',
+                'updated' => 'Social provider updated',
+                'deleted' => 'Social provider deleted',
+            ],
             'role' => [
                 'created' => 'Realm role created',
                 'updated' => 'Realm role updated',

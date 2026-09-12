@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Auth;
 
 use App\Auth\Actions\CreateNewUser;
+use App\Auth\Actions\CreateUserFromSocialLogin;
 use App\Auth\Actions\DeleteUser;
 use App\Auth\Actions\EndUserSessions;
 use App\Auth\Actions\ResetUserMfa;
@@ -27,6 +28,7 @@ use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
 use Bambamboole\LaravelOidc\Server\Credentials\Views\FactorSetupView;
 use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
+use Bambamboole\LaravelOidc\Server\Shared\Brokering\CreateUserFromSocialAccount;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
 use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
@@ -46,6 +48,7 @@ final class AuthServiceProvider extends ServiceProvider
         $this->app->singleton(RealmRepository::class, DatabaseRealmRepository::class);
         $this->app->bind(CreateUser::class, CreateNewUser::class);
         $this->app->bind(ResetUserPasswordContract::class, ResetUserPassword::class);
+        $this->app->bind(CreateUserFromSocialAccount::class, CreateUserFromSocialLogin::class);
         $this->app->bind(DeletesUser::class, DeleteUser::class);
         $this->app->bind(EndsUserSessions::class, EndUserSessions::class);
         $this->app->bind(ResetsUserMfa::class, ResetUserMfa::class);
