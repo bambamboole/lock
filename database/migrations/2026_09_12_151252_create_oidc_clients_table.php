@@ -2,17 +2,29 @@
 
 declare(strict_types=1);
 
+use Bambamboole\LaravelOidc\Server\Database\ForeignKeys;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+/**
+ * `id` is the internal key foreign keys point at; `client_id` is the identifier
+ * relying parties send on the wire. Keeping them apart lets a client be renamed
+ * without rewriting its tokens. A `client_id` only has to be unique within
+ * its realm.
+ *
+ * `realm_id` (here and on every other scoped table) is an opaque identifier
+ * the application owns — there is no realm table and no foreign key, exactly
+ * as with `user_id`. A string rather than a uuid so a host-derived slug can be
+ * stored without a lookup.
+ */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::create('oidc_clients', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->string('realm_id')->default((string) config('oidc.realm', 'default'))->index();
+            $table->string('realm_id');
             $table->string('client_id');
             $table->nullableUuidMorphs('owner');
             $table->string('name');
@@ -27,11 +39,15 @@ return new class extends Migration
             $table->text('backchannel_logout_uri')->nullable();
             $table->boolean('backchannel_logout_session_required')->default(false);
             $table->boolean('consent_required')->default(true);
-            $table->string('provisioning_key', 64)->nullable()->unique();
-            $table->boolean('revoked')->default(false);
+            $table->string('provisioning_key', 64)->nullable();
+            $table->timestamp('revoked_at')->nullable();
             $table->timestamps();
 
             $table->unique(['realm_id', 'client_id']);
+            $table->unique(['realm_id', 'id']);
+            $table->unique(['realm_id', 'provisioning_key']);
+
+            ForeignKeys::realm($table);
         });
     }
 

@@ -33,7 +33,7 @@ final class RevokeClient extends ActionDefinition
     {
         $client = $this->realmClientOrNull();
 
-        return $client instanceof Client && ! $client->revoked;
+        return $client instanceof Client && ! $client->isRevoked();
     }
 
     public function handle(Request $request): ActionResult

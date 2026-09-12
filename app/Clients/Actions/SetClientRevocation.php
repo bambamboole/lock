@@ -14,12 +14,12 @@ final class SetClientRevocation implements SetsClientRevocation
 {
     public function handle(Client $client, bool $revoked): void
     {
-        if ($client->revoked === $revoked) {
+        if ($client->isRevoked() === $revoked) {
             return;
         }
 
         DB::transaction(function () use ($client, $revoked): void {
-            $client->forceFill(['revoked' => $revoked])->save();
+            $client->forceFill(['revoked_at' => $revoked ? now() : null])->save();
 
             Audit::record($revoked ? ClientAuditEvent::ClientRevoked : ClientAuditEvent::ClientRestored, $client, Realm::ofClient($client), [
                 'realm' => $client->realm_id,

@@ -24,7 +24,7 @@ final readonly class EndUserSessions implements EndsUserSessions
             ->where('user_id', $user->id)
             ->whereNull('revoked_at')
             ->when($sid !== null, fn ($query) => $query->whereKey($sid))
-            ->pluck('sid');
+            ->pluck('id');
 
         DB::transaction(function () use ($user, $sids, $sid): void {
             foreach ($sids as $revoked) {

@@ -49,9 +49,8 @@ final class UsersTable extends EloquentTableDefinition
             ->selectRaw('users.email_verified_at is not null as email_verified')
             ->selectRaw('users.blocked_at is not null as blocked')
             ->selectRaw(
-                '(exists (select 1 from oidc_totp_factors where oidc_totp_factors.authenticatable_type = ? and oidc_totp_factors.authenticatable_id = users.id and oidc_totp_factors.confirmed_at is not null)'
+                '(exists (select 1 from oidc_totp_factors where oidc_totp_factors.user_id = users.id and oidc_totp_factors.confirmed_at is not null)'
                 .' or exists (select 1 from passkeys where passkeys.user_id = users.id)) as mfa',
-                [new User()->getMorphClass()],
             )
             ->withExists(['roles as administrates' => fn (Builder $roles): Builder => $roles
                 ->whereHas('scopes.resource', fn (Builder $resource): Builder => $resource->where('identifier', ManagementApi::RESOURCE))])

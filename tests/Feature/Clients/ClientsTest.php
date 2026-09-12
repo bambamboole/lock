@@ -135,7 +135,7 @@ test('a client detail page opens under its own realm only', function () {
     $this->callDeniedAction(RevokeClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
     $this->callDeniedAction(DeleteClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
 
-    expect($client->refresh()->revoked)->toBeFalse()
+    expect($client->refresh()->isRevoked())->toBeFalse()
         ->and($client->name)->toBe('Existing app');
 });
 
@@ -304,14 +304,14 @@ test('blocking a client stops it from being resolved as active until it is unblo
     $this->callDeniedAction(RestoreClient::class, [], $context)->assertForbidden();
     $this->callAction(RevokeClient::class, [], $context)->assertReloadsPage();
 
-    expect($client->refresh()->revoked)->toBeTrue()
+    expect($client->refresh()->isRevoked())->toBeTrue()
         ->and($active())->toBeNull()
         ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientRevoked->eventName())->sole()->subject_id)->toBe($client->id);
 
     $this->callDeniedAction(RevokeClient::class, [], $context)->assertForbidden();
     $this->callAction(RestoreClient::class, [], $context)->assertReloadsPage();
 
-    expect($client->refresh()->revoked)->toBeFalse()
+    expect($client->refresh()->isRevoked())->toBeFalse()
         ->and($active())->not->toBeNull()
         ->and(Activity::forRealm($this->realm)->where('event', ClientAuditEvent::ClientRestored->eventName())->sole()->subject_id)->toBe($client->id);
 });

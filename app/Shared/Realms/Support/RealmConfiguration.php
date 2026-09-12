@@ -134,7 +134,7 @@ final class RealmConfiguration
             ...self::rules(),
             'trusted_clients.*' => [
                 ...self::rules()['trusted_clients.*'],
-                Rule::exists('oidc_clients', 'client_id')->where('realm_id', $realmSlug)->where('revoked', 0),
+                Rule::exists('oidc_clients', 'client_id')->where('realm_id', $realmSlug)->whereNull('revoked_at'),
             ],
         ])->setAttributeNames(self::attributeNames())->validate();
     }

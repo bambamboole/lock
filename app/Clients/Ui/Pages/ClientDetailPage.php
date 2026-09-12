@@ -95,7 +95,7 @@ final class ClientDetailPage extends AdminPage
         return ActionBar::make(
             primary: $client->confidential() ? [Action::use(RotateClientSecret::class)] : [],
             overflow: [
-                ...($client->revoked
+                ...($client->isRevoked()
                     ? [Action::use(RestoreClient::class)]
                     : [Action::use(RevokeClient::class)]),
                 Action::use(DeleteClient::class),
@@ -151,8 +151,8 @@ final class ClientDetailPage extends AdminPage
                 ComponentEntry::make('scopes', __('admin.clients.detail.scopes'), 'client-scopes')
                     ->value($this->badges($client->assignedScopes())),
                 BadgeEntry::make('status', __('admin.clients.columns.status'), 'client-status')
-                    ->value($client->revoked ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
-                    ->color($client->revoked ? ColorName::Danger : ColorName::Success),
+                    ->value($client->isRevoked() ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
+                    ->color($client->isRevoked() ? ColorName::Danger : ColorName::Success),
                 DateEntry::make('created_at', __('admin.clients.detail.created-at'), 'client-created-at')
                     ->value($client->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),
