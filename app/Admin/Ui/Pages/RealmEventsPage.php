@@ -13,6 +13,7 @@ use Lattice\Core\Breadcrumb;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/events', name: 'admin.realms.events', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
@@ -33,6 +34,7 @@ final class RealmEventsPage extends AdminPage
         return $schema->schema([
             Stack::make('admin-realm-events-page')
                 ->gap(Gap::Large)
+                ->width(Width::Large)
                 ->schema([
                     PageHeader::make(__('admin.events.heading'), __('admin.events.description', ['realm' => $realm->name])),
                     Table::use(RealmAuditEventsTable::class),

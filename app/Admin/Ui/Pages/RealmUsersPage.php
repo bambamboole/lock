@@ -16,6 +16,7 @@ use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Button;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/realms/{realm}/users', name: 'admin.realms.users', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
@@ -36,6 +37,7 @@ final class RealmUsersPage extends AdminPage
         return $schema->schema([
             Stack::make('admin-realm-users-page')
                 ->gap(Gap::Large)
+                ->width(Width::Large)
                 ->schema([
                     PageHeader::make(__('admin.users.heading'), __('admin.users.description', ['realm' => $realm->name]), ActionBar::make(primary: [
                         Button::make(__('admin.users.create.submit'))

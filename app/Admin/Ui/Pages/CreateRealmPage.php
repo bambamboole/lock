@@ -25,7 +25,7 @@ final class CreateRealmPage extends AdminPage
     public function render(PageSchema $schema): PageSchema
     {
         return $schema->schema([
-            Stack::make('admin-create-realm-page')->gap(Gap::Large)->width(Width::Medium)->schema([
+            Stack::make('admin-create-realm-page')->gap(Gap::Large)->width(Width::Large)->schema([
                 PageHeader::make(__('admin.realms.create.heading'), __('admin.realms.create.description')),
                 Card::make(__('admin.realms.sections.general'))->schema([
                     Form::use(CreateRealmForm::class),

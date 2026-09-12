@@ -10,6 +10,7 @@ use Lattice\Core\Attributes\AsPage;
 use Lattice\Table\Components\Table;
 use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
+use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
 #[AsPage(route: '/admin/activity', name: 'admin.activity')]
@@ -25,6 +26,7 @@ final class ActivityPage extends AdminPage
         return $schema->schema([
             Stack::make('admin-activity-page')
                 ->gap(Gap::Large)
+                ->width(Width::Large)
                 ->schema([
                     PageHeader::make(__('admin.activity.heading')),
                     Table::use(AdminActivityTable::class),
