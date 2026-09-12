@@ -16,12 +16,6 @@ final class RealmDomain
      */
     public const string PATTERN = '/\A(?=.{1,253}\z)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?\z/';
 
-    /** A host is case-insensitive, so it is compared and stored lowercased. */
-    public static function normalize(string $domain): string
-    {
-        return strtolower(trim($domain));
-    }
-
     /** @return list<mixed> */
     public static function rules(?Realm $ignore = null): array
     {

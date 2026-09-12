@@ -22,8 +22,6 @@ final class UpdateRealmDomain implements UpdatesRealmDomain
             throw ValidationException::withMessages(['domain' => [__('admin.realms.domain.master-fixed')]]);
         }
 
-        $domain = RealmDomain::normalize($domain);
-
         Validator::make(['domain' => $domain], ['domain' => RealmDomain::rules($realm)])->validate();
 
         if ($domain === $realm->domain) {

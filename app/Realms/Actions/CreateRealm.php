@@ -33,18 +33,16 @@ final readonly class CreateRealm implements CreatesRealm
      */
     public function handle(CreateRealmData $data): Realm
     {
-        $domain = RealmDomain::normalize($data->domain);
-
-        Validator::make(['domain' => $domain], ['domain' => RealmDomain::rules()])->validate();
+        Validator::make(['domain' => $data->domain], ['domain' => RealmDomain::rules()])->validate();
 
         $settings = $this->resolveSettings($data);
         $deviations = $settings->deviations();
 
-        return DB::transaction(function () use ($data, $domain, $settings, $deviations): Realm {
+        return DB::transaction(function () use ($data, $settings, $deviations): Realm {
             $realm = Realm::create([
                 'name' => $data->name,
                 'slug' => $data->slug,
-                'domain' => $domain,
+                'domain' => $data->domain,
                 'settings' => $settings,
             ]);
 
