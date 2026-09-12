@@ -16,20 +16,20 @@ trait BuildsResourceFields
      * relative to the realm issuer, or an absolute URI naming a resource server
      * the realm does not host.
      *
-     * @return array<int, TextInput>
+     * @return array<string, TextInput>
      */
     private function resourceFields(Realm $realm, ?Resource $resource): array
     {
         $unique = Rule::unique(Resource::class, 'identifier')->where('realm_id', $realm->id);
 
         return [
-            TextInput::make('identifier', __('admin.resources.fields.identifier.label'))
+            'identifier' => TextInput::make('identifier', __('admin.resources.fields.identifier.label'))
                 ->value($resource?->identifier, editable: true)
                 ->required()
                 ->helperText(__('admin.resources.fields.identifier.help-text'))
                 ->rules(['string', 'max:255', $resource instanceof Resource ? $unique->ignore($resource) : $unique])
                 ->rules(fn (): array => [$this->identifierRule()]),
-            TextInput::make('name', __('admin.resources.fields.name.label'))
+            'name' => TextInput::make('name', __('admin.resources.fields.name.label'))
                 ->value($resource?->name, editable: true)
                 ->required()
                 ->rules(['string', 'max:255']),

@@ -10,6 +10,7 @@ use App\Admin\Ui\Actions\DeleteResourceAction;
 use App\Admin\Ui\Actions\DeleteResourceScopeAction;
 use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Admin\Ui\Actions\UpdateResourceScopeAction;
+use App\Admin\Ui\Forms\UpdateResourceForm;
 use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Auth\Models\User;
@@ -98,6 +99,36 @@ test('renaming and deleting a resource works from the console', function () {
     $this->callAction(DeleteResourceAction::class, [], $context)->assertOk();
 
     expect(Resource::query()->exists())->toBeFalse();
+});
+
+test('a detail page row edits one field and leaves the other alone', function () {
+    $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api', 'name' => 'Orders API']);
+    $context = ['realm' => 'acme', 'resource' => $resource->id];
+
+    $this->actingAs(globalAdmin());
+    $this->submitForm(UpdateResourceForm::class, ['name' => 'Orders'], [...$context, 'field' => 'name'])->assertRedirect();
+
+    expect($resource->refresh()->name)->toBe('Orders')
+        ->and($resource->identifier)->toBe('api');
+
+    $this->submitForm(UpdateResourceForm::class, ['identifier' => 'orders'], [...$context, 'field' => 'identifier'])->assertRedirect();
+
+    expect($resource->refresh()->identifier)->toBe('orders')
+        ->and($resource->name)->toBe('Orders');
+});
+
+test('a detail page row is refused for a resource of another realm and without resources-manage', function () {
+    $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api', 'name' => 'Orders API']);
+
+    $this->actingAs(globalAdmin())
+        ->submitDeniedForm(UpdateResourceForm::class, ['name' => 'Taken over'], ['realm' => 'globex', 'resource' => $resource->id, 'field' => 'name'])
+        ->assertForbidden();
+
+    $this->actingAs(globalAdminWith(AdminPermission::Access, AdminPermission::ViewResources))
+        ->submitDeniedForm(UpdateResourceForm::class, ['name' => 'Renamed'], ['realm' => 'acme', 'resource' => $resource->id, 'field' => 'name'])
+        ->assertForbidden();
+
+    expect($resource->refresh()->name)->toBe('Orders API');
 });
 
 test('two resources of one realm carry the same scope value, one resource does not', function () {

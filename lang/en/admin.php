@@ -335,6 +335,19 @@ return [
         'linking' => [
             'heading' => 'Account linking',
         ],
+        'detail' => [
+            'description' => ':driver provider of :realm.',
+            'created-at' => 'Added',
+            'key-fixed' => 'Part of the redirect URI and of the accounts linked through it, so it is fixed for life.',
+            'settings' => [
+                'heading' => 'Provider',
+                'subtitle' => 'Open a row to change it. The key and the driver are fixed for life.',
+            ],
+            'secret' => [
+                'set' => 'Stored',
+                'missing' => 'Not set',
+            ],
+        ],
         'columns' => [
             'key' => 'Key',
             'driver' => 'Provider',
@@ -348,9 +361,6 @@ return [
         ],
         'create' => [
             'label' => 'Add provider',
-        ],
-        'edit' => [
-            'label' => 'Edit provider',
         ],
         'delete' => [
             'label' => 'Delete provider',

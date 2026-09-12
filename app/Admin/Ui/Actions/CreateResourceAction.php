@@ -27,7 +27,7 @@ final class CreateResourceAction extends ActionDefinition
     {
         return $action
             ->label(__('admin.resources.create.label'))
-            ->form($this->resourceFields($this->realm(), null));
+            ->form(array_values($this->resourceFields($this->realm(), null)));
     }
 
     public function handle(FormData $data): ActionResult

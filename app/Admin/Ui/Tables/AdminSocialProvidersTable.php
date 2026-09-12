@@ -5,7 +5,6 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\DeleteSocialProviderAction;
-use App\Admin\Ui\Actions\UpdateSocialProviderAction;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmSocialProvider;
 use App\Shared\Realms\Enums\SocialProviderDriver;
@@ -15,6 +14,7 @@ use Lattice\Table\Attributes\AsTable;
 use Lattice\Table\Columns\BadgeColumn;
 use Lattice\Table\Columns\BooleanColumn;
 use Lattice\Table\Columns\TextColumn;
+use Lattice\Table\Components\RowClick;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
 
@@ -59,14 +59,15 @@ final class AdminSocialProvidersTable extends EloquentTableDefinition
         ];
     }
 
+    #[\Override]
+    public function rowClick(array $row): RowClick
+    {
+        return RowClick::make()->href(route('admin.realms.social-providers.show', ['realm' => $this->contextString('realm'), 'socialProvider' => $row['id']], false));
+    }
+
     public function actions(array $row): array
     {
-        $context = ['socialProvider' => $row['id']];
-
-        return [
-            Action::use(UpdateSocialProviderAction::class, $context),
-            Action::use(DeleteSocialProviderAction::class, $context),
-        ];
+        return [Action::use(DeleteSocialProviderAction::class, ['socialProvider' => $row['id']])];
     }
 
     /**

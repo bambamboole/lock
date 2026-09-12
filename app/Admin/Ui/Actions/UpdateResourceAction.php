@@ -33,7 +33,7 @@ final class UpdateResourceAction extends ActionDefinition
             ->label(__('admin.resources.edit.label'))
             ->method(HttpMethod::Patch)
             ->emphasis(Emphasis::Ghost)
-            ->form($this->resourceFields($this->realm(), $this->resource()));
+            ->form(array_values($this->resourceFields($this->realm(), $this->resource())));
     }
 
     #[\Override]

@@ -6,7 +6,6 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\BuildsSocialProviderFields;
 use App\Admin\Ui\Concerns\ResolvesRealmSocialProvider;
-use App\Admin\Ui\Tables\AdminSocialProvidersTable;
 use App\Shared\Realms\Contracts\CreatesSocialProvider;
 use App\Shared\Realms\Enums\SocialProviderDriver;
 use Lattice\Actions\ActionDefinition;
@@ -35,8 +34,10 @@ final class CreateSocialProviderAction extends ActionDefinition
     {
         $driver = SocialProviderDriver::from((string) $data->string('driver'));
 
-        $this->createProvider->handle(
-            $this->realm(),
+        $realm = $this->realm();
+
+        $provider = $this->createProvider->handle(
+            $realm,
             trim((string) $data->string('key')),
             $driver,
             $this->submittedCredentials($driver, $data),
@@ -45,6 +46,6 @@ final class CreateSocialProviderAction extends ActionDefinition
 
         return ActionResult::success()
             ->toast(__('admin.social-providers.created'), Variant::Success)
-            ->reloadComponent(AdminSocialProvidersTable::ID);
+            ->toRoute('admin.realms.social-providers.show', ['realm' => $realm->slug, 'socialProvider' => $provider->id]);
     }
 }

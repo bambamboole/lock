@@ -58,16 +58,20 @@ trait BuildsSocialProviderFields
     }
 
     /**
-     * @return array<int, Field>
+     * The rows of the provider's detail page, keyed the way its disclosure
+     * forms name them.
+     *
+     * @return array<string, Field>
      */
     private function socialProviderFields(RealmSocialProvider $provider): array
     {
-        $fields = array_map(
-            fn (string $name): Field => $this->credentialField($name, $provider),
-            $provider->driver->fields(),
-        );
+        $fields = [];
 
-        return [$this->callbackField($provider), ...$fields, $this->enabledField($provider->enabled)];
+        foreach ($provider->driver->fields() as $name) {
+            $fields[$name] = $this->credentialField($name, $provider);
+        }
+
+        return [...$fields, 'enabled' => $this->enabledField($provider->enabled)];
     }
 
     /**
@@ -112,19 +116,6 @@ trait BuildsSocialProviderFields
             ->value($provider?->config[$name] ?? null, editable: true)
             ->required($provider instanceof RealmSocialProvider)
             ->helperText(__('admin.social-providers.fields.'.$key.'.help-text'));
-    }
-
-    /**
-     * The redirect URI the upstream provider has to be configured with. It is
-     * derived from the realm host and the key, both fixed once the provider
-     * exists, so the form only shows it.
-     */
-    private function callbackField(RealmSocialProvider $provider): Field
-    {
-        return TextInput::make('callback_url', __('admin.social-providers.fields.callback-url.label'))
-            ->value($provider->callbackUrl())
-            ->readOnly()
-            ->helperText(__('admin.social-providers.fields.callback-url.help-text'));
     }
 
     private function enabledField(bool $enabled): Field

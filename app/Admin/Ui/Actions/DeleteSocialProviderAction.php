@@ -5,7 +5,6 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Concerns\ResolvesRealmSocialProvider;
-use App\Admin\Ui\Tables\AdminSocialProvidersTable;
 use App\Realms\Models\RealmSocialProvider;
 use App\Shared\Realms\Contracts\DeletesSocialProvider;
 use Illuminate\Http\Request;
@@ -42,10 +41,12 @@ final class DeleteSocialProviderAction extends ActionDefinition
 
     public function handle(Request $request): ActionResult
     {
+        $realm = $this->realm();
+
         $this->deleteProvider->handle($this->socialProvider());
 
         return ActionResult::success()
             ->toast(__('admin.social-providers.deleted'), Variant::Success)
-            ->reloadComponent(AdminSocialProvidersTable::ID);
+            ->toRoute('admin.realms.settings', ['realm' => $realm->slug, 'tabs' => 'social']);
     }
 }

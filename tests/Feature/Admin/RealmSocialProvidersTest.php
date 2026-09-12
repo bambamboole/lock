@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Actions\CreateSocialProviderAction;
 use App\Admin\Ui\Actions\DeleteSocialProviderAction;
-use App\Admin\Ui\Actions\UpdateSocialProviderAction;
+use App\Admin\Ui\Forms\UpdateSocialProviderForm;
 use App\Admin\Ui\Tables\AdminSocialProvidersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
@@ -123,18 +123,20 @@ test('an empty secret keeps the stored one and the trail records only that it ch
         'config' => ['client_id' => 'old-id', 'client_secret' => 'keep-me'],
     ]);
 
-    $this->actingAs(globalAdmin())->callAction(UpdateSocialProviderAction::class, [
-        'client_id' => 'new-id',
-        'client_secret' => '',
-        'enabled' => false,
-    ], ['realm' => 'acme', 'socialProvider' => $provider->id])->assertOk();
+    $this->actingAs(globalAdmin());
+    $this->submitForm(UpdateSocialProviderForm::class, ['client_id' => 'new-id'], ['realm' => 'acme', 'socialProvider' => $provider->id, 'field' => 'client_id'])->assertRedirect();
+    $this->submitForm(UpdateSocialProviderForm::class, ['enabled' => false], ['realm' => 'acme', 'socialProvider' => $provider->id, 'field' => 'enabled'])->assertRedirect();
 
     expect($provider->refresh()->config)->toBe(['client_id' => 'new-id', 'client_secret' => 'keep-me'])
         ->and($provider->enabled)->toBeFalse();
 
-    $activity = Activity::forRealm($this->realm)->where('event', RealmAuditEvent::SocialProviderUpdated->eventName())->sole();
+    $changes = Activity::forRealm($this->realm)
+        ->where('event', RealmAuditEvent::SocialProviderUpdated->eventName())
+        ->get()
+        ->flatMap(fn (Activity $activity): array => (array) $activity->getProperty('changes'))
+        ->all();
 
-    expect($activity->getProperty('changes'))->toBe([
+    expect($changes)->toBe([
         'client_id' => ['old' => 'old-id', 'new' => 'new-id'],
         'enabled' => ['old' => true, 'new' => false],
     ]);
@@ -146,11 +148,9 @@ test('a submitted secret replaces the stored one without reaching the trail', fu
         'config' => ['client_id' => 'id', 'client_secret' => 'old-secret'],
     ]);
 
-    $this->actingAs(globalAdmin())->callAction(UpdateSocialProviderAction::class, [
-        'client_id' => 'id',
+    $this->actingAs(globalAdmin())->submitForm(UpdateSocialProviderForm::class, [
         'client_secret' => 'new-secret',
-        'enabled' => true,
-    ], ['realm' => 'acme', 'socialProvider' => $provider->id])->assertOk();
+    ], ['realm' => 'acme', 'socialProvider' => $provider->id, 'field' => 'client_secret'])->assertRedirect();
 
     expect($provider->refresh()->config['client_secret'])->toBe('new-secret');
 
@@ -165,10 +165,9 @@ test('a credential the provider needs cannot be cleared on an edit', function ()
         'config' => ['client_id' => 'id', 'client_secret' => 'secret'],
     ]);
 
-    $this->actingAs(globalAdmin())->callAction(UpdateSocialProviderAction::class, [
+    $this->actingAs(globalAdmin())->submitForm(UpdateSocialProviderForm::class, [
         'client_id' => '',
-        'enabled' => true,
-    ], ['realm' => 'acme', 'socialProvider' => $provider->id])->assertInvalid(['client_id']);
+    ], ['realm' => 'acme', 'socialProvider' => $provider->id, 'field' => 'client_id'])->assertInvalid(['client_id']);
 
     expect($provider->refresh()->config['client_id'])->toBe('id');
 });
@@ -215,7 +214,8 @@ test('a provider is only reachable through its own realm', function () {
     $foreign = ['realm' => 'globex', 'socialProvider' => $provider->id];
 
     $this->actingAs(globalAdmin());
-    $this->callDeniedAction(UpdateSocialProviderAction::class, ['client_id' => 'taken-over', 'enabled' => true], $foreign)->assertForbidden();
+    $this->get("/admin/realms/globex/social-providers/{$provider->id}")->assertNotFound();
+    $this->submitDeniedForm(UpdateSocialProviderForm::class, ['client_id' => 'taken-over'], [...$foreign, 'field' => 'client_id'])->assertForbidden();
     $this->callDeniedAction(DeleteSocialProviderAction::class, [], $foreign)->assertForbidden();
 
     expect($provider->refresh()->config['client_id'])->not->toBe('taken-over');
@@ -226,9 +226,10 @@ test('the providers console is forbidden without realms-manage', function () {
     $context = ['realm' => 'acme', 'socialProvider' => $provider->id];
 
     $this->actingAs(globalAdminWith(AdminPermission::Access, AdminPermission::ViewRealms));
+    $this->get("/admin/realms/acme/social-providers/{$provider->id}")->assertForbidden();
     $this->loadDeniedTable(AdminSocialProvidersTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateSocialProviderAction::class, ['key' => 'github', 'driver' => 'github'], ['realm' => 'acme'])->assertForbidden();
-    $this->callDeniedAction(UpdateSocialProviderAction::class, ['client_id' => 'other', 'enabled' => true], $context)->assertForbidden();
+    $this->submitDeniedForm(UpdateSocialProviderForm::class, ['client_id' => 'other'], [...$context, 'field' => 'client_id'])->assertForbidden();
     $this->callDeniedAction(DeleteSocialProviderAction::class, [], $context)->assertForbidden();
 
     expect(RealmSocialProvider::query()->count())->toBe(1);

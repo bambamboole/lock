@@ -335,6 +335,19 @@ return [
         'linking' => [
             'heading' => 'Kontoverknüpfung',
         ],
+        'detail' => [
+            'description' => ':driver-Anbieter von :realm.',
+            'created-at' => 'Hinzugefügt',
+            'key-fixed' => 'Teil der Redirect-URI und der darüber verknüpften Konten, daher dauerhaft festgelegt.',
+            'settings' => [
+                'heading' => 'Anbieter',
+                'subtitle' => 'Zum Ändern eine Zeile öffnen. Schlüssel und Treiber sind dauerhaft festgelegt.',
+            ],
+            'secret' => [
+                'set' => 'Hinterlegt',
+                'missing' => 'Nicht gesetzt',
+            ],
+        ],
         'columns' => [
             'key' => 'Schlüssel',
             'driver' => 'Anbieter',
@@ -348,9 +361,6 @@ return [
         ],
         'create' => [
             'label' => 'Anbieter hinzufügen',
-        ],
-        'edit' => [
-            'label' => 'Anbieter bearbeiten',
         ],
         'delete' => [
             'label' => 'Anbieter löschen',
