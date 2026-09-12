@@ -40,6 +40,10 @@ return [
             'description' => 'Description',
         ],
     ],
+    'api' => [
+        'heading' => 'API',
+        'description' => 'The management API of this instance. Execute a request straight from an operation to try it with your own permissions.',
+    ],
     'activity' => [
         'heading' => 'Admin activity',
         'empty' => 'No admin activity yet.',
@@ -422,6 +426,7 @@ return [
         'created' => 'Realm created.',
         'created-unverified' => 'Realm created. :outcome',
         'domain' => [
+            'master-fixed' => 'The administration realm is served from APP_URL and takes no domain of its own.',
             'master' => 'Taken from APP_URL.',
             'status' => [
                 'pending' => 'Not checked',

@@ -5,8 +5,8 @@ namespace App\Admin\Ui\Forms;
 
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
-use App\Shared\Realms\Contracts\UpdatesRealmConfiguration;
-use App\Shared\Realms\Support\RealmConfiguration;
+use App\Shared\Realms\Contracts\UpdatesRealm;
+use App\Shared\Realms\Data\UpdateRealmData;
 use Illuminate\Http\Request;
 use Lattice\Facades\Effects;
 use Lattice\Form\Attributes\AsForm;
@@ -21,7 +21,7 @@ use Lattice\Ui\Enums\Variant;
 #[AsForm('admin.realms.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
 final class UpdateRealmForm extends FormDefinition
 {
-    public function __construct(private readonly UpdatesRealmConfiguration $updateRealm) {}
+    public function __construct(private readonly UpdatesRealm $updateRealm) {}
 
     public function definition(FormComponent $form, Request $request): FormComponent
     {
@@ -33,7 +33,7 @@ final class UpdateRealmForm extends FormDefinition
                 TextInput::make('name', __('admin.realms.fields.name.label'))
                     ->value($realm->name, editable: true)
                     ->required()
-                    ->rules(RealmConfiguration::rules()['name']),
+                    ->rules(['string', 'max:'.Realm::NAME_MAX_LENGTH]),
             ])
             ->submitLabel(__('admin.realms.general.submit'));
     }
@@ -42,7 +42,7 @@ final class UpdateRealmForm extends FormDefinition
     {
         $realm = $this->realm();
 
-        $this->updateRealm->handle($realm, ['name' => (string) $data->string('name')]);
+        $this->updateRealm->handle($realm, UpdateRealmData::from(['name' => (string) $data->string('name')]));
 
         return Effects::respond()->toast(__('admin.realms.updated'), Variant::Success)
             ->toRoute('admin.realms.settings', ['realm' => $realm->slug]);

@@ -5,6 +5,7 @@ namespace App\Admin\Ui\Layouts;
 
 use App\Admin\Enums\AdminPermission;
 use App\Admin\Ui\Pages\ActivityPage;
+use App\Admin\Ui\Pages\ApiReferencePage;
 use App\Admin\Ui\Pages\RealmActivityPage;
 use App\Admin\Ui\Pages\RealmClientsPage;
 use App\Admin\Ui\Pages\RealmEventsPage;
@@ -173,6 +174,7 @@ final class AdminLayout extends LayoutDefinition
         return [
             ...($user->can(AdminPermission::ViewRealms) ? [
                 MenuItem::fromPage(RealmsPage::class)->label(__('navigation.realms'))->prefix(Icon::List),
+                MenuItem::fromPage(ApiReferencePage::class)->label(__('navigation.api'))->prefix(Icon::CodeXml),
             ] : []),
             MenuItem::fromPage(ActivityPage::class)->label(__('navigation.activity'))->prefix(Icon::Clock),
         ];

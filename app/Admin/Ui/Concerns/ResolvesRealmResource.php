@@ -6,6 +6,7 @@ namespace App\Admin\Ui\Concerns;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Shared\Api\ManagementApi;
 
 /**
  * A resource is only reachable through its own realm, and a scope only through
@@ -34,6 +35,24 @@ trait ResolvesRealmResource
         $resource = $this->contextModelOrNull('resource', Resource::class);
 
         return $realm instanceof Realm && $resource instanceof Resource && $resource->belongsToRealm($realm) ? $resource : null;
+    }
+
+    /**
+     * The management API's rows belong to `app:deploy`, so the console offers no
+     * way to rename or delete them — the domain action refuses either way.
+     */
+    private function mutableResourceOrNull(): ?Resource
+    {
+        $resource = $this->resourceOrNull();
+
+        return $resource instanceof Resource && ! app(ManagementApi::class)->owns($resource) ? $resource : null;
+    }
+
+    private function mutableResourceScopeOrNull(): ?ResourceScope
+    {
+        $scope = $this->resourceScopeOrNull();
+
+        return $scope instanceof ResourceScope && $this->mutableResourceOrNull() instanceof Resource ? $scope : null;
     }
 
     private function resourceScope(): ResourceScope

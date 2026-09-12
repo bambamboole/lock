@@ -16,7 +16,6 @@ use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
-use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Shared\Audit\Models\Activity;
@@ -108,7 +107,7 @@ test('a user can be created with an initial password and a verified address', fu
 });
 
 test('an initial password follows the target realm\'s policy, not the admin\'s own', function () {
-    app(UpdateRealmConfiguration::class)->handle($this->realm, ['password_min_length' => 12]);
+    $this->realm->writeSettings(['password_min_length' => 12]);
     $admin = globalAdmin();
     $payload = fn (string $email, string $password): array => [
         'name' => 'Wanda Needle', 'email' => $email, 'credentials' => 'password', 'password' => $password,

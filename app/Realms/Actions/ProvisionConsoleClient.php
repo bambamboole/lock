@@ -117,12 +117,11 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
 
     private function applySettings(Realm $realm, string $clientId, bool $trusted): bool
     {
-        $settings = $realm->settings;
-        $changed = $settings->string('realm.first_party_client_id') !== $clientId
-            || $settings->boolean('realm.first_party_trusted') !== $trusted;
+        $clients = $realm->clients();
+        $changed = $clients->firstPartyClientId !== $clientId || $clients->firstPartyTrusted !== $trusted;
 
-        $settings->set('realm.first_party_client_id', $clientId);
-        $settings->set('realm.first_party_trusted', $trusted);
+        $realm->first_party_client_id = $clientId;
+        $realm->writeSettings(['first_party_trusted' => $trusted]);
 
         return $changed;
     }

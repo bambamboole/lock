@@ -15,8 +15,8 @@ The existing modules are `Admin`, `Auth`, `Shared`, and `Realms`.
 
 `app/Shared/{Domain}/` is the public surface of a domain: the contracts, attributes, traits, and DTOs other modules
 may depend on (`app/Shared/Auth/Contracts/PermissionEnum`,
-`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — settings, the audit trail — is a whole
-module there (`app/Shared/Settings`, `app/Shared/Audit`). It imports nothing from `app/{Domain}/`; the domain provider binds each
+`app/Shared/Audit/Contracts/AuditEvent`). A concern no single domain owns — the audit trail, the API's own OAuth surface — is a whole
+module there (`app/Shared/Audit`, `app/Shared/Api`). It imports nothing from `app/{Domain}/`; the domain provider binds each
 contract to its implementation. `App\Auth\Models\User`, `App\Realms\Models\Realm`, `App\Realms\Models\RealmRole`, `App\Admin\Models\Role`,
 `App\Resources\Models\Resource` and `App\Resources\Models\ResourceScope` are the shared kernel and may be imported anywhere — relations, route bindings, and policies need the concrete class. Behaviour a neighbour
 needs is a contract there (`App\Shared\Auth\Contracts\DeletesUser`, `App\Shared\Realms\Contracts\CreatesRealm`),

@@ -11,7 +11,7 @@ final class DatabaseRealmRepository implements RealmRepository
 {
     public function find(string $id): ?Realm
     {
-        return Realm::query()->with('storedSettings')->where('slug', $id)->first();
+        return Realm::query()->where('slug', $id)->first();
     }
 
     public function findByDomain(string $host): ?Realm

@@ -1,7 +1,6 @@
 ---
 paths:
     - "app/*/Models/**"
-    - "app/Shared/Settings/Models/**"
 ---
 
 # Models
@@ -39,3 +38,10 @@ docblock and PHPStan then rejects the case. Write the class fully qualified (`\A
 generics, `@property` tags and `@extends` clauses.
 
 `Realm` hard-deletes — a deleted realm frees its slug — and `App\Realms\Actions\DeleteRealm` is the only place that removes one, because the package rows keyed by the realm slug have no foreign key to cascade from. Deleting a user, client or realm goes through laravel-oidc's `PurgeUser`, `PurgeClient` and `PurgeRealm`, which know every package table; never list package tables in the app.
+
+## Lifecycle hooks live on the model, in a #[Boot] method
+
+A model's `creating`/`updating`/`deleting`/… hooks are registered in a static method the model carries, tagged
+`#[Boot]` — not in an observer class, and not in a `boot()` override. The invariants a model refuses to break read
+next to the attributes they guard, which is why `App\Realms\Models\Realm` pins its immutable slug and the
+undeletable master realm there. There is no `app/{Domain}/Observers/` folder.

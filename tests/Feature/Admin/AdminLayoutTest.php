@@ -14,7 +14,7 @@ it('shows the instance areas while no realm is selected', function () {
     $response = $this->actingAs(globalAdmin())->get(route('admin.realms'))->assertOk();
 
     expect(menuItemHrefs(latticeSchema($response, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
-        ->toBe(['/admin/realms', '/admin/activity']);
+        ->toBe(['/admin/realms', '/admin/api', '/admin/activity']);
 });
 
 it('turns the sidebar into the selected realm console, showing only what the admin may open', function (string $roleName, array $areas) {

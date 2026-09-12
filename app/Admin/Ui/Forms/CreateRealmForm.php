@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Forms;
 
 use App\Admin\Enums\AdminPermission;
+use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Data\CreateRealmData;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Support\RealmDomain;
@@ -32,7 +34,7 @@ final class CreateRealmForm extends FormDefinition
     {
         return $form->schema([
             TextInput::make('name', __('admin.realms.fields.name.label'))
-                ->required()->rules(['string', 'max:255']),
+                ->required()->rules(['string', 'max:'.Realm::NAME_MAX_LENGTH]),
             TextInput::make('slug', __('admin.realms.fields.slug.label'))
                 ->helperText(__('admin.realms.fields.slug.help-text'))
                 ->required()->rules(['string', 'max:63', 'regex:/\A[a-z0-9]+(?:-[a-z0-9]+)*\z/', Rule::unique('realms', 'slug')]),
@@ -49,7 +51,11 @@ final class CreateRealmForm extends FormDefinition
      */
     public function handle(FormData $data): LatticeResponse
     {
-        $realm = $this->createRealm->handle((string) $data->string('name'), (string) $data->string('domain'), (string) $data->string('slug'));
+        $realm = $this->createRealm->handle(CreateRealmData::from([
+            'name' => (string) $data->string('name'),
+            'slug' => (string) $data->string('slug'),
+            'domain' => (string) $data->string('domain'),
+        ]));
         $status = $this->checkDomain->handle($realm);
 
         if ($status === RealmDomainStatus::Verified) {

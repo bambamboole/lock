@@ -6,7 +6,8 @@ namespace App\Admin\Ui\Forms;
 use App\Admin\Enums\AdminPermission;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
-use App\Shared\Realms\Contracts\UpdatesRealmDomain;
+use App\Shared\Realms\Contracts\UpdatesRealm;
+use App\Shared\Realms\Data\UpdateRealmData;
 use App\Shared\Realms\Enums\RealmDomainStatus;
 use App\Shared\Realms\Support\RealmDomain;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ use Lattice\Ui\Enums\Variant;
 final class UpdateRealmDomainForm extends FormDefinition
 {
     public function __construct(
-        private readonly UpdatesRealmDomain $updateDomain,
+        private readonly UpdatesRealm $updateRealm,
         private readonly ChecksRealmDomain $checkDomain,
     ) {}
 
@@ -57,7 +58,7 @@ final class UpdateRealmDomainForm extends FormDefinition
         $realm = $this->realm();
         $before = $realm->domain;
 
-        $this->updateDomain->handle($realm, (string) $data->string('domain'));
+        $realm = $this->updateRealm->handle($realm, UpdateRealmData::from(['domain' => (string) $data->string('domain')]));
 
         if ($realm->domain === $before) {
             return Effects::respond()->toRoute('admin.realms.settings', ['realm' => $realm->slug]);

@@ -6,6 +6,8 @@ namespace Tests\Helpers;
 
 use App\Realms\Models\Realm;
 use App\Realms\Support\DomainCheckToken;
+use App\Shared\Realms\Contracts\CreatesRealm;
+use App\Shared\Realms\Data\CreateRealmData;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Client\Request;
@@ -47,4 +49,20 @@ function realmClient(Realm $realm, string $name = 'Existing app', bool $confiden
 {
     return $realm->runAsCurrent(fn (): Client => app(ClientRepository::class)
         ->createAuthorizationCodeGrantClient($name, ['https://rp.test/callback'], $confidential));
+}
+
+/**
+ * A realm built the way the console and the API build one, so it gets its own
+ * signing keypair.
+ *
+ * @param  array<string, mixed>  $settings
+ */
+function createRealm(string $name, string $slug, string $domain, array $settings = []): Realm
+{
+    return app(CreatesRealm::class)->handle(CreateRealmData::from([
+        'name' => $name,
+        'slug' => $slug,
+        'domain' => $domain,
+        'settings' => $settings,
+    ]));
 }

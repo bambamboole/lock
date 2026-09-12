@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Auth\Models\User;
-use App\Realms\Actions\UpdateRealmConfiguration;
 use App\Realms\Models\Realm;
 use Bambamboole\LaravelOidc\Server\Authentication\PasswordResetTokens;
 use Illuminate\Http\Response;
@@ -31,7 +30,7 @@ function registerIn(Realm $realm, string $password): TestResponse
 it('enforces each realms own password policy at registration', function () {
     $strict = Realm::factory()->create(['slug' => 'strict']);
     $lenient = Realm::factory()->create(['slug' => 'lenient']);
-    app(UpdateRealmConfiguration::class)->handle($strict, ['password_min_length' => 12, 'password_numbers' => true]);
+    $strict->writeSettings(['password_min_length' => 12, 'password_numbers' => true]);
 
     registerIn($strict, 'tencharspw')->assertSessionHasErrors('password');
     registerIn($strict, 'twelvechars12')->assertSessionHasNoErrors();
@@ -43,7 +42,7 @@ it('enforces each realms own password policy at registration', function () {
 
 it('enforces the realms password policy when a password is reset', function () {
     $realm = Realm::factory()->create(['slug' => 'strict']);
-    app(UpdateRealmConfiguration::class)->handle($realm, ['password_min_length' => 12]);
+    $realm->writeSettings(['password_min_length' => 12]);
     $user = User::factory()->for($realm)->create();
     $token = $realm->runAsCurrent(fn (): string => app(PasswordResetTokens::class)->create($user));
 

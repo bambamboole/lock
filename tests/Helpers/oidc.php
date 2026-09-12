@@ -30,8 +30,8 @@ function selfSsoProviderFake(?Client $client = null): OidcClientFake
     ]);
 
     $realm = Realm::master();
-    $realm->settings->set('realm.first_party_client_id', $client->client_id);
-    $realm->settings->set('realm.first_party_trusted', true);
+    $realm->first_party_client_id = $client->client_id;
+    $realm->writeSettings(['first_party_trusted' => true]);
 
     return OidcClient::fake();
 }

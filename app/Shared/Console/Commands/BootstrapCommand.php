@@ -6,6 +6,7 @@ namespace App\Shared\Console\Commands;
 
 use App\Realms\Models\Realm;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
+use App\Shared\Api\ManagementApi;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use App\Shared\Realms\Contracts\ProvisionsConsoleClient;
 use Illuminate\Console\Attributes\Description;
@@ -23,7 +24,7 @@ use RuntimeException;
 #[Signature('app:bootstrap')]
 final class BootstrapCommand extends Command
 {
-    public function handle(ProvisionsConsoleClient $clients, EnsuresAdministrator $administrators): int
+    public function handle(ProvisionsConsoleClient $clients, EnsuresAdministrator $administrators, ManagementApi $api): int
     {
         $realm = Realm::master();
 
@@ -33,6 +34,7 @@ final class BootstrapCommand extends Command
             // do.
             $outcomes = DB::transaction(fn (): array => [
                 'console client' => $this->provisionClient($clients, $realm),
+                'management api' => $api->reconcile($realm),
                 'administrator' => $this->ensureAdministrator($administrators),
             ]);
         } catch (ValidationException $exception) {

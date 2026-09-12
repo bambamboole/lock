@@ -5,64 +5,22 @@ declare(strict_types=1);
 namespace App\Shared\Realms\Support;
 
 use App\Shared\Realms\Data\RealmSetting;
+use App\Shared\Realms\Data\RealmSettings;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Enums\RealmSettingType;
-use App\Shared\Settings\SettingsRegistry;
 use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
 use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 
 final class RealmConfiguration
 {
-    /** @return array<string, int|bool|string|list<string>> */
+    /** @return array<string, mixed> */
     public static function defaults(): array
     {
-        $tokens = new TokenSettings;
-        $sessions = new SessionSettings;
-        $authentication = AuthenticationSettings::fromConfig();
-        $credentials = new CredentialSettings;
-        $clients = new ClientSettings;
-        $password = PasswordPolicy::fromConfig();
-
-        return [
-            'access_token_lifetime' => $tokens->accessTokenLifetime,
-            'id_token_lifetime' => $tokens->idTokenLifetime,
-            'client_credentials_lifetime' => $tokens->clientCredentialsLifetime,
-            'refresh_token_lifetime' => $tokens->refreshTokenLifetime,
-            'session_absolute_lifetime' => $sessions->absoluteLifetime,
-            'session_token_ttl' => $sessions->tokenTtl,
-            'session_token_refresh_skew' => $sessions->tokenRefreshSkew,
-            'login_methods' => array_map(fn (LoginMethod $method): string => $method->value, $authentication->methods),
-            'email_verification_required' => $authentication->emailVerificationRequired,
-            'mfa_requirement' => $authentication->mfa->value,
-            'challenge_providers' => $credentials->challengeProviders,
-            'totp_secret_length' => $credentials->totpSecretLength,
-            'totp_window' => $credentials->totpWindow,
-            'recovery_codes' => $credentials->recoveryCodes,
-            'password_min_length' => $password->minLength,
-            'password_mixed_case' => $password->mixedCase,
-            'password_numbers' => $password->numbers,
-            'password_symbols' => $password->symbols,
-            'password_uncompromised' => $password->uncompromised,
-            'password_history' => $password->history,
-            'password_max_age_days' => $password->maxAgeDays ?? 0,
-            'dynamic_registration' => $clients->dynamicRegistration,
-            'allowed_redirect_schemes' => $clients->allowedRedirectSchemes,
-            'allowed_redirect_domains' => $clients->allowedRedirectDomains,
-            'default_scopes' => $clients->defaultScopes,
-            'optional_scopes' => $clients->optionalScopes,
-            'token_exchange' => $clients->tokenExchange,
-            'first_party_trusted' => $clients->firstPartyTrusted,
-            'trusted_clients' => $clients->trustedClients,
-        ];
+        return RealmSettings::defaults()->toArray();
     }
 
     /**
@@ -108,7 +66,7 @@ final class RealmConfiguration
      */
     public static function attributeNames(): array
     {
-        $names = ['name' => __('admin.realms.fields.name.label')];
+        $names = [];
 
         foreach (self::settings() as $setting) {
             $names[$setting->name] = __('admin.realms.fields.'.$setting->translationKey().'.label');
@@ -117,27 +75,10 @@ final class RealmConfiguration
         return $names;
     }
 
-    public static function register(SettingsRegistry $registry): void
-    {
-        foreach (self::defaults() as $key => $default) {
-            $definition = $registry->define('realm.'.$key)->default($default);
-
-            match (true) {
-                is_int($default) => $definition->integer(),
-                is_bool($default) => $definition->boolean(),
-                is_string($default) => $definition->string(),
-                default => $definition->array(),
-            };
-        }
-
-        $registry->define('realm.first_party_client_id')->string();
-    }
-
     /** @return array<string, list<string|In>> */
     public static function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
             'access_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'id_token_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
             'client_credentials_lifetime' => ['required', 'integer', 'min:1', 'max:31536000'],
@@ -175,6 +116,27 @@ final class RealmConfiguration
             'trusted_clients' => ['present', 'array', 'list', 'max:100'],
             'trusted_clients.*' => ['required', 'string', 'max:255', 'distinct'],
         ];
+    }
+
+    /**
+     * Validates a whole configuration — a submission merged into the realm's
+     * current values, or into {@see defaults()} for a realm being created — so
+     * the rules comparing two settings see both of them. The realm is named
+     * rather than passed: a client it trusts has to be one of its own, and on a
+     * create the slug is known before the row is.
+     *
+     * @param  array<string, mixed>  $configuration
+     * @return array<string, mixed>
+     */
+    public static function validate(array $configuration, string $realmSlug): array
+    {
+        return Validator::make($configuration, [
+            ...self::rules(),
+            'trusted_clients.*' => [
+                ...self::rules()['trusted_clients.*'],
+                Rule::exists('oidc_clients', 'client_id')->where('realm_id', $realmSlug)->where('revoked', 0),
+            ],
+        ])->setAttributeNames(self::attributeNames())->validate();
     }
 
     /**

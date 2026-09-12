@@ -36,7 +36,7 @@ final class DeleteResourceAction extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        return $this->resourceOrNull() instanceof Resource;
+        return $this->mutableResourceOrNull() instanceof Resource;
     }
 
     public function handle(Request $request): ActionResult
