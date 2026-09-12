@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3e2a36d78ac5d342683285baed28abc9",
+    "content-hash": "86b4d741639174a56037d3cc3c2bc3e6",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -302,16 +302,16 @@
         },
         {
             "name": "bambamboole/spectacular",
-            "version": "0.26.0",
+            "version": "0.27.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bambamboole/spectacular.git",
-                "reference": "2d62bc90989c641d7dfaa9a39672b0aeafc7bfa2"
+                "reference": "7915b761e3d1bff1766dae8ef68e0015ba36fd02"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bambamboole/spectacular/zipball/2d62bc90989c641d7dfaa9a39672b0aeafc7bfa2",
-                "reference": "2d62bc90989c641d7dfaa9a39672b0aeafc7bfa2",
+                "url": "https://api.github.com/repos/bambamboole/spectacular/zipball/7915b761e3d1bff1766dae8ef68e0015ba36fd02",
+                "reference": "7915b761e3d1bff1766dae8ef68e0015ba36fd02",
                 "shasum": ""
             },
             "require": {
@@ -340,7 +340,7 @@
                 "bambamboole/laravel-webhooks": "Document webhook events alongside broadcasts in the generated AsyncAPI (>=0.3).",
                 "brick/math": "Type BigDecimal directly on Data properties: auto-registered cast/transformer plus an OpenAPI schema accepting number and decimal string.",
                 "lattice-php/api-reference": "Render the generated OpenAPI documents as a browsable API reference (Lattice component, ^0.42).",
-                "spatie/laravel-data": "Document the request body of actions taking a Data object, descriptions included (^4.23).",
+                "spatie/laravel-data": "Document the request body and the response of actions taking or returning a Data object, descriptions included (^4.23).",
                 "spatie/laravel-model-states": "Document model state properties as string enum schemas in the generated OpenAPI (^2.0)."
             },
             "type": "library",
@@ -376,9 +376,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bambamboole/spectacular/issues",
-                "source": "https://github.com/bambamboole/spectacular/tree/0.26.0"
+                "source": "https://github.com/bambamboole/spectacular/tree/0.27.0"
             },
-            "time": "2026-08-17T11:03:24+00:00"
+            "time": "2026-09-12T11:36:26+00:00"
         },
         {
             "name": "brick/math",

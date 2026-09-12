@@ -9,8 +9,9 @@ paths:
 
 `Http/Controllers` for web controllers, `Http/Requests` for their Form Requests, `Http/Middleware` for middleware.
 A token-authenticated JSON endpoint — one gated in `routes/api.php` by `CheckScopes::using(ApiScope::…)` — goes under
-`Http/Api/V1/Controllers`, with its `JsonResource` classes in `Http/Api/V1/Resources`. An API endpoint takes no Form
-Request: its payload is a `spatie/laravel-data` object (see `.ai/rules/services.md`). Never put an API controller or resource directly under `Http/Controllers` or
+`Http/Api/V1/Controllers`, with the `spatie/laravel-data` class it answers with in `Http/Api/V1/Resources` — there is
+no `JsonResource` here, and no Form Request either: what a write accepts is a laravel-data object too (see
+`.ai/rules/services.md`). Never put an API controller or resource directly under `Http/Controllers` or
 `Http/Resources`: the version segment is what makes a breaking API change a new folder instead of an edit to the one
 every client already calls.
 

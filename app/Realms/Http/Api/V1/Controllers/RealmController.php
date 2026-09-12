@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Realms\Http\Api\V1\Controllers;
 
-use App\Realms\Http\Api\V1\Resources\RealmResource;
+use App\Realms\Http\Api\V1\Resources\RealmData;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
@@ -12,12 +12,13 @@ use App\Shared\Realms\Contracts\UpdatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
 use App\Shared\Realms\Data\UpdateRealmData;
 use Bambamboole\Spectacular\QueryBuilder;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Dedoc\Scramble\Attributes\IgnoreResponse;
+use Dedoc\Scramble\Attributes\Response;
 use Illuminate\Validation\ValidationException;
 use Spatie\LaravelData\Optional;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 final readonly class RealmController
 {
@@ -33,9 +34,9 @@ final readonly class RealmController
      *
      * Every realm this instance serves, the administration realm included.
      *
-     * @return AnonymousResourceCollection<array-key, RealmResource>
+     * @return PaginatedDataCollection<array-key, RealmData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         $realms = QueryBuilder::for(Realm::class)
             ->allowedFilters(
@@ -48,15 +49,15 @@ final readonly class RealmController
             ->defaultSort('name')
             ->apiPaginate();
 
-        return RealmResource::collection($realms);
+        return RealmData::collect($realms, PaginatedDataCollection::class);
     }
 
     /**
      * Show a realm
      */
-    public function show(Realm $realm): RealmResource
+    public function show(Realm $realm): RealmData
     {
-        return new RealmResource($realm);
+        return RealmData::fromRealm($realm);
     }
 
     /**
@@ -67,13 +68,15 @@ final readonly class RealmController
      * `domain_status` rather than refused — DNS and the proxy usually follow.
      * Settings left out of `settings` follow the instance defaults.
      */
-    public function store(CreateRealmData $data): JsonResponse
+    #[IgnoreResponse(200)]
+    #[Response(201, type: RealmData::class)]
+    public function store(CreateRealmData $data): SymfonyResponse
     {
         $realm = $this->reportingSettingErrors(fn (): Realm => $this->createRealm->handle($data));
 
         $this->checkDomain->handle($realm);
 
-        return new RealmResource($realm->refresh())->response()->setStatusCode(Response::HTTP_CREATED);
+        return RealmData::fromRealm($realm->refresh())->toResponse(request())->setStatusCode(SymfonyResponse::HTTP_CREATED);
     }
 
     /**
@@ -83,7 +86,7 @@ final readonly class RealmController
      * their current value. Re-pointing the domain changes the issuer of every
      * token the realm mints and restarts the domain check.
      */
-    public function update(UpdateRealmData $data, Realm $realm): RealmResource
+    public function update(UpdateRealmData $data, Realm $realm): RealmData
     {
         $realm = $this->reportingSettingErrors(fn (): Realm => $this->updateRealm->handle($realm, $data));
 
@@ -91,7 +94,7 @@ final readonly class RealmController
             $this->checkDomain->handle($realm);
         }
 
-        return new RealmResource($realm->refresh());
+        return RealmData::fromRealm($realm->refresh());
     }
 
     /**
@@ -126,9 +129,9 @@ final readonly class RealmController
      * Purges the realm's users, roles, clients, tokens and keys, and frees its
      * slug. The administration realm cannot be deleted.
      */
-    public function destroy(Realm $realm): Response
+    public function destroy(Realm $realm): SymfonyResponse
     {
-        abort_if($realm->isMaster(), Response::HTTP_CONFLICT, 'The administration realm cannot be deleted.');
+        abort_if($realm->isMaster(), SymfonyResponse::HTTP_CONFLICT, 'The administration realm cannot be deleted.');
 
         $this->deleteRealm->handle($realm);
 

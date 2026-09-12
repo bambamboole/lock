@@ -14,7 +14,7 @@
         "php": "^8.4",
         "bambamboole/laravel-i18next": "^0.6.0",
         "bambamboole/laravel-oidc": "^0.30.0",
-        "bambamboole/spectacular": "^0.26.0",
+        "bambamboole/spectacular": "^0.27.0",
         "inertiajs/inertia-laravel": "^3.3.3",
         "laravel/framework": "^13.31.0",
         "laravel/octane": "^2.19.1",
