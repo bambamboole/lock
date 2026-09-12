@@ -42,7 +42,7 @@ definition endpoints may run after the page request, so the registered context r
 
 Give closure resolvers a concrete model return type. Lattice uses it to map bound route models to registered context
 keys. The `realm` resolver in `RealmsServiceProvider` is a plain lookup: every realm definition gates itself on an
-`AdminPermission`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
+`ApiScope`, so the slug the client round-trips on lazy table and form requests cannot reach data the admin
 may not see anyway. A resolver for data that is not admin-only has to check the signed-in user itself.
 
 Context resolvers are pure lookups. A resolver also runs while components are merely being built, once per distinct
@@ -51,7 +51,7 @@ about. Request-wide state keyed to the context belongs in `Definition::activated
 signed endpoint after the gate has passed; a page has no `activated()`.
 
 Declare simple authorization on the definition attribute:
-`#[AsForm('admin.realms.update', can: [AdminPermission::Access, AdminPermission::ManageRealms])]`. With a registered
+`#[AsForm('admin.realms.update', can: ApiScope::RealmsWrite)]`. With a registered
 subject key (`on: 'realm'`) Lattice resolves the subject before the definition runs and denies a missing subject. Keep `authorize()` only for conditions a gate
 subject cannot express, and use the nullable context accessor inside it.
 

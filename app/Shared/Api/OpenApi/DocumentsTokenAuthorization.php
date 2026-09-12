@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Api\OpenApi;
 
-use Bambamboole\LaravelOidc\Server\Tokens\Http\Middleware\CheckScopes;
+use App\Shared\Http\Middleware\EnsureScopes;
 use Dedoc\Scramble\Extensions\OperationExtension;
 use Dedoc\Scramble\Support\Generator\Operation;
 use Dedoc\Scramble\Support\Generator\Reference;
@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 
 /**
  * Two things no controller body reveals. The scopes a route requires live in
- * its `CheckScopes` middleware — without them every operation would inherit the
+ * its `EnsureScopes` middleware — without them every operation would inherit the
  * document's bare requirement, and neither a reader nor the reference's
  * playground, which mints a token per operation scope set, could tell what a
  * call needs. And the guard rejects with the RFC 6750 error body rather than
@@ -67,7 +67,7 @@ final class DocumentsTokenAuthorization extends OperationExtension
     /** @return list<string> */
     private function scopesOf(RouteInfo $routeInfo): array
     {
-        $prefix = CheckScopes::class.':';
+        $prefix = EnsureScopes::class.':';
         $scopes = [];
 
         foreach ($routeInfo->route->gatherMiddleware() as $middleware) {

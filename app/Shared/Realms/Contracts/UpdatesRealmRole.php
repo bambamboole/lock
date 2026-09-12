@@ -7,5 +7,8 @@ use App\Realms\Models\RealmRole;
 
 interface UpdatesRealmRole
 {
-    public function handle(RealmRole $role, string $name, ?string $description): void;
+    /**
+     * @param  list<string>  $scopeIds  resource scope rows of the same realm
+     */
+    public function handle(RealmRole $role, string $name, ?string $description, array $scopeIds): void;
 }

@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Api\ManagementApi;
 
@@ -51,10 +50,10 @@ it('mints a scoped token on execute that the API accepts', function () {
         ->assertJsonPath('data.0.slug', Realm::master()->slug);
 });
 
-it('refuses to mint a token for an admin who cannot manage realms', function () {
+it('refuses to mint a token for an admin who cannot write realms', function () {
     $request = playgroundTokenRequest(ApiScope::RealmsWrite);
 
-    $this->actingAs(globalAdminWith(AdminPermission::Access, AdminPermission::ViewRealms))
+    $this->actingAs(globalAdminWith(ApiScope::RealmsRead))
         ->withHeader('X-Lattice-Ref', $request['ref'])
         ->postJson($request['endpoint'], $request['payload'])
         ->assertForbidden();
@@ -70,6 +69,6 @@ it('refuses a scope set no sealed reference covers', function () {
         ->assertForbidden();
 });
 
-it('closes the page to an admin without the realms permission', function () {
-    $this->actingAs(globalAdminWith(AdminPermission::Access))->get(route('admin.api'))->assertForbidden();
+it('closes the page to an admin without realms:read', function () {
+    $this->actingAs(globalAdminWith(ApiScope::ActivityRead))->get(route('admin.api'))->assertForbidden();
 });

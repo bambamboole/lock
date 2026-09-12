@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Models\Role;
-use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
-use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
+use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -18,63 +17,44 @@ use Illuminate\Support\Facades\Notification;
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
 
-test('a roles-manage admin can grant a global role to a user, and the grant is recorded', function () {
+test('a roles-write admin grants a master realm role, and the console opens for its holder', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
-    $superAdminRole = Role::query()->where('name', GlobalRoles::SUPER_ADMIN)->sole();
+    $superAdmin = Realm::master()->realmRoles()->where('name', ManagementRoles::SUPER_ADMIN)->sole();
 
-    $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
-        'role_ids' => [$superAdminRole->id],
-    ], ['user' => $target->id])->assertOk();
+    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
+        'role_ids' => [$superAdmin->id],
+    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
-    $activity = Activity::global()->sole();
-
-    expect($target->refresh()->can(AdminPermission::Access))->toBeTrue()
-        ->and($activity->event)->toBe(AdminAuditEvent::GlobalRolesUpdated->eventName())
-        ->and($activity->subject_id)->toBe($target->id)
-        ->and($activity->causer_id)->toBe($admin->id)
-        ->and($activity->properties?->get('added'))->toBe([GlobalRoles::SUPER_ADMIN])
-        ->and($activity->properties?->get('removed'))->toBe([]);
+    expect($target->refresh()->can(ApiScope::RealmsWrite))->toBeTrue();
 });
 
-test('global roles cannot be granted to a user outside the master realm', function () {
-    $admin = globalAdmin();
-    $target = User::factory()->create();
-    $superAdminRole = Role::query()->where('name', GlobalRoles::SUPER_ADMIN)->sole();
-
-    $this->actingAs($admin)->callDeniedAction(UpdateUserGlobalRoles::class, [
-        'role_ids' => [$superAdminRole->id],
-    ], ['user' => $target->id])->assertForbidden();
-
-    expect($target->refresh()->roles()->exists())->toBeFalse();
-});
-
-test('clearing a user\'s global roles revokes their admin access', function () {
+test('clearing a user\'s roles revokes their console access', function () {
     $admin = globalAdmin();
     $target = globalAdmin();
 
-    $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
+    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
         'role_ids' => [],
-    ], ['user' => $target->id]);
+    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
-    expect($target->refresh()->can(AdminPermission::Access))->toBeFalse();
+    expect($target->refresh()->managementScopes()->all())->toBeEmpty();
 });
 
-test('an admin cannot change their own global roles', function () {
+test('an admin cannot change their own roles', function () {
     $admin = globalAdmin();
 
-    $this->actingAs($admin)->callDeniedAction(UpdateUserGlobalRoles::class, [
+    $this->actingAs($admin)->callDeniedAction(UpdateUserRealmRoles::class, [
         'role_ids' => [],
-    ], ['user' => $admin->id])->assertForbidden();
+    ], ['realm' => Realm::master()->slug, 'user' => $admin->id])->assertForbidden();
 });
 
-test('a support admin cannot manage global roles', function () {
-    $support = globalAdmin(GlobalRoles::SUPPORT);
-    $target = User::factory()->create();
+test('support cannot manage roles', function () {
+    $support = globalAdmin(ManagementRoles::SUPPORT);
+    $target = User::factory()->for(Realm::master())->create();
 
-    $this->actingAs($support)->callDeniedAction(UpdateUserGlobalRoles::class, [
+    $this->actingAs($support)->callDeniedAction(UpdateUserRealmRoles::class, [
         'role_ids' => [],
-    ], ['user' => $target->id])->assertForbidden();
+    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertForbidden();
 });
 
 test('a users-manage admin can resend verification for an unverified user', function () {
@@ -113,7 +93,7 @@ test('a users-manage admin can send a password reset', function () {
 
 test('an admin without users-manage cannot resend verification', function () {
     Notification::fake();
-    $outsider = globalAdminWith(AdminPermission::Access);
+    $outsider = globalAdminWith(ApiScope::UsersRead);
     $target = User::factory()->unverified()->create();
 
     $this->actingAs($outsider)
@@ -125,7 +105,7 @@ test('an admin without users-manage cannot resend verification', function () {
 
 test('an admin without users-manage cannot send a password reset', function () {
     Notification::fake();
-    $outsider = globalAdminWith(AdminPermission::Access);
+    $outsider = globalAdminWith(ApiScope::UsersRead);
     $target = User::factory()->create();
 
     $this->actingAs($outsider)

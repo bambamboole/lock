@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Shared\Ui\Pages;
 
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
 use Lattice\Http\Page;
 
-#[AsPage(layout: 'admin', middleware: ['web', 'auth', 'verified'], can: AdminPermission::Access)]
+#[AsPage(layout: 'admin', middleware: ['web', 'auth', 'verified'])]
 abstract class AdminPage extends Page
 {
     /**

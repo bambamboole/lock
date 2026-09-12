@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
 
 test('admin:grant makes a user an admin and records it with a system actor', function () {
@@ -15,12 +15,12 @@ test('admin:grant makes a user an admin and records it with a system actor', fun
 
     $activity = Activity::global()->sole();
 
-    expect($user->refresh()->can(AdminPermission::Access))->toBeTrue()
+    expect($user->refresh()->can(ApiScope::RealmsWrite))->toBeTrue()
         ->and($activity->event)->toBe(AdminAuditEvent::SuperAdminGranted->eventName())
         ->and($activity->subject_id)->toBe($user->id)
         ->and($activity->causer_name)->toBe(__('admin.activity.system-actor'))
         ->and($activity->properties?->get('actor'))->toBe('console:admin:grant')
-        ->and($activity->properties?->get('added'))->toBe([GlobalRoles::SUPER_ADMIN]);
+        ->and($activity->properties?->get('added'))->toBe([ManagementRoles::SUPER_ADMIN]);
 });
 
 test('re-granting an existing admin is not recorded twice', function () {

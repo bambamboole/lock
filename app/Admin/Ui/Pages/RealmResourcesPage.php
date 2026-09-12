@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Pages;
 use App\Admin\Ui\Actions\CreateResourceAction;
 use App\Admin\Ui\Tables\AdminResourcesTable;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -18,7 +18,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/resources', name: 'admin.realms.resources', can: [AdminPermission::Access, AdminPermission::ViewResources])]
+#[AsPage(route: '/admin/realms/{realm}/resources', name: 'admin.realms.resources', can: ApiScope::ResourcesRead)]
 final class RealmResourcesPage extends AdminPage
 {
     public function title(): string

@@ -9,7 +9,7 @@ use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -27,7 +27,7 @@ use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/resources/{resource}', name: 'admin.realms.resources.show', can: [AdminPermission::Access, AdminPermission::ViewResources])]
+#[AsPage(route: '/admin/realms/{realm}/resources/{resource}', name: 'admin.realms.resources.show', can: ApiScope::ResourcesRead)]
 final class ResourceDetailPage extends AdminPage
 {
     public function render(PageSchema $schema, Realm $realm, Resource $resource, RealmAudiences $audiences): PageSchema

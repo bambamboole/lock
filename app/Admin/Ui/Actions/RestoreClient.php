@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Actions;
 
 use App\Admin\Ui\Concerns\ResolvesRealmClient;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\SetsClientRevocation;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
@@ -14,7 +14,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.clients.restore', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsAction('admin.clients.restore', can: ApiScope::ClientsWrite)]
 final class RestoreClient extends ActionDefinition
 {
     use ResolvesRealmClient;

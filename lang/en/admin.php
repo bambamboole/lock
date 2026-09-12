@@ -111,9 +111,6 @@ return [
                 'heading' => 'Profile',
                 'subtitle' => 'Name, email address, verification state and realm membership.',
             ],
-            'admin-roles' => [
-                'heading' => 'Admin roles',
-            ],
             'realm-roles' => [
                 'heading' => 'Realm roles',
                 'subtitle' => 'Issued as the roles claim in every ID and access token of this user.',
@@ -125,13 +122,6 @@ return [
                 'update' => 'Update realm roles',
                 'updated' => 'Realm roles updated.',
             ],
-            'roles' => [
-                'field' => [
-                    'label' => 'Global roles',
-                ],
-            ],
-            'update-roles' => 'Update roles',
-            'roles-updated' => 'Global roles updated.',
             'resend-verification' => 'Resend verification',
             'verification-sent' => 'Verification email sent.',
             'send-password-reset' => 'Send password reset',
@@ -665,6 +655,10 @@ return [
             ],
             'description' => [
                 'label' => 'Description',
+            ],
+            'scopes' => [
+                'label' => 'Scopes',
+                'help-text' => 'What the role grants. A scope belongs to a resource of this realm; a role that may write also needs the matching read scope.',
             ],
         ],
         'validation' => [

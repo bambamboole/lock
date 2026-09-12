@@ -24,7 +24,7 @@ beforeEach(function () {
 
 it('reconciles the resource and its scopes, and reports a repeat run as unchanged', function () {
     expect($this->resource->name)->toBe(ManagementApi::NAME)
-        ->and($this->resource->scopes->pluck('value')->sort()->values()->all())->toBe(ApiScope::values())
+        ->and($this->resource->scopes->pluck('value')->all())->toEqualCanonicalizing(ApiScope::values())
         ->and($this->scope->description)->toBe(ApiScope::RealmsRead->description())
         ->and(app(ManagementApi::class)->reconcile(Realm::master())->value)->toBe('unchanged');
 });
@@ -35,7 +35,7 @@ it('restores a scope an administrator changed in the database', function () {
 
     expect(app(ManagementApi::class)->reconcile(Realm::master())->value)->toBe('updated')
         ->and($this->scope->refresh()->description)->toBe(ApiScope::RealmsRead->description())
-        ->and($this->resource->refresh()->scopes->pluck('value')->sort()->values()->all())->toBe(ApiScope::values());
+        ->and($this->resource->refresh()->scopes->pluck('value')->all())->toEqualCanonicalizing(ApiScope::values());
 });
 
 it('offers a console admin no way to rename, delete or extend the resource', function () {

@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use Illuminate\Http\Request;
@@ -17,7 +17,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.sessions.end', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.sessions.end', can: ApiScope::UsersWrite)]
 final class EndUserSessionAction extends ActionDefinition
 {
     public function __construct(private readonly EndsUserSessions $endSessions) {}

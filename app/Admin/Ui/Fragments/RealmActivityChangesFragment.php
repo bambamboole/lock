@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Fragments;
 
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Fragments\ActivityChangesFragment;
 use Lattice\Core\Attributes\AsFragment;
 
-#[AsFragment('admin.realm-activity-changes', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+#[AsFragment('admin.realm-activity-changes', can: ApiScope::ActivityRead)]
 final class RealmActivityChangesFragment extends ActivityChangesFragment
 {
     protected function activity(): ?Activity

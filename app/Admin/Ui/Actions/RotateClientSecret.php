@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Ui\Concerns\ResolvesRealmClient;
 use App\Admin\Ui\Pages\ClientDetailPage;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\RotatesClientSecret;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.clients.rotate-secret', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsAction('admin.clients.rotate-secret', can: ApiScope::ClientsWrite)]
 final class RotateClientSecret extends ActionDefinition
 {
     use ResolvesRealmClient;

@@ -11,7 +11,6 @@ use App\Admin\Ui\Actions\ResendUserVerification;
 use App\Admin\Ui\Actions\ResetUserMfaAction;
 use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UnblockUserAction;
-use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
 use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Admin\Ui\Forms\UpdateUserEmailForm;
 use App\Admin\Ui\Forms\UpdateUserNameForm;
@@ -19,12 +18,10 @@ use App\Admin\Ui\Forms\UpdateUserVerificationForm;
 use App\Admin\Ui\Tables\UserSessionsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -47,15 +44,14 @@ use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsPage(route: '/admin/realms/{realm}/users/{user}', name: 'admin.realms.users.show', can: ApiScope::UsersRead)]
 final class UserDetailPage extends AdminPage
 {
-    public function render(PageSchema $schema, Realm $realm, User $user, Request $request): PageSchema
+    public function render(PageSchema $schema, Realm $realm, User $user): PageSchema
     {
         abort_unless($user->belongsToRealm($realm), 404);
 
         $user->setRelation('realm', $realm);
-        $currentUser = $request->user();
 
         $schema->title($user->name)->breadcrumbs($this->realmBreadcrumbs(
             $realm,
@@ -73,7 +69,6 @@ final class UserDetailPage extends AdminPage
                         ...$this->headerActions($user),
                     ]),
                     $this->profileCard($user),
-                    $this->adminRolesCard($user, $currentUser),
                     $this->realmRolesCard($user),
                     $this->sessionsCard(),
                 ]),
@@ -110,15 +105,6 @@ final class UserDetailPage extends AdminPage
                     ->style(DateTimeStyle::Long),
             ]),
         ]);
-    }
-
-    private function adminRolesCard(User $user, ?User $currentUser): Card
-    {
-        return Card::make(__('admin.users.detail.admin-roles.heading'))
-            ->visible($currentUser instanceof User && $user->realm->isMaster() && Gate::forUser($currentUser)->allows(AdminPermission::ManageAdminRoles) && $currentUser->isNot($user))
-            ->schema([
-                ActionBar::button(Action::use(UpdateUserGlobalRoles::class)),
-            ]);
     }
 
     private function realmRolesCard(User $user): Card

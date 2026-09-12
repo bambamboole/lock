@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Models;
 
 use App\Auth\Models\User;
+use App\Resources\Models\ResourceScope;
 use Carbon\CarbonImmutable;
 use Database\Factories\RealmRoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -15,8 +16,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * Emitted as the `roles` claim of its users' tokens; unrelated to the
- * instance-wide App\Admin\Models\Role.
+ * A named set of scopes, emitted as the `roles` claim of its users' tokens.
+ * Its scopes are rows of its own realm's resources, so a role can never grant
+ * something outside the realm it belongs to.
  *
  * @property string $id
  * @property string $realm_id
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  * @property-read Realm $realm
+ * @property-read Collection<int, ResourceScope> $scopes
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  *
@@ -55,6 +58,22 @@ final class RealmRole extends Model
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'realm_role_user')->withTimestamps();
+    }
+
+    /**
+     * @return BelongsToMany<ResourceScope, $this>
+     */
+    public function scopes(): BelongsToMany
+    {
+        return $this->belongsToMany(ResourceScope::class, 'realm_role_scope')->withTimestamps();
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function scopeValues(): array
+    {
+        return array_values(array_unique($this->scopes->map(fn (ResourceScope $scope): string => $scope->value)->all()));
     }
 
     public function belongsToRealm(Realm $realm): bool

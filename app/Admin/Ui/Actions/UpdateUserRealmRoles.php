@@ -6,7 +6,8 @@ namespace App\Admin\Ui\Actions;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Concerns\ResolvesCurrentUser;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -19,9 +20,11 @@ use Lattice\Form\FormData;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.realm-roles.update', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.realm-roles.update', can: ApiScope::RolesWrite)]
 final class UpdateUserRealmRoles extends ActionDefinition
 {
+    use ResolvesCurrentUser;
+
     public function __construct(private readonly SyncsUserRealmRoles $syncRoles) {}
 
     public function definition(Action $action): Action
@@ -43,7 +46,9 @@ final class UpdateUserRealmRoles extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        return $this->realmUserOrNull() instanceof User;
+        $target = $this->realmUserOrNull();
+
+        return $target instanceof User && $target->isNot($this->currentUser());
     }
 
     public function handle(FormData $data): ActionResult

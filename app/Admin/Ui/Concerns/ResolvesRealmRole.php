@@ -5,6 +5,7 @@ namespace App\Admin\Ui\Concerns;
 
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
+use App\Shared\Api\ManagementApi;
 
 /**
  * A role is only reachable through its own realm: the `realmRole` context
@@ -33,5 +34,25 @@ trait ResolvesRealmRole
         $role = $this->contextModelOrNull('realmRole', RealmRole::class);
 
         return $realm instanceof Realm && $role instanceof RealmRole && $role->belongsToRealm($realm) ? $role : null;
+    }
+
+    /**
+     * The protected roles belong to `app:bootstrap`, so the console offers no
+     * way to rename, re-scope or delete them.
+     */
+    private function mutableRealmRole(): RealmRole
+    {
+        $role = $this->mutableRealmRoleOrNull();
+
+        abort_unless($role instanceof RealmRole, 404);
+
+        return $role;
+    }
+
+    private function mutableRealmRoleOrNull(): ?RealmRole
+    {
+        $role = $this->realmRoleOrNull();
+
+        return $role instanceof RealmRole && ! app(ManagementApi::class)->ownsRole($role) ? $role : null;
     }
 }

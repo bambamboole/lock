@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Admin\Models\Role;
-use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Realms\Models\RealmRole;
+use App\Resources\Models\ResourceScope;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementApi;
+use App\Shared\Api\ManagementRoles;
 
-function globalAdmin(string $roleName = GlobalRoles::SUPER_ADMIN): User
+function globalAdmin(string $roleName = ManagementRoles::SUPER_ADMIN): User
 {
     $admin = User::factory()->for(Realm::master())->create();
 
@@ -21,15 +23,50 @@ function globalAdmin(string $roleName = GlobalRoles::SUPER_ADMIN): User
 
 function grantGlobalRole(User $user, string $name): void
 {
-    $user->roles()->attach(Role::query()->where('name', $name)->sole());
+    $user->realmRoles()->attach(Realm::master()->realmRoles()->where('name', $name)->sole());
 }
 
-function globalAdminWith(AdminPermission ...$permissions): User
+/**
+ * A throwaway master realm role holding exactly these management scopes.
+ */
+function globalAdminWith(ApiScope ...$scopes): User
 {
-    $admin = User::factory()->for(Realm::master())->create();
-    $role = Role::factory()->create();
-    $role->syncPermissions(array_values($permissions));
-    $admin->roles()->attach($role);
+    $realm = Realm::master();
+    $admin = User::factory()->for($realm)->create();
+    $role = RealmRole::factory()->for($realm)->create();
+
+    $role->scopes()->sync(managementScopeIds(...$scopes));
+    $admin->realmRoles()->attach($role);
 
     return $admin;
+}
+
+/**
+ * @return list<string>
+ */
+function managementScopeIds(ApiScope ...$scopes): array
+{
+    $resource = Realm::master()->realmResources()->where('identifier', ManagementApi::RESOURCE)->sole();
+
+    return array_values($resource->scopes()
+        ->whereIn('value', array_map(fn (ApiScope $scope): string => $scope->value, $scopes))
+        ->pluck('id')
+        ->map(fn (mixed $id): string => (string) $id)
+        ->all());
+}
+
+/**
+ * @return list<string>
+ */
+function scopeValuesOf(RealmRole $role): array
+{
+    return array_values($role->scopes()->pluck('value')->map(fn (mixed $value): string => (string) $value)->sort()->values()->all());
+}
+
+/**
+ * @return list<string>
+ */
+function resourceScopeValues(ResourceScope ...$scopes): array
+{
+    return array_values(array_map(fn (ResourceScope $scope): string => $scope->value, $scopes));
 }

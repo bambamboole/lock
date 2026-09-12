@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Concerns\ResolvesCurrentUser;
@@ -17,7 +17,7 @@ use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.delete', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.delete', can: ApiScope::UsersWrite)]
 final class DeleteUserAction extends ActionDefinition
 {
     use ResolvesCurrentUser;

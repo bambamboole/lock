@@ -7,7 +7,7 @@ use App\Admin\Ui\Actions\DeleteResourceScopeAction;
 use App\Admin\Ui\Actions\UpdateResourceScopeAction;
 use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
@@ -19,7 +19,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<ResourceScope>
  */
-#[AsTable(self::ID, can: [AdminPermission::Access, AdminPermission::ViewResources])]
+#[AsTable(self::ID, can: ApiScope::ResourcesRead)]
 final class AdminResourceScopesTable extends EloquentTableDefinition
 {
     use ResolvesRealmResource;

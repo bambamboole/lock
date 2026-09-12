@@ -7,7 +7,7 @@ use App\Admin\Ui\Actions\DeleteRealmRoleAction;
 use App\Admin\Ui\Actions\UpdateRealmRoleAction;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
 use Lattice\Table\Attributes\AsTable;
@@ -19,7 +19,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<RealmRole>
  */
-#[AsTable(self::ID, can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsTable(self::ID, can: ApiScope::RolesRead)]
 final class AdminRealmRolesTable extends EloquentTableDefinition
 {
     public const string ID = 'admin.realm-roles';

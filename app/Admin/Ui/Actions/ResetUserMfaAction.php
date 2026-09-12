@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.reset-mfa', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.reset-mfa', can: ApiScope::UsersWrite)]
 final class ResetUserMfaAction extends ActionDefinition
 {
     public function __construct(private readonly ResetsUserMfa $resetMfa) {}

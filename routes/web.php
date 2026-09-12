@@ -2,7 +2,6 @@
 declare(strict_types=1);
 
 use App\Realms\Http\Controllers\DomainCheckController;
-use App\Shared\Admin\Enums\AdminPermission;
 use App\Shared\Auth\Support\RequestUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -12,7 +11,7 @@ Route::get('/', function (Request $request) {
 
     abort_if($user === null, 401);
 
-    return $user->can(AdminPermission::Access)
+    return $user->managementScopes()->isNotEmpty()
         ? to_route('admin.realms')
         : to_route('account');
 })

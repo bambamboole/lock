@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Tables;
 use App\Admin\Ui\Actions\EndUserSessionAction;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,7 +23,7 @@ use Lattice\Ui\Enums\DateTimeStyle;
 /**
  * @extends EloquentTableDefinition<OidcSession>
  */
-#[AsTable(UserSessionsTable::ID, can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsTable(UserSessionsTable::ID, can: ApiScope::UsersRead)]
 final class UserSessionsTable extends EloquentTableDefinition
 {
     public const string ID = 'admin.users.sessions';

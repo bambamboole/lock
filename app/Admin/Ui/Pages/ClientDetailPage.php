@@ -9,7 +9,7 @@ use App\Admin\Ui\Actions\RevokeClient;
 use App\Admin\Ui\Actions\RotateClientSecret;
 use App\Admin\Ui\Forms\UpdateClientForm;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
@@ -40,7 +40,7 @@ use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/clients/{client}', name: 'admin.realms.clients.show', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsPage(route: '/admin/realms/{realm}/clients/{client}', name: 'admin.realms.clients.show', can: ApiScope::ClientsRead)]
 final class ClientDetailPage extends AdminPage
 {
     private const string SECRET_FLASH_KEY = 'admin.clients.revealed-secret';

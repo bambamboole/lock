@@ -4,21 +4,28 @@ declare(strict_types=1);
 
 namespace App\Admin\Database\Seeders;
 
-use App\Admin\Models\Role;
-use App\Admin\Support\GlobalRoles;
+use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementApi;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * The protected roles grant scopes of the management API resource, so the
+ * resource and its scope rows have to be reconciled first. Establishing the
+ * baseline is not an administrative act, so it writes no audit rows —
+ * `app:bootstrap` records a reconcile that actually changes something.
+ */
 final class GlobalRoleSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::transaction(function (): void {
-            foreach (GlobalRoles::grants() as $name => $permissions) {
-                Role::query()
-                    ->firstOrCreate(['name' => $name])
-                    ->syncPermissions($permissions);
-            }
-        });
+        $api = app(ManagementApi::class);
+
+        DB::transaction(fn () => activity()->withoutLogging(function () use ($api): void {
+            $realm = Realm::master();
+
+            $api->reconcile($realm);
+            $api->reconcileRoles($realm);
+        }));
     }
 }

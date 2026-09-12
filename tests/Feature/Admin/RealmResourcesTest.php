@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Models\Role;
 use App\Admin\Ui\Actions\CreateResourceAction;
 use App\Admin\Ui\Actions\CreateResourceScopeAction;
 use App\Admin\Ui\Actions\DeleteResourceAction;
@@ -15,9 +14,10 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
+use Illuminate\Database\Eloquent\Builder;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -27,14 +27,18 @@ beforeEach(function () {
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });
 
-$resourceViewer = function (): User {
-    $viewer = User::factory()->for(Realm::master())->create();
-    $role = Role::factory()->create(['name' => 'Resource viewer']);
-    $role->syncPermissions([AdminPermission::Access, AdminPermission::ViewResources]);
-    $viewer->roles()->attach($role);
+/**
+ * The master realm carries the management API's own resource and scopes, so a
+ * count has to stay inside the realm under test.
+ *
+ * @return Builder<ResourceScope>
+ */
+function realmScopes(Realm $realm): Builder
+{
+    return ResourceScope::query()->whereHas('resource', fn (Builder $query) => $query->where('realm_id', $realm->id));
+}
 
-    return $viewer;
-};
+$resourceViewer = fn (): User => globalAdminWith(ApiScope::ResourcesRead);
 
 test('a resources-manage admin adds a resource and it is recorded', function () {
     $this->actingAs(globalAdmin())->callAction(CreateResourceAction::class, [
@@ -42,7 +46,7 @@ test('a resources-manage admin adds a resource and it is recorded', function () 
         'name' => 'Orders API',
     ], ['realm' => 'acme'])->assertOk();
 
-    $resource = Resource::query()->sole();
+    $resource = $this->realm->realmResources()->sole();
 
     expect($resource->identifier)->toBe('api')
         ->and($resource->name)->toBe('Orders API')
@@ -62,7 +66,7 @@ test('an identifier is unique per realm but free in another', function () {
     $this->callAction(CreateResourceAction::class, ['identifier' => 'api', 'name' => 'Duplicate'], ['realm' => 'acme'])->assertInvalid(['identifier']);
     $this->callAction(CreateResourceAction::class, ['identifier' => 'api', 'name' => 'Elsewhere'], ['realm' => 'globex'])->assertOk();
 
-    expect(Resource::query()->where('identifier', 'api')->count())->toBe(2);
+    expect(Resource::query()->where('identifier', 'api')->whereIn('realm_id', [$this->realm->id, $this->other->id])->count())->toBe(2);
 });
 
 test('an identifier is rejected when it is neither a path nor an absolute uri', function (string $identifier) {
@@ -70,7 +74,7 @@ test('an identifier is rejected when it is neither a path nor an absolute uri', 
         ->callAction(CreateResourceAction::class, ['identifier' => $identifier, 'name' => 'Broken'], ['realm' => 'acme'])
         ->assertInvalid(['identifier']);
 
-    expect(Resource::query()->exists())->toBeFalse();
+    expect($this->realm->realmResources()->exists())->toBeFalse();
 })->with([
     'whitespace' => 'orders api',
     'leading slash' => '/api',
@@ -83,7 +87,7 @@ test('an absolute uri is accepted as an identifier', function () {
         ->callAction(CreateResourceAction::class, ['identifier' => 'https://billing.test', 'name' => 'Billing'], ['realm' => 'acme'])
         ->assertOk();
 
-    expect(Resource::query()->sole()->isAbsolute())->toBeTrue();
+    expect($this->realm->realmResources()->sole()->isAbsolute())->toBeTrue();
 });
 
 test('renaming and deleting a resource works from the console', function () {
@@ -97,7 +101,7 @@ test('renaming and deleting a resource works from the console', function () {
 
     $this->callAction(DeleteResourceAction::class, [], $context)->assertOk();
 
-    expect(Resource::query()->exists())->toBeFalse();
+    expect($this->realm->realmResources()->exists())->toBeFalse();
 });
 
 test('two resources of one realm carry the same scope value, one resource does not', function () {
@@ -109,7 +113,7 @@ test('two resources of one realm carry the same scope value, one resource does n
     $this->callAction(CreateResourceScopeAction::class, ['value' => 'read', 'description' => ''], ['realm' => 'acme', 'resource' => $reports->id])->assertOk();
     $this->callAction(CreateResourceScopeAction::class, ['value' => 'read'], ['realm' => 'acme', 'resource' => $orders->id])->assertInvalid(['value']);
 
-    expect(ResourceScope::query()->where('value', 'read')->count())->toBe(2)
+    expect(realmScopes($this->realm)->where('value', 'read')->count())->toBe(2)
         ->and($orders->scopes()->sole()->description)->toBe('Read orders')
         ->and($reports->scopes()->sole()->description)->toBeNull();
 });
@@ -121,7 +125,7 @@ test('a scope value is rejected when it carries whitespace', function () {
         ->callAction(CreateResourceScopeAction::class, ['value' => 'orders read'], ['realm' => 'acme', 'resource' => $resource->id])
         ->assertInvalid(['value']);
 
-    expect(ResourceScope::query()->exists())->toBeFalse();
+    expect(realmScopes($this->realm)->exists())->toBeFalse();
 });
 
 test('a scope is edited and deleted from its resource page', function () {
@@ -137,7 +141,7 @@ test('a scope is edited and deleted from its resource page', function () {
 
     $this->callAction(DeleteResourceScopeAction::class, [], $context)->assertOk();
 
-    expect(ResourceScope::query()->exists())->toBeFalse();
+    expect(realmScopes($this->realm)->exists())->toBeFalse();
 });
 
 test('the resources table lists only the selected realm with its scope counts', function () {
@@ -205,18 +209,18 @@ test('a view-only admin reads the console but cannot change anything', function 
     $this->callDeniedAction(DeleteResourceScopeAction::class, [], $context)->assertForbidden();
 
     expect($resource->refresh()->identifier)->toBe('api')
-        ->and(Resource::query()->count())->toBe(1)
+        ->and($this->realm->realmResources()->count())->toBe(1)
         ->and($scope->refresh()->value)->toBe('read');
 });
 
-test('the resources console is closed without a resources permission', function () {
+test('the resources console is closed without a resources scope', function () {
     $resource = Resource::factory()->for($this->realm)->create(['identifier' => 'api']);
 
-    $this->actingAs(globalAdminWith(AdminPermission::Access));
+    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
     $this->get('/admin/realms/acme/resources')->assertForbidden();
     $this->get("/admin/realms/acme/resources/{$resource->id}")->assertForbidden();
     $this->loadDeniedTable(AdminResourcesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateResourceAction::class, ['identifier' => 'new', 'name' => 'New'], ['realm' => 'acme'])->assertForbidden();
 
-    expect(Resource::query()->count())->toBe(1);
+    expect($this->realm->realmResources()->count())->toBe(1);
 });

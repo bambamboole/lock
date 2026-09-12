@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Admin\Ui\Tables\AdminResourceScopesTable;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\DeletesResourceScope;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -17,7 +17,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.resource-scopes.delete', can: [AdminPermission::Access, AdminPermission::ManageResources])]
+#[AsAction('admin.resource-scopes.delete', can: ApiScope::ResourcesWrite)]
 final class DeleteResourceScopeAction extends ActionDefinition
 {
     use ResolvesRealmResource;

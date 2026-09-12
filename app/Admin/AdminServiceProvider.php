@@ -9,7 +9,8 @@ use App\Auth\Models\User;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Shared\Admin\Contracts\EnsuresAdministrator;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Auth\Support\RequestUser;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
@@ -29,14 +30,14 @@ final class AdminServiceProvider extends ServiceProvider
         Lattice::context('resourceScope', fn (string $value): ResourceScope => ResourceScope::query()->findOrFail($value));
 
         Gate::before(function (User $user, string $ability): ?bool {
-            $permission = AdminPermission::tryFrom($ability);
+            $scope = ApiScope::tryFrom($ability);
 
-            return $permission === null ? null : $user->hasGlobalPermission($permission);
+            return $scope === null ? null : $user->hasManagementScope($scope);
         });
 
         Lattice::extend('app.user-menu', static fn (): MenuItem => MenuItem::make(__('navigation.admin'))
             ->href(route('admin.realms', absolute: false))
             ->prefix(Icon::Settings)
-            ->can(AdminPermission::Access));
+            ->visible(RequestUser::current()?->managementScopes()->isNotEmpty() ?? false));
     }
 }

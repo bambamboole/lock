@@ -10,7 +10,6 @@ enum AdminAuditEvent: string implements AuditEvent
 {
     use IsAuditEvent;
 
-    case GlobalRolesUpdated = 'admin.roles.updated';
     case SuperAdminGranted = 'admin.roles.granted';
     case PasswordResetSent = 'admin.password-reset.sent';
     case VerificationResent = 'admin.verification.resent';

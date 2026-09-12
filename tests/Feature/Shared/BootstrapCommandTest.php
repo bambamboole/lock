@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\Hash;
 
@@ -74,7 +74,7 @@ it('creates the administrator verified and holding Super Admin', function () {
     expect($admin->name)->toBe('Root')
         ->and($admin->email_verified_at)->not->toBeNull()
         ->and(Hash::check('CorrectHorse42', $admin->password))->toBeTrue()
-        ->and($admin->can(AdminPermission::Access))->toBeTrue();
+        ->and($admin->can(ApiScope::RealmsWrite))->toBeTrue();
 });
 
 it('reconciles an existing user into the configured administrator', function () {
@@ -89,7 +89,7 @@ it('reconciles an existing user into the configured administrator', function () 
 
     expect(Hash::check('CorrectHorse42', $admin->password))->toBeTrue()
         ->and($admin->email_verified_at)->not->toBeNull()
-        ->and($admin->can(AdminPermission::Access))->toBeTrue()
+        ->and($admin->can(ApiScope::RealmsWrite))->toBeTrue()
         ->and(Realm::master()->users()->count())->toBe(1);
 });
 
@@ -107,7 +107,7 @@ it('leaves an existing password alone when none is configured', function () {
 
     expect(Hash::check('PreviousSecret9', $admin->password))->toBeTrue()
         ->and($admin->email_verified_at)->not->toBeNull()
-        ->and($admin->can(AdminPermission::Access))->toBeTrue();
+        ->and($admin->can(ApiScope::RealmsWrite))->toBeTrue();
 });
 
 it('fails loudly when the configured password violates the realm policy', function () {

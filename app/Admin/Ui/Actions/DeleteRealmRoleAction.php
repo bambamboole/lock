@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Actions;
 use App\Admin\Ui\Concerns\ResolvesRealmRole;
 use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Realms\Models\RealmRole;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\DeletesRealmRole;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -17,7 +17,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.realm-roles.delete', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.realm-roles.delete', can: ApiScope::RolesWrite)]
 final class DeleteRealmRoleAction extends ActionDefinition
 {
     use ResolvesRealmRole;
@@ -37,12 +37,12 @@ final class DeleteRealmRoleAction extends ActionDefinition
     #[\Override]
     public function authorize(Request $request): bool
     {
-        return $this->realmRoleOrNull() instanceof RealmRole;
+        return $this->mutableRealmRoleOrNull() instanceof RealmRole;
     }
 
     public function handle(Request $request): ActionResult
     {
-        $this->deleteRole->handle($this->realmRole());
+        $this->deleteRole->handle($this->mutableRealmRole());
 
         return ActionResult::success()
             ->toast(__('admin.roles.deleted'), Variant::Success)

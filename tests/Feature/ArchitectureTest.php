@@ -1,13 +1,12 @@
 <?php
 
 declare(strict_types=1);
-use App\Admin\Models\Role;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -144,7 +143,6 @@ function architectureSharedKernel(): array
         User::class,
         Realm::class,
         RealmRole::class,
-        Role::class,
         Resource::class,
         ResourceScope::class,
     ];
@@ -249,9 +247,9 @@ it('keeps every concrete app class final', function () {
         ->and($notFinal)->toBeEmpty();
 });
 
-it('keeps every permission value kebab-cased with a :view verb, never :read, so manage implies view', function () {
-    foreach (array_column(AdminPermission::cases(), 'value') as $value) {
-        expect($value)->toMatch('/^[a-z][a-z-]*(:[a-z][a-z-]*)+$/')
-            ->and(Str::afterLast($value, ':'))->not->toBeIn(['read', 'list', 'show']);
+it('keeps every scope value a kebab-cased area with a read or write verb', function () {
+    foreach (ApiScope::values() as $value) {
+        expect($value)->toMatch('/^[a-z][a-z-]*:[a-z][a-z-]*$/')
+            ->and(Str::afterLast($value, ':'))->toBeIn(['read', 'write']);
     }
 });

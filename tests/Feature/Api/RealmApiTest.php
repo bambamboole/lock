@@ -154,7 +154,7 @@ it('declares its scopes as the resource a token is addressed to', function () {
 
     $this->getJson(realmUrl(Realm::master(), '/.well-known/oauth-protected-resource/api'))
         ->assertOk()
-        ->assertJsonPath('scopes_supported', ApiScope::values());
+        ->assertJsonPath('scopes_supported', fn (array $scopes): bool => ! array_diff($scopes, ApiScope::values()) && ! array_diff(ApiScope::values(), $scopes));
 });
 
 it('reports the realm configuration with every setting typed', function () {

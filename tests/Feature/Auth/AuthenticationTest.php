@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementRoles;
 use Illuminate\Support\Facades\Http;
 
 use function Tests\Helpers\consoleSessionFor;
@@ -15,7 +15,7 @@ test('the root path sends a master realm user to their account and an admin to t
 
     $this->get('/')->assertRedirect(route('login'));
     $this->actingAs(User::factory()->for(Realm::master())->create())->get('/')->assertRedirect(realmRoute(Realm::master(), 'account'));
-    $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
+    $this->actingAs(globalAdmin(ManagementRoles::SUPPORT))->get('/')->assertRedirect(route('admin.realms'));
 });
 
 test('logging out ends both the console and the identity session', function () {

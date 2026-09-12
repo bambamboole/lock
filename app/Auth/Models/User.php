@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Auth\Models;
 
-use App\Admin\Models\Role;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
-use App\Shared\Auth\Contracts\PermissionEnum;
+use App\Resources\Models\ResourceScope;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementApi;
 use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
 use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
 use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
@@ -27,7 +28,6 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection as SupportCollection;
-use Illuminate\Support\Str;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
 
@@ -84,14 +84,6 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
     }
 
     /**
-     * @return BelongsToMany<Role, $this>
-     */
-    public function roles(): BelongsToMany
-    {
-        return $this->belongsToMany(Role::class, 'user_role')->select('roles.*')->withTimestamps();
-    }
-
-    /**
      * @return BelongsToMany<RealmRole, $this>
      */
     public function realmRoles(): BelongsToMany
@@ -126,36 +118,52 @@ final class User extends Authenticatable implements HasLocalePreference, MustVer
         return $this->totpFactors()->whereNotNull('confirmed_at')->exists() || $this->passkeys()->exists();
     }
 
-    public function hasGlobalPermission(PermissionEnum $permission): bool
+    public function hasManagementScope(ApiScope $scope): bool
     {
-        if (! $this->realm->isMaster()) {
-            return false;
-        }
-
-        $value = (string) $permission->value;
-        $granted = $this->grantedGlobalPermissions();
-
-        if ($granted->contains($value)) {
-            return true;
-        }
-
-        return str_ends_with($value, ':view') && $granted->contains(Str::beforeLast($value, ':').':manage');
+        return $this->managementScopes()->contains($scope->value);
     }
 
     /**
-     * Read through the loaded relation: a users table ran over three hundred
-     * queries when every gate check re-read the pivot. `refresh()` picks up a
-     * role change made after a check.
+     * Whether the person holds every one of them — the same subset rule
+     * `CheckScopes` applies to a token, so a gate and an API route read a
+     * scope set the same way.
+     *
+     * @param  list<ApiScope>  $scopes
+     */
+    public function hasManagementScopes(array $scopes): bool
+    {
+        $granted = $this->managementScopes();
+
+        return array_all($scopes, fn ($scope) => $granted->contains($scope->value));
+    }
+
+    /**
+     * The management API scopes this person's roles grant. Matching the
+     * resource and not just the value matters: any realm may declare a
+     * resource whose scope reads `realms:write`, and only the master realm's
+     * `api` resource means the console.
+     *
+     * Loaded rather than queried: a users table ran over three hundred queries
+     * when every gate check re-read the pivot. `loadMissing` walks the whole
+     * chain, because `refresh()` restores `realmRoles` without its nested
+     * relations. `refresh()` picks up a role change made after a check.
      *
      * @return SupportCollection<int, string>
      */
-    private function grantedGlobalPermissions(): SupportCollection
+    public function managementScopes(): SupportCollection
     {
-        if (! $this->relationLoaded('roles')) {
-            $this->load(['roles.permissions']);
+        if (! $this->realm->isMaster()) {
+            return new SupportCollection;
         }
 
-        return $this->roles->flatMap(fn (Role $role): array => $role->permissionValues());
+        $this->loadMissing(['realmRoles.scopes.resource']);
+
+        return $this->realmRoles
+            ->flatMap(fn (RealmRole $role): array => $role->scopes->all())
+            ->filter(fn (ResourceScope $scope): bool => $scope->resource->identifier === ManagementApi::RESOURCE)
+            ->map(fn (ResourceScope $scope): string => $scope->value)
+            ->unique()
+            ->values();
     }
 
     public function preferredLocale(): ?string

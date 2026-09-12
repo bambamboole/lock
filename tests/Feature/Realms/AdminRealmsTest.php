@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Ui\Forms\CreateRealmForm;
@@ -10,6 +9,7 @@ use App\Realms\Ui\Forms\DeleteRealmForm;
 use App\Realms\Ui\Forms\RealmSettingForm;
 use App\Realms\Ui\Forms\UpdateRealmForm;
 use App\Realms\Ui\Tables\RealmsTable;
+use App\Shared\Api\ManagementRoles;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\headerTriggers;
@@ -23,7 +23,7 @@ test('every admin can list and open realms', function (string $roleName) {
     $this->loadTable(RealmsTable::class)->assertOk();
     $this->get('/admin/realms')->assertOk();
     $this->get("/admin/realms/{$realm->slug}/settings")->assertOk();
-})->with(['support admin' => GlobalRoles::SUPPORT, 'super admin' => GlobalRoles::SUPER_ADMIN]);
+})->with(['support admin' => ManagementRoles::SUPPORT, 'super admin' => ManagementRoles::SUPER_ADMIN]);
 
 test('a realm user reaches neither the realms list nor a realm', function () {
     $realm = Realm::factory()->create();
@@ -37,7 +37,7 @@ test('a realm user reaches neither the realms list nor a realm', function () {
 test('only realms-manage admins see the editing tabs', function () {
     $realm = Realm::factory()->create();
 
-    $support = $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $support = $this->actingAs(globalAdmin(ManagementRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
 
     expect(renderedTabKeys($support))->toBe(['general'])
@@ -47,7 +47,7 @@ test('only realms-manage admins see the editing tabs', function () {
 test('only a realms-manage admin can delete a realm, and never the admin realm', function () {
     $realm = Realm::factory()->create();
 
-    $support = $this->actingAs(globalAdmin(GlobalRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
+    $support = $this->actingAs(globalAdmin(ManagementRoles::SUPPORT))->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $superAdmin = $this->actingAs(globalAdmin())->get("/admin/realms/{$realm->slug}/settings")->assertOk();
     $master = $this->get('/admin/realms/'.Realm::master()->slug.'/settings')->assertOk();
 
@@ -79,7 +79,7 @@ test('a realm row counts the realm\'s users', function () {
 test('a support admin cannot create, edit or delete a realm', function () {
     $realm = Realm::factory()->create();
 
-    $this->actingAs(globalAdmin(GlobalRoles::SUPPORT));
+    $this->actingAs(globalAdmin(ManagementRoles::SUPPORT));
     $this->get('/admin/realms/create')->assertForbidden();
     $this->submitDeniedForm(CreateRealmForm::class, ['name' => 'Forbidden', 'slug' => 'forbidden', 'domain' => 'forbidden.example.com'])->assertForbidden();
     $this->submitDeniedForm(UpdateRealmForm::class, ['name' => 'Renamed'], ['realm' => $realm->slug])->assertForbidden();

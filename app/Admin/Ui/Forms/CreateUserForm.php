@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Forms;
 use App\Admin\Actions\CreateRealmUser;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Lattice\Facades\Effects;
@@ -21,7 +21,7 @@ use Lattice\Form\FormDefinition;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\Variant;
 
-#[AsForm('admin.users.create', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsForm('admin.users.create', can: ApiScope::UsersWrite)]
 final class CreateUserForm extends FormDefinition
 {
     private const string INVITE = 'invite';

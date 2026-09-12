@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Forms;
 
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\ChecksRealmDomain;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
@@ -22,7 +22,7 @@ use Lattice\Form\FormDefinition;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\Variant;
 
-#[AsForm('admin.realms.create', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsForm('admin.realms.create', can: ApiScope::RealmsWrite)]
 final class CreateRealmForm extends FormDefinition
 {
     public function __construct(

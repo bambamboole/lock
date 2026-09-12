@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Ui\Fragments\RealmActivityChangesFragment;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use App\Shared\Resources\Enums\ResourceAuditEvent;
@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
 use Lattice\Table\Attributes\AsTable;
 
-#[AsTable('admin.realm-activity', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+#[AsTable('admin.realm-activity', can: ApiScope::ActivityRead)]
 final class RealmActivityTable extends ActivityTable
 {
     /**

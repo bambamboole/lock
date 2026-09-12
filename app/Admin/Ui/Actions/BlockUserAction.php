@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Actions\BlockUser;
 use App\Auth\Models\User;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Concerns\ResolvesCurrentUser;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -14,7 +14,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.block', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.block', can: ApiScope::UsersWrite)]
 final class BlockUserAction extends ActionDefinition
 {
     use ResolvesCurrentUser;

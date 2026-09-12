@@ -6,14 +6,14 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Ui\Tables\ActivityTable;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Fragments\Components\Fragment;
 use Lattice\Table\Attributes\AsTable;
 
-#[AsTable('admin.activity', can: AdminPermission::Access)]
+#[AsTable('admin.activity', can: ApiScope::ActivityRead)]
 final class AdminActivityTable extends ActivityTable
 {
     /**

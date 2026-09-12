@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Ui\Concerns\ResolvesRealmResource;
 use App\Resources\Models\Resource;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Resources\Contracts\DeletesResource;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -16,7 +16,7 @@ use Lattice\Ui\Enums\Emphasis;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.resources.delete', can: [AdminPermission::Access, AdminPermission::ManageResources])]
+#[AsAction('admin.resources.delete', can: ApiScope::ResourcesWrite)]
 final class DeleteResourceAction extends ActionDefinition
 {
     use ResolvesRealmResource;

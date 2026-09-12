@@ -88,6 +88,6 @@ and the relying party's client from `lock.console_client` — so the app authent
 ## Global roles only count inside the master realm
 
 `User::hasGlobalPermission()` returns false for a user outside the master realm whatever roles they hold, and
-`App\Admin\Ui\Actions\UpdateUserGlobalRoles` refuses such a target. Instance administrators live in the master
-realm; every other realm is data to them, reachable through `User::canAccessRealm()` and the `admin:realms:manage`
+a role outside it holds no management scopes whatever its rows read. Instance administrators live in the master
+realm; every other realm is data to them, reachable through `User::canAccessRealm()` and the `realms:write`
 permission rather than membership.

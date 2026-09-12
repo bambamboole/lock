@@ -3,12 +3,12 @@
 declare(strict_types=1);
 
 use App\Admin\Enums\AdminAuditEvent;
-use App\Admin\Support\GlobalRoles;
-use App\Admin\Ui\Actions\UpdateUserGlobalRoles;
+use App\Admin\Ui\Actions\UpdateUserRealmRoles;
 use App\Admin\Ui\Fragments\AdminActivityChangesFragment;
 use App\Admin\Ui\Tables\AdminActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -19,9 +19,9 @@ test('a role update that changes nothing is not logged', function () {
     $admin = globalAdmin();
     $target = User::factory()->for(Realm::master())->create();
 
-    $this->actingAs($admin)->callAction(UpdateUserGlobalRoles::class, [
+    $this->actingAs($admin)->callAction(UpdateUserRealmRoles::class, [
         'role_ids' => [],
-    ], ['user' => $target->id])->assertOk();
+    ], ['realm' => Realm::master()->slug, 'user' => $target->id])->assertOk();
 
     expect(Activity::global()->count())->toBe(0);
 });
@@ -31,7 +31,7 @@ test('any admin can read the activity trail', function (string $roleName) {
 
     $this->actingAs($admin)->get('/admin/activity')->assertOk();
     $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk();
-})->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
+})->with([ManagementRoles::SUPER_ADMIN, ManagementRoles::SUPPORT]);
 
 test('a non-admin cannot read the activity trail', function () {
     $this->actingAs(User::factory()->create())->get('/admin/activity')->assertForbidden();
@@ -43,16 +43,16 @@ test('the activity table shows admin rows and hides realm rows', function () {
     $realm = Realm::factory()->create();
 
     Audit::record(RealmAuditEvent::RealmUpdated, $realm, $realm);
-    Audit::record(AdminAuditEvent::GlobalRolesUpdated, User::factory()->create());
+    Audit::record(AdminAuditEvent::SuperAdminGranted, User::factory()->create());
 
     $rows = $this->actingAs($admin)->loadTable(AdminActivityTable::class)->assertOk()->json('data');
 
-    expect(collect(is_array($rows) ? $rows : [])->pluck('event')->all())->toBe(['admin.roles.updated']);
+    expect(collect(is_array($rows) ? $rows : [])->pluck('event')->all())->toBe(['admin.roles.granted']);
 });
 
 test('the row detail renders the recorded properties for an admin', function () {
     $admin = globalAdmin();
-    Audit::record(AdminAuditEvent::GlobalRolesUpdated, User::factory()->create(), properties: ['added' => ['Super Admin']]);
+    Audit::record(AdminAuditEvent::SuperAdminGranted, User::factory()->create(), properties: ['added' => ['Super Admin']]);
 
     $activity = Activity::global()->sole();
 

@@ -12,7 +12,7 @@ use App\Realms\Ui\Concerns\OpensRealmDeletion;
 use App\Realms\Ui\Concerns\PresentsRealmDomainStatus;
 use App\Realms\Ui\Forms\UpdateRealmDomainForm;
 use App\Realms\Ui\Forms\UpdateRealmForm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Components\PageHeader;
@@ -39,7 +39,7 @@ use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/settings', name: 'admin.realms.settings', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+#[AsPage(route: '/admin/realms/{realm}/settings', name: 'admin.realms.settings', can: ApiScope::RealmsRead)]
 final class RealmSettingsPage extends AdminPage
 {
     use BuildsRealmSettingRows;
@@ -49,7 +49,7 @@ final class RealmSettingsPage extends AdminPage
     public function render(PageSchema $schema, Realm $realm, Request $request): PageSchema
     {
         $user = $request->user();
-        $manages = $user instanceof User && $user->can(AdminPermission::ManageRealms);
+        $manages = $user instanceof User && $user->can(ApiScope::RealmsWrite);
 
         $schema->title($realm->name)->breadcrumbs($this->realmBreadcrumbs(
             $realm,

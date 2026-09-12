@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Shared\Api\Enums;
 
 /**
- * The scopes the management API declares. They are OAuth scopes, not
- * permissions: a token carries them, and `CheckScopes` is the only thing that
- * reads them. The descriptions are stored on the scope rows, so they stay in
- * English like every other scope value on the wire.
+ * The scopes of the management API resource — the only authorization currency
+ * Lock has. A token carries them, a realm role grants them, and both the
+ * console and `CheckScopes` read the same values. There is no implication
+ * between them: a role that may write also lists the matching read scope.
  */
 enum ApiScope: string
 {
@@ -15,11 +15,38 @@ enum ApiScope: string
 
     case RealmsWrite = 'realms:write';
 
+    case UsersRead = 'users:read';
+
+    case UsersWrite = 'users:write';
+
+    case ClientsRead = 'clients:read';
+
+    case ClientsWrite = 'clients:write';
+
+    case RolesRead = 'roles:read';
+
+    case RolesWrite = 'roles:write';
+
+    case ResourcesRead = 'resources:read';
+
+    case ResourcesWrite = 'resources:write';
+
+    case ActivityRead = 'activity:read';
+
     public function description(): string
     {
         return match ($this) {
-            self::RealmsRead => 'Read realms and their domain state.',
-            self::RealmsWrite => 'Create, rename, re-point and delete realms.',
+            self::RealmsRead => 'Read realms, their settings and their domain state.',
+            self::RealmsWrite => 'Create, rename, re-point, configure and delete realms.',
+            self::UsersRead => 'Read the users of a realm and their sessions.',
+            self::UsersWrite => 'Create, edit, block, delete users and end their sessions.',
+            self::ClientsRead => 'Read the OAuth clients of a realm.',
+            self::ClientsWrite => 'Create, edit, revoke and delete OAuth clients.',
+            self::RolesRead => 'Read the roles of a realm and their scopes.',
+            self::RolesWrite => 'Create, edit and delete roles, and assign them to users.',
+            self::ResourcesRead => 'Read the protected resources of a realm and their scopes.',
+            self::ResourcesWrite => 'Create, edit and delete protected resources and their scopes.',
+            self::ActivityRead => 'Read the audit trail and the security events of a realm.',
         };
     }
 

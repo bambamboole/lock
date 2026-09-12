@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Actions;
 
 use App\Admin\Enums\AdminAuditEvent;
 use App\Auth\Models\User;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
@@ -15,7 +15,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
 
-#[AsAction('admin.users.resend-verification', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsAction('admin.users.resend-verification', can: ApiScope::UsersWrite)]
 final class ResendUserVerification extends ActionDefinition
 {
     public function definition(Action $action): Action

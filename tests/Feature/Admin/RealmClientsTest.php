@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Actions\DeleteClient;
 use App\Admin\Ui\Actions\RestoreClient;
 use App\Admin\Ui\Actions\RevokeClient;
@@ -12,6 +11,7 @@ use App\Admin\Ui\Forms\UpdateClientForm;
 use App\Admin\Ui\Tables\AdminClientsTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementRoles;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
 use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
@@ -100,7 +100,7 @@ test('the clients console is forbidden without realms-manage', function (Closure
 
     expect(Client::query()->count())->toBe(1);
 })->with([
-    'support admin' => fn () => globalAdmin(GlobalRoles::SUPPORT),
+    'support admin' => fn () => globalAdmin(ManagementRoles::SUPPORT),
     'realm user' => fn () => User::factory()->create(),
 ]);
 

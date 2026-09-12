@@ -6,7 +6,7 @@ use App\Admin\Enums\AdminAuditEvent;
 use App\Admin\Ui\Tables\RealmActivityTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Audit;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -34,7 +34,7 @@ test('the realm activity table lists only that realm and leaves the instance tra
 });
 
 test('the realm activity console is forbidden without realms-view', function () {
-    $this->actingAs(globalAdminWith(AdminPermission::Access));
+    $this->actingAs(globalAdminWith(ApiScope::UsersRead));
 
     $this->get('/admin/realms/acme/activity')->assertForbidden();
     $this->loadDeniedTable(RealmActivityTable::class, context: ['realm' => 'acme'])->assertForbidden();

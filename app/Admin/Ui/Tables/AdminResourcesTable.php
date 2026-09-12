@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Tables;
 use App\Admin\Ui\Actions\DeleteResourceAction;
 use App\Admin\Ui\Actions\UpdateResourceAction;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
@@ -20,7 +20,7 @@ use Lattice\Table\TableQuery;
 /**
  * @extends EloquentTableDefinition<\App\Resources\Models\Resource>
  */
-#[AsTable(self::ID, can: [AdminPermission::Access, AdminPermission::ViewResources])]
+#[AsTable(self::ID, can: ApiScope::ResourcesRead)]
 final class AdminResourcesTable extends EloquentTableDefinition
 {
     public const string ID = 'admin.resources';

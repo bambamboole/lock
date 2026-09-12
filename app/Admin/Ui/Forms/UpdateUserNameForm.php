@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Admin\Ui\Forms;
 
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Illuminate\Http\Request;
 use Lattice\Form\Attributes\AsForm;
 use Lattice\Form\Components\Form as FormComponent;
@@ -11,7 +11,7 @@ use Lattice\Form\Components\TextInput;
 use Lattice\Form\FormData;
 use Lattice\Http\LatticeResponse;
 
-#[AsForm('admin.users.update.name', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsForm('admin.users.update.name', can: ApiScope::UsersWrite)]
 final class UpdateUserNameForm extends RealmUserForm
 {
     public function definition(FormComponent $form, Request $request): FormComponent

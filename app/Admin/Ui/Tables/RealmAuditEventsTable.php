@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Tables;
 
 use App\Admin\Ui\Fragments\AuditEventContextFragment;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Enums\AuditEventCategory;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
@@ -25,7 +25,7 @@ use Lattice\Ui\Enums\ColumnWidth;
 /**
  * @extends EloquentTableDefinition<AuditEvent>
  */
-#[AsTable('admin.realm-events', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+#[AsTable('admin.realm-events', can: ApiScope::ActivityRead)]
 final class RealmAuditEventsTable extends EloquentTableDefinition
 {
     /**

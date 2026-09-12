@@ -8,7 +8,7 @@ paths:
 ## Split each domain's Http/ by purpose, and version the API
 
 `Http/Controllers` for web controllers, `Http/Requests` for their Form Requests, `Http/Middleware` for middleware.
-A token-authenticated JSON endpoint — one gated in `routes/api.php` by `CheckScopes::using(ApiScope::…)` — goes under
+A token-authenticated JSON endpoint — one gated in `routes/api.php` by `EnsureScopes::using(ApiScope::…)` — goes under
 `Http/Api/V1/Controllers`, with the `spatie/laravel-data` class it answers with in `Http/Api/V1/Resources` — there is
 no `JsonResource` here, and no Form Request either: what a write accepts is a laravel-data object too (see
 `.ai/rules/services.md`). Never put an API controller or resource directly under `Http/Controllers` or
@@ -20,15 +20,17 @@ A domain never reaches into another domain's `Http/`.
 ## API endpoints authenticate with auth:oidc
 
 `routes/api.php` runs on the `oidc` guard that `laravel-oidc` registers itself; `config/auth.php` declares no `api`
-guard at all. Gate a route on scopes with the package's `CheckScopes::using(ApiScope::…->value)` — never an
-`AdminPermission`: a permission is a grant on a person, a scope is a claim in a token (see `.ai/rules/enums.md`).
+guard at all. Gate a route with `App\Shared\Http\Middleware\EnsureScopes::using(ApiScope::…->value)`, never the
+package's `CheckScopes` directly: a token outlives the role that justified it, so when a person is behind the token
+`EnsureScopes` also intersects the required scopes with the ones their roles still grant. A `client_credentials`
+token has no person and is judged on its scopes alone (see `.ai/rules/enums.md`).
 
 The API is the master realm's own protected resource. `App\Shared\Api` owns it: `ApiScope` is the scope catalog,
 `ManagementApi` reconciles the resource row and its scopes (from `app:bootstrap`, so every deploy restores them) and
 answers which rows the console must refuse to touch. `EnsureManagementApiAudience` narrows every token to that
 resource, because the guard only checks a token is addressed to _one_ of the realm's audiences. The scopes each
 operation requires reach the OpenAPI document through `DocumentsTokenAuthorization`, which reads them off the route's
-`CheckScopes` middleware and replaces Scramble's inferred `AuthenticationException` with the RFC 6750 error body the
+`EnsureScopes` middleware and replaces Scramble's inferred `AuthenticationException` with the RFC 6750 error body the
 guard really returns. The reference's playground mints a token per operation scope set from exactly those scopes, so
 an operation whose security requirement is missing cannot be executed there.
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Realms\Ui\Concerns;
 
 use App\Realms\Ui\Forms\DeleteRealmForm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use Lattice\Form\Components\Form;
 use Lattice\Ui\Components\Link;
 use Lattice\Ui\Components\Modal;
@@ -20,7 +20,7 @@ trait OpensRealmDeletion
     {
         return Link::make(__('admin.realms.danger.submit'), 'delete-realm-'.$slug)
             ->unstyled()
-            ->can(AdminPermission::ManageRealms)
+            ->can(ApiScope::RealmsWrite)
             ->visible($slug !== config('lock.master_realm'))
             ->modal(
                 Modal::make('admin.realms.delete.'.$slug)

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Realms\Models\Realm;
+use App\Shared\Api\ManagementRoles;
 use Lattice\Support\Testing\ComponentNode;
 
 use function Tests\Helpers\globalAdmin;
@@ -25,8 +25,8 @@ it('turns the sidebar into the selected realm console, showing only what the adm
     expect(menuItemHrefs(latticeSchema($response, 'props.lattice.layout.schema')->firstOfTypeOrFail('menu', 'admin-sidebar-menu')))
         ->toBe(array_map(fn (string $area): string => "/admin/realms/acme/{$area}", $areas));
 })->with([
-    'super admin' => [GlobalRoles::SUPER_ADMIN, ['users', 'clients', 'roles', 'resources', 'events', 'activity', 'settings']],
-    'support admin' => [GlobalRoles::SUPPORT, ['users', 'roles', 'events', 'activity', 'settings']],
+    'super admin' => [ManagementRoles::SUPER_ADMIN, ['users', 'clients', 'roles', 'resources', 'events', 'activity', 'settings']],
+    'support admin' => [ManagementRoles::SUPPORT, ['users', 'roles', 'events', 'activity', 'settings']],
 ]);
 
 it('lists every realm in the switcher and marks the selected one', function () {

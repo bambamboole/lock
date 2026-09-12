@@ -15,11 +15,12 @@
   the folder.
 - **Deploys run one command: `php artisan app:deploy`.** It runs `migrate --force --isolated`, the data migrations,
   `oidc:rotate-keys --if-missing` for every realm (signing keys live in `oidc_signing_keys`, one keypair per realm,
-  and the data migrations create the master realm the first deploy needs one for), `permission:sync` (creates/re-syncs the
-  protected global `Super Admin`/`Support` roles from `App\Admin\Support\GlobalRoles`), and `lattice:discover-cache`. Every step is
+  and the data migrations create the master realm the first deploy needs one for), `app:bootstrap` (reconciles the
+  management API resource and its scopes, the protected `Super Admin`/`Support` roles from
+  `App\Shared\Api\ManagementRoles`, the console client and the first administrator), and `lattice:discover-cache`. Every step is
   idempotent and the migrations run isolated, so concurrently booting instances are safe. Bytecode caches
   (`config:cache`, routes, views) stay with the deploy platform. Grant the first admin with
-  `php artisan admin:grant {email}` (revoke by clearing the user's global roles in the admin UI).
+  `php artisan admin:grant {email}` (revoke by clearing the user's master realm roles in the admin UI).
 - The frontend is **not** an Inertia-React `resources/js/Pages` app. Pages, forms, tables, and actions are PHP classes
   (`#[AsPage]`, `#[AsForm]`, `#[AsTable]`, `#[AsAction]`) rendered by the Lattice runtime. The only hand-written React
   lives in `resources/js/` (the `registry.ts` plugin and a few custom components registered by string key). Prefer the

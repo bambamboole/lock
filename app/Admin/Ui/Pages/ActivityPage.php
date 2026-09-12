@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Pages;
 
 use App\Admin\Ui\Tables\AdminActivityTable;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
@@ -13,7 +14,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/activity', name: 'admin.activity')]
+#[AsPage(route: '/admin/activity', name: 'admin.activity', can: ApiScope::ActivityRead)]
 final class ActivityPage extends AdminPage
 {
     public function title(): string

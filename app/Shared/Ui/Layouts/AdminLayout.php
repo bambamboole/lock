@@ -5,7 +5,7 @@ namespace App\Shared\Ui\Layouts;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\BrandMark;
 use App\Shared\Ui\Concerns\RendersUserMenu;
 use Illuminate\Http\Request;
@@ -48,7 +48,7 @@ final class AdminLayout extends LayoutDefinition
     {
         $user = $request->user();
 
-        abort_unless($user instanceof User && $user->can(AdminPermission::Access), 403);
+        abort_unless($user instanceof User && $user->managementScopes()->isNotEmpty(), 403);
 
         $realm = $this->currentRealm($request);
 
@@ -60,7 +60,7 @@ final class AdminLayout extends LayoutDefinition
                 ->schema([
                     Sidebar::make('admin-sidebar')->collapsible()->items([
                         BrandMark::wordmark('admin-sidebar-logo'),
-                        ...($user->can(AdminPermission::ViewRealms) ? [$this->realmSwitcher($realm)] : []),
+                        ...($user->can(ApiScope::RealmsRead) ? [$this->realmSwitcher($realm)] : []),
                         Menu::make('admin-sidebar-menu')->items(
                             $realm instanceof Realm ? $this->realmMenuItems($user, $realm) : $this->instanceMenuItems($user),
                         ),
@@ -144,12 +144,12 @@ final class AdminLayout extends LayoutDefinition
     private function realmMenuItems(User $user, Realm $realm): array
     {
         return [
-            ...($user->can(AdminPermission::ManageUsers) ? [
+            ...($user->can(ApiScope::UsersRead) ? [
                 $this->menuItem(__('navigation.users'), 'admin.realms.users', ['realm' => $realm->slug])->prefix(Affix::icon('users')),
             ] : []),
-            ...($user->can(AdminPermission::ManageRealms) ? [$this->menuItem(__('navigation.clients'), 'admin.realms.clients', ['realm' => $realm->slug])->prefix(Affix::icon('key-round'))] : []),
-            ...($user->can(AdminPermission::ManageUsers) ? [$this->menuItem(__('navigation.roles'), 'admin.realms.roles', ['realm' => $realm->slug])->prefix(Affix::icon('shield-check'))] : []),
-            ...($user->can(AdminPermission::ViewResources) ? [$this->menuItem(__('navigation.resources'), 'admin.realms.resources', ['realm' => $realm->slug])->prefix(Affix::icon('layers'))] : []),
+            ...($user->can(ApiScope::ClientsRead) ? [$this->menuItem(__('navigation.clients'), 'admin.realms.clients', ['realm' => $realm->slug])->prefix(Affix::icon('key-round'))] : []),
+            ...($user->can(ApiScope::RolesRead) ? [$this->menuItem(__('navigation.roles'), 'admin.realms.roles', ['realm' => $realm->slug])->prefix(Affix::icon('shield-check'))] : []),
+            ...($user->can(ApiScope::ResourcesRead) ? [$this->menuItem(__('navigation.resources'), 'admin.realms.resources', ['realm' => $realm->slug])->prefix(Affix::icon('layers'))] : []),
             $this->menuItem(__('navigation.events'), 'admin.realms.events', ['realm' => $realm->slug])->prefix(Affix::icon('shield-alert')),
             $this->menuItem(__('navigation.activity'), 'admin.realms.activity', ['realm' => $realm->slug])->prefix(Icon::Clock),
             $this->menuItem(__('navigation.settings'), 'admin.realms.settings', ['realm' => $realm->slug])->prefix(Icon::Settings),
@@ -162,7 +162,7 @@ final class AdminLayout extends LayoutDefinition
     private function instanceMenuItems(User $user): array
     {
         return [
-            ...($user->can(AdminPermission::ViewRealms) ? [
+            ...($user->can(ApiScope::RealmsRead) ? [
                 $this->menuItem(__('navigation.realms'), 'admin.realms')->prefix(Icon::List),
                 $this->menuItem(__('navigation.api'), 'admin.api')->prefix(Icon::CodeXml),
             ] : []),

@@ -10,7 +10,7 @@ use App\Admin\Ui\Tables\AdminRealmRolesTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmRole;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\Activity;
 use App\Shared\Realms\Contracts\SyncsUserRealmRoles;
 use App\Shared\Realms\Enums\RealmAuditEvent;
@@ -23,13 +23,13 @@ beforeEach(function () {
     $this->other = Realm::factory()->create(['name' => 'Globex', 'slug' => 'globex']);
 });
 
-test('a users-manage admin creates a realm role and it is recorded', function () {
+test('a roles-write admin creates a realm role and it is recorded', function () {
     $this->actingAs(globalAdmin())->callAction(CreateRealmRoleAction::class, [
         'name' => 'member',
         'description' => '  Standard access  ',
     ], ['realm' => 'acme'])->assertOk();
 
-    $role = RealmRole::query()->sole();
+    $role = $this->realm->realmRoles()->sole();
 
     expect($role->name)->toBe('member')
         ->and($role->description)->toBe('Standard access')
@@ -49,7 +49,7 @@ test('a realm role name is unique per realm but free in another', function () {
     $this->callAction(CreateRealmRoleAction::class, ['name' => 'member'], ['realm' => 'acme'])->assertInvalid(['name']);
     $this->callAction(CreateRealmRoleAction::class, ['name' => 'member'], ['realm' => 'globex'])->assertOk();
 
-    expect(RealmRole::query()->where('name', 'member')->count())->toBe(2);
+    expect(RealmRole::query()->where('name', 'member')->whereIn('realm_id', [$this->realm->id, $this->other->id])->count())->toBe(2);
 });
 
 test('a realm role name is rejected when it is not token safe', function (string $name) {
@@ -57,7 +57,7 @@ test('a realm role name is rejected when it is not token safe', function (string
         ->callAction(CreateRealmRoleAction::class, ['name' => $name], ['realm' => 'acme'])
         ->assertInvalid(['name']);
 
-    expect(RealmRole::query()->exists())->toBeFalse();
+    expect($this->realm->realmRoles()->exists())->toBeFalse();
 })->with([
     'whitespace' => 'realm admin',
     'leading punctuation' => '-admin',
@@ -129,18 +129,18 @@ test('a realm role is only reachable through its own realm', function () {
     expect($role->refresh()->name)->toBe('member');
 });
 
-test('the roles console is forbidden without users-manage', function () {
+test('the roles console is forbidden without a roles scope', function () {
     $role = RealmRole::factory()->for($this->realm)->create(['name' => 'member']);
     $context = ['realm' => 'acme', 'realmRole' => $role->id];
 
-    $this->actingAs(globalAdminWith(AdminPermission::Access));
+    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
     $this->get('/admin/realms/acme/roles')->assertForbidden();
     $this->loadDeniedTable(AdminRealmRolesTable::class, context: ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(CreateRealmRoleAction::class, ['name' => 'other'], ['realm' => 'acme'])->assertForbidden();
     $this->callDeniedAction(UpdateRealmRoleAction::class, ['name' => 'other'], $context)->assertForbidden();
     $this->callDeniedAction(DeleteRealmRoleAction::class, [], $context)->assertForbidden();
 
-    expect(RealmRole::query()->count())->toBe(1);
+    expect($this->realm->realmRoles()->count())->toBe(1);
 });
 
 test('assigning realm roles to a user replaces the set and records what changed', function () {

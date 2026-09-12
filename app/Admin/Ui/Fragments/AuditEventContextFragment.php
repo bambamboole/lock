@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Admin\Ui\Fragments;
 
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Models\AuditEvent;
 use App\Shared\Ui\Concerns\RendersActivityChanges;
 use Lattice\Core\Attributes\AsFragment;
@@ -16,7 +16,7 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\PageSchema;
 
-#[AsFragment('admin.audit-event-context', can: [AdminPermission::Access, AdminPermission::ViewRealms])]
+#[AsFragment('admin.audit-event-context', can: ApiScope::ActivityRead)]
 final class AuditEventContextFragment extends FragmentDefinition
 {
     use RendersActivityChanges;

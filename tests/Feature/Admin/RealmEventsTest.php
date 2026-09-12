@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Admin\Ui\Fragments\AuditEventContextFragment;
 use App\Admin\Ui\Tables\RealmAuditEventsTable;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Audit\Enums\AuditEventType;
 use App\Shared\Audit\Models\AuditEvent;
 
@@ -75,7 +75,7 @@ test('a detail from another realm is not readable through the fragment', functio
 });
 
 test('the events console is forbidden without realms-view', function () {
-    $this->actingAs(globalAdminWith(AdminPermission::Access));
+    $this->actingAs(globalAdminWith(ApiScope::UsersRead));
 
     $this->get('/admin/realms/acme/events')->assertForbidden();
     $this->loadDeniedTable(RealmAuditEventsTable::class, context: ['realm' => 'acme'])->assertForbidden();

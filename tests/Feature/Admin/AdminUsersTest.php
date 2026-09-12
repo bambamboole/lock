@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\Admin\Support\GlobalRoles;
 use App\Admin\Ui\Tables\AdminUsersTable;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementRoles;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;
@@ -21,10 +21,10 @@ test('a users-manage admin can open the realm users page and load its table', fu
     $this->actingAs(globalAdmin($roleName));
     $this->get('/admin/realms/acme/users')->assertOk();
     $this->loadTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertOk();
-})->with([GlobalRoles::SUPER_ADMIN, GlobalRoles::SUPPORT]);
+})->with([ManagementRoles::SUPER_ADMIN, ManagementRoles::SUPPORT]);
 
 test('the realm users page and table are forbidden without users-manage', function () {
-    $this->actingAs(globalAdminWith(AdminPermission::Access));
+    $this->actingAs(globalAdminWith(ApiScope::ActivityRead));
     $this->get('/admin/realms/acme/users')->assertForbidden();
     $this->loadDeniedTable(AdminUsersTable::class, context: ['realm' => 'acme'])->assertForbidden();
 });
@@ -51,16 +51,16 @@ test('a user detail page opens under its own realm only', function () {
     $this->actingAs(User::factory()->for($other)->create())->get("/admin/realms/acme/users/{$target->id}")->assertForbidden();
 });
 
-test('a user holding a global role is flagged as admin in the table', function () {
-    $admin = globalAdmin(GlobalRoles::SUPER_ADMIN);
-    grantGlobalRole($admin, GlobalRoles::SUPPORT);
+test('a user holding a management scope is flagged as admin in the table', function () {
+    $admin = globalAdmin(ManagementRoles::SUPER_ADMIN);
+    grantGlobalRole($admin, ManagementRoles::SUPPORT);
 
     $rows = $this->actingAs($admin)->loadTable(AdminUsersTable::class, context: ['realm' => Realm::master()->slug])->assertOk()->json('data');
 
     $row = collect(is_array($rows) ? $rows : [])->firstWhere('id', $admin->id);
 
     expect($row)->not->toBeNull()
-        ->and(data_get($row, 'roles_exists'))->toBeTrue();
+        ->and(data_get($row, 'administrates'))->toBeTrue();
 });
 
 test('the user detail page offers its actions in the header, led by the two an operator reaches for', function () {

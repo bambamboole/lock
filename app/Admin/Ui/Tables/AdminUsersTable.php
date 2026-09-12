@@ -13,7 +13,8 @@ use App\Admin\Ui\Actions\SendUserPasswordReset;
 use App\Admin\Ui\Actions\UnblockUserAction;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
+use App\Shared\Api\ManagementApi;
 use App\Shared\Ui\Components\ActionBar;
 use Illuminate\Database\Eloquent\Builder;
 use Lattice\Actions\Components\Action;
@@ -33,7 +34,7 @@ use Lattice\Ui\Enums\Size;
 /**
  * @extends EloquentTableDefinition<User>
  */
-#[AsTable('admin.users', can: [AdminPermission::Access, AdminPermission::ManageUsers])]
+#[AsTable('admin.users', can: ApiScope::UsersRead)]
 final class AdminUsersTable extends EloquentTableDefinition
 {
     /**
@@ -52,7 +53,8 @@ final class AdminUsersTable extends EloquentTableDefinition
                 .' or exists (select 1 from passkeys where passkeys.user_id = users.id)) as mfa',
                 [new User()->getMorphClass()],
             )
-            ->withExists('roles')
+            ->withExists(['realmRoles as administrates' => fn (Builder $roles): Builder => $roles
+                ->whereHas('scopes.resource', fn (Builder $resource): Builder => $resource->where('identifier', ManagementApi::RESOURCE))])
             ->withCasts(['email_verified' => 'boolean', 'blocked' => 'boolean', 'mfa' => 'boolean']);
 
         if ($query->sorts === []) {
@@ -77,7 +79,7 @@ final class AdminUsersTable extends EloquentTableDefinition
             $this->flag('email_verified', __('admin.users.columns.verified')),
             $this->flag('mfa', __('admin.users.columns.mfa')),
             $this->flag('blocked', __('admin.users.columns.blocked')),
-            $this->flag('roles_exists', __('admin.users.columns.admin')),
+            $this->flag('administrates', __('admin.users.columns.admin')),
             TextColumn::make('created_at')
                 ->label(__('admin.users.columns.created-at'))
                 ->date()

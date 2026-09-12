@@ -6,7 +6,7 @@ namespace App\Admin\Ui\Forms;
 use App\Admin\Ui\Concerns\BuildsClientFields;
 use App\Admin\Ui\Concerns\ResolvesRealmClient;
 use App\Admin\Ui\Pages\ClientDetailPage;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Realms\Contracts\CreatesClient;
 use Illuminate\Http\Request;
 use Lattice\Facades\Effects;
@@ -17,7 +17,7 @@ use Lattice\Form\FormDefinition;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\Variant;
 
-#[AsForm('admin.clients.create', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsForm('admin.clients.create', can: ApiScope::ClientsWrite)]
 final class CreateClientForm extends FormDefinition
 {
     use BuildsClientFields;

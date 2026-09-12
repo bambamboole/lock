@@ -5,7 +5,7 @@ namespace App\Admin\Ui\Pages;
 
 use App\Admin\Ui\Forms\CreateClientForm;
 use App\Realms\Models\Realm;
-use App\Shared\Admin\Enums\AdminPermission;
+use App\Shared\Api\Enums\ApiScope;
 use App\Shared\Ui\Components\PageHeader;
 use App\Shared\Ui\Pages\AdminPage;
 use Lattice\Core\Attributes\AsPage;
@@ -17,7 +17,7 @@ use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
 
-#[AsPage(route: '/admin/realms/{realm}/clients/create', name: 'admin.realms.clients.create', can: [AdminPermission::Access, AdminPermission::ManageRealms])]
+#[AsPage(route: '/admin/realms/{realm}/clients/create', name: 'admin.realms.clients.create', can: ApiScope::ClientsWrite)]
 final class CreateClientPage extends AdminPage
 {
     public function title(): string

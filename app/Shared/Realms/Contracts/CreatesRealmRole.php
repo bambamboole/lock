@@ -8,5 +8,8 @@ use App\Realms\Models\RealmRole;
 
 interface CreatesRealmRole
 {
-    public function handle(Realm $realm, string $name, ?string $description): RealmRole;
+    /**
+     * @param  list<string>  $scopeIds  resource scope rows of the same realm
+     */
+    public function handle(Realm $realm, string $name, ?string $description, array $scopeIds): RealmRole;
 }
