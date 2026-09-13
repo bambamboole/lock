@@ -5,6 +5,7 @@ namespace App\Realms\Ui\Actions;
 
 use App\Realms\Actions\CreateSocialProvider;
 use App\Realms\Data\CreateSocialProviderData;
+use App\Realms\Data\SocialProviderCredentialsData;
 use App\Realms\Ui\Concerns\BuildsSocialProviderFields;
 use App\Realms\Ui\Concerns\ResolvesRealmSocialProvider;
 use App\Shared\Authorization\Enums\Scope;
@@ -42,7 +43,7 @@ final class CreateSocialProviderAction extends ActionDefinition
             new CreateSocialProviderData(
                 trim((string) $data->string('key')),
                 $driver,
-                $this->submittedCredentials($driver, $data),
+                SocialProviderCredentialsData::from($this->submittedCredentials($driver, $data)),
                 $data->boolean('enabled'),
             ),
         );

@@ -10,10 +10,9 @@ use Spatie\LaravelData\Optional;
 
 final class UpdateSocialProviderData extends ApiData
 {
-    /** @param array<string, string>|Optional $config */
     public function __construct(
         #[SpecProperty('Credentials to replace. Omitted values and blank secrets keep their stored value.')]
-        public Optional|array $config,
+        public Optional|SocialProviderCredentialsData $config,
         #[SpecProperty('Whether the realm accepts sign-ins through this provider.')]
         public Optional|bool $enabled,
     ) {}

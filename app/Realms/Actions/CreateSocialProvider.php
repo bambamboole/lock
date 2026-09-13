@@ -6,6 +6,7 @@ namespace App\Realms\Actions;
 use App\Realms\Data\CreateSocialProviderData;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmSocialProvider;
+use App\Realms\Support\SocialProviderConfiguration;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Enums\RealmAdminEvent;
 use Illuminate\Support\Facades\DB;
@@ -21,11 +22,12 @@ final class CreateSocialProvider
                 'key' => [Rule::unique(RealmSocialProvider::class, 'key')->where('realm_id', $realm->id)],
             ])->validate();
             $driver = $data->driver;
+            $config = SocialProviderConfiguration::validate($driver, $data->config->values());
             $provider = $realm->socialProviders()->create([
                 'key' => $data->key,
                 'driver' => $driver,
                 'enabled' => $data->enabled,
-                'config' => array_intersect_key($data->config, array_flip($driver->fields())),
+                'config' => $config,
             ]);
 
             Audit::record(RealmAdminEvent::SocialProviderCreated, $provider, $realm, [

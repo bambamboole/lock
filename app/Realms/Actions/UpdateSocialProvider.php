@@ -5,6 +5,7 @@ namespace App\Realms\Actions;
 
 use App\Realms\Data\UpdateSocialProviderData;
 use App\Realms\Models\RealmSocialProvider;
+use App\Realms\Support\SocialProviderConfiguration;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Enums\RealmAdminEvent;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,9 @@ final class UpdateSocialProvider
     {
         DB::transaction(function () use ($provider, $data): void {
             $provider->refresh();
-            $config = $data->config instanceof Optional ? [] : $data->config;
+            $config = $data->config instanceof Optional
+                ? []
+                : SocialProviderConfiguration::validate($provider->driver, $data->config->values(), partial: true);
             $enabled = $data->enabled instanceof Optional ? $provider->enabled : $data->enabled;
             $driver = $provider->driver;
             $secrets = $driver->secrets();
