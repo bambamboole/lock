@@ -11,6 +11,7 @@ use Spatie\LaravelData\Attributes\Validation\Rule;
 
 final class CreateResourceData extends ApiData
 {
+    /** @param array<int, CreateResourceScopeData> $scopes */
     public function __construct(
         #[SpecProperty('A path relative to the realm issuer, or an absolute URI with a host and no fragment.')]
         #[Max(255), Rule(new ResourceIdentifier)]
@@ -18,5 +19,7 @@ final class CreateResourceData extends ApiData
         #[SpecProperty('Human readable name of the protected resource.')]
         #[Max(255)]
         public string $name,
+        #[SpecProperty('Scopes to create with this resource.')]
+        public array $scopes = [],
     ) {}
 }

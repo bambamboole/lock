@@ -11,10 +11,6 @@ use Carbon\CarbonImmutable;
 final class ResourceScopeData extends Data
 {
     public function __construct(
-        #[SpecProperty('Stable UUID of the scope, used in its API path.')]
-        public string $id,
-        #[SpecProperty('UUID of the resource this scope belongs to.')]
-        public string $resourceId,
         #[SpecProperty('Scope value, unique within its resource.')]
         public string $value,
         #[SpecProperty('Human readable description of the scope.')]
@@ -28,8 +24,6 @@ final class ResourceScopeData extends Data
     public static function fromResourceScope(ResourceScope $scope): self
     {
         return new self(
-            id: $scope->id,
-            resourceId: $scope->resource_id,
             value: $scope->value,
             description: $scope->description,
             createdAt: $scope->created_at,

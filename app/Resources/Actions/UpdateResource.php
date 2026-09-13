@@ -17,13 +17,13 @@ use Spatie\LaravelData\Optional;
 
 final readonly class UpdateResource implements UpdatesResource
 {
-    public function __construct(private ManagementApi $api) {}
+    public function __construct(private ManagementApi $api, private SyncResourceScopes $syncScopes) {}
 
     public function handle(Resource $resource, UpdateResourceData $data): void
     {
         $this->guardManagementApi($resource);
 
-        $attributes = $data->toAttributes();
+        $attributes = $data->toAttributes(only: ['identifier', 'name']);
 
         if (! $data->identifier instanceof Optional) {
             $attributes['identifier'] = trim($data->identifier);
@@ -34,7 +34,11 @@ final readonly class UpdateResource implements UpdatesResource
             'identifier' => [Rule::unique(Resource::class, 'identifier')->where('realm_id', $resource->realm_id)->ignore($resource)],
         ])->validate();
 
-        DB::transaction(function () use ($resource, $attributes): void {
+        DB::transaction(function () use ($resource, $attributes, $data): void {
+            if (! $data->scopes instanceof Optional) {
+                $this->syncScopes->handle($resource, $data->scopes);
+            }
+
             $before = $resource->only(['identifier', 'name']);
 
             $resource->fill($attributes)->save();

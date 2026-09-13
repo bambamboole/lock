@@ -35,7 +35,7 @@ final readonly class ResourceController
      */
     public function index(Realm $realm): PaginatedDataCollection
     {
-        $resources = QueryBuilder::for($realm->realmResources()->with('realm')->getQuery())
+        $resources = QueryBuilder::for($realm->realmResources()->with(['realm', 'scopes'])->getQuery())
             ->allowedFilters(AllowedFilter::partial('name'), AllowedFilter::exact('identifier'))
             ->allowedSorts('name', 'identifier', 'created_at')
             ->defaultSort('name')

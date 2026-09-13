@@ -12,6 +12,7 @@ use Spatie\LaravelData\Optional;
 
 final class UpdateResourceData extends ApiData
 {
+    /** @param array<int, ResourceScopeChangeData>|Optional $scopes */
     public function __construct(
         #[SpecProperty('A path relative to the realm issuer, or an absolute URI with a host and no fragment.')]
         #[Max(255), Rule(new ResourceIdentifier)]
@@ -19,5 +20,7 @@ final class UpdateResourceData extends ApiData
         #[SpecProperty('Human readable name of the protected resource.')]
         #[Max(255)]
         public Optional|string $name,
+        #[SpecProperty('Scope changes keyed by value: new values create, existing values update, delete: true removes. Omitted entries remain unchanged; an empty array changes nothing.')]
+        public Optional|array $scopes = new Optional,
     ) {}
 }
