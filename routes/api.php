@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Clients\Http\Api\V1\Controllers\ClientController;
 use App\Realms\Http\Api\V1\Controllers\RealmController;
+use App\Realms\Http\Api\V1\Controllers\SocialProviderController;
 use App\Resources\Http\Api\V1\Controllers\ResourceController;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Http\Middleware\EnsureManagementApiAudience;
@@ -22,6 +23,10 @@ Route::prefix('v1')
     ->middleware(['auth:oidc', EnsureManagementApiAudience::class])
     ->group(function (): void {
         Route::apiResource('realms', RealmController::class)
+            ->middlewareFor(['index', 'show'], EnsureScopes::using(Scope::RealmsRead->value))
+            ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(Scope::RealmsWrite->value));
+
+        Route::apiResource('realms.social-providers', SocialProviderController::class)
             ->middlewareFor(['index', 'show'], EnsureScopes::using(Scope::RealmsRead->value))
             ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(Scope::RealmsWrite->value));
 
