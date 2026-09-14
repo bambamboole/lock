@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use App\Clients\Http\Api\V1\Controllers\ClientController;
 use App\Realms\Http\Api\V1\Controllers\RealmController;
+use App\Resources\Http\Api\V1\Controllers\ResourceController;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Http\Middleware\EnsureManagementApiAudience;
 use App\Shared\Http\Middleware\EnsureScopes;
@@ -27,4 +28,8 @@ Route::prefix('v1')
         Route::apiResource('realms.clients', ClientController::class)
             ->middlewareFor(['index', 'show'], EnsureScopes::using(Scope::ClientsRead->value))
             ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(Scope::ClientsWrite->value));
+
+        Route::apiResource('realms.resources', ResourceController::class)
+            ->middlewareFor(['index', 'show'], EnsureScopes::using(Scope::ResourcesRead->value))
+            ->middlewareFor(['store', 'update', 'destroy'], EnsureScopes::using(Scope::ResourcesWrite->value));
     });

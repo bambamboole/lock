@@ -7,22 +7,29 @@ use App\Resources\Models\ResourceScope;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Audit\Audit;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
+use App\Shared\Resources\Data\UpdateResourceScopeData;
 use App\Shared\Resources\Enums\ResourceAdminEvent;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use LogicException;
 
 final readonly class UpdateResourceScope implements UpdatesResourceScope
 {
     public function __construct(private ManagementApi $api) {}
 
-    public function handle(ResourceScope $scope, string $value, ?string $description): void
+    public function handle(ResourceScope $scope, UpdateResourceScopeData $data): void
     {
         $this->guardManagementApi($scope);
 
-        DB::transaction(function () use ($scope, $value, $description): void {
+        DB::transaction(function () use ($scope, $data): void {
             $before = $scope->only(['value', 'description']);
 
-            $scope->fill(['value' => $value, 'description' => $description])->save();
+            Validator::make($data->toAttributes(), [
+                'value' => [Rule::unique(ResourceScope::class, 'value')->where('resource_id', $scope->resource_id)->ignore($scope)],
+            ])->validate();
+
+            $scope->fill($data->toAttributes())->save();
 
             $changes = [];
 

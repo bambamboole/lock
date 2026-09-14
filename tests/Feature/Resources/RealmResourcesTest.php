@@ -12,6 +12,10 @@ use App\Shared\Resources\Contracts\DeletesResource;
 use App\Shared\Resources\Contracts\DeletesResourceScope;
 use App\Shared\Resources\Contracts\UpdatesResource;
 use App\Shared\Resources\Contracts\UpdatesResourceScope;
+use App\Shared\Resources\Data\CreateResourceData;
+use App\Shared\Resources\Data\CreateResourceScopeData;
+use App\Shared\Resources\Data\UpdateResourceData;
+use App\Shared\Resources\Data\UpdateResourceScopeData;
 use App\Shared\Resources\Enums\ResourceAdminEvent;
 
 beforeEach(function () {
@@ -19,12 +23,12 @@ beforeEach(function () {
 });
 
 test('a realm serves its resources and their scopes to the oidc server', function () {
-    $api = app(CreatesResource::class)->handle($this->realm, 'api', 'Orders API');
-    app(CreatesResourceScope::class)->handle($api, 'orders.read', 'Read orders');
-    app(CreatesResourceScope::class)->handle($api, 'orders.write', null);
+    $api = app(CreatesResource::class)->handle($this->realm, CreateResourceData::from(['identifier' => 'api', 'name' => 'Orders API']));
+    app(CreatesResourceScope::class)->handle($api, CreateResourceScopeData::from(['value' => 'orders.read', 'description' => 'Read orders']));
+    app(CreatesResourceScope::class)->handle($api, CreateResourceScopeData::from(['value' => 'orders.write', 'description' => null]));
 
-    $external = app(CreatesResource::class)->handle($this->realm, 'https://billing.test', 'Billing');
-    app(CreatesResourceScope::class)->handle($external, 'invoices.read', null);
+    $external = app(CreatesResource::class)->handle($this->realm, CreateResourceData::from(['identifier' => 'https://billing.test', 'name' => 'Billing']));
+    app(CreatesResourceScope::class)->handle($external, CreateResourceScopeData::from(['value' => 'invoices.read', 'description' => null]));
 
     expect($this->realm->resources()->resources)->toBe([
         'api' => ['orders.read', 'orders.write'],
@@ -33,9 +37,9 @@ test('a realm serves its resources and their scopes to the oidc server', functio
 });
 
 test('creating, renaming and deleting a resource is recorded in the admin trail', function () {
-    $resource = app(CreatesResource::class)->handle($this->realm, 'api', 'Orders API');
+    $resource = app(CreatesResource::class)->handle($this->realm, CreateResourceData::from(['identifier' => 'api', 'name' => 'Orders API']));
 
-    app(UpdatesResource::class)->handle($resource, 'orders', 'Orders');
+    app(UpdatesResource::class)->handle($resource, UpdateResourceData::from(['identifier' => 'orders', 'name' => 'Orders']));
 
     expect($resource->refresh()->identifier)->toBe('orders');
 
@@ -46,7 +50,7 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
         'name' => ['old' => 'Orders API', 'new' => 'Orders'],
     ]);
 
-    app(CreatesResourceScope::class)->handle($resource, 'orders.read', null);
+    app(CreatesResourceScope::class)->handle($resource, CreateResourceScopeData::from(['value' => 'orders.read', 'description' => null]));
     app(DeletesResource::class)->handle($resource);
 
     expect(Resource::query()->whereKey($resource->id)->exists())->toBeFalse()
@@ -59,10 +63,10 @@ test('creating, renaming and deleting a resource is recorded in the admin trail'
 });
 
 test('changing and dropping a scope is recorded against its resource', function () {
-    $resource = app(CreatesResource::class)->handle($this->realm, 'api', 'Orders API');
-    $scope = app(CreatesResourceScope::class)->handle($resource, 'orders.read', null);
+    $resource = app(CreatesResource::class)->handle($this->realm, CreateResourceData::from(['identifier' => 'api', 'name' => 'Orders API']));
+    $scope = app(CreatesResourceScope::class)->handle($resource, CreateResourceScopeData::from(['value' => 'orders.read', 'description' => null]));
 
-    app(UpdatesResourceScope::class)->handle($scope, 'orders.read', 'Read orders');
+    app(UpdatesResourceScope::class)->handle($scope, UpdateResourceScopeData::from(['value' => 'orders.read', 'description' => 'Read orders']));
 
     expect($scope->refresh()->label())->toBe('Read orders');
 

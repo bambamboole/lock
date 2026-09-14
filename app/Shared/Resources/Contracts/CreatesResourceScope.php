@@ -5,8 +5,9 @@ namespace App\Shared\Resources\Contracts;
 
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
+use App\Shared\Resources\Data\CreateResourceScopeData;
 
 interface CreatesResourceScope
 {
-    public function handle(Resource $resource, string $value, ?string $description): ResourceScope;
+    public function handle(Resource $resource, CreateResourceScopeData $data): ResourceScope;
 }
