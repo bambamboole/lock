@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Auth\Support;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
+use Lock\Server\Realms\RealmRepository;
 
 final class DatabaseRealmRepository implements RealmRepository
 {

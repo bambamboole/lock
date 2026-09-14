@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Support\Facades\Validator;
+use Lock\Server\Authentication\Contracts\ResetUserPassword as ResetUserPasswordContract;
 
 final class ResetUserPassword implements ResetUserPasswordContract
 {

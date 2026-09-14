@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Authentication\PasswordResetTokens;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Testing\TestResponse;
+use Lock\Server\Authentication\PasswordResetTokens;
 
 use function Tests\Helpers\realmRoute;
 use function Tests\Helpers\runningTestCase;

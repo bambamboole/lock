@@ -5,11 +5,11 @@ namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Brokering\Exceptions\SocialAuthenticationException;
-use Bambamboole\LaravelOidc\Server\Shared\Brokering\CreateUserFromSocialAccount;
-use Bambamboole\LaravelOidc\Server\Shared\Brokering\SocialUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Lock\Server\Shared\Brokering\CreateUserFromSocialAccount;
+use Lock\Server\Shared\Brokering\SocialAuthenticationException;
+use Lock\Server\Shared\Brokering\SocialUser;
 
 final class CreateUserFromSocialLogin implements CreateUserFromSocialAccount
 {

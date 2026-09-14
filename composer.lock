@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d0892dc15be0509a94b5628553b1bc4a",
+    "content-hash": "f42c4b6f24980ed5a69b845dd4d456da",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -129,112 +129,6 @@
                 "source": "https://github.com/bambamboole/laravel-i18next/tree/0.6.0"
             },
             "time": "2026-06-13T18:53:49+00:00"
-        },
-        {
-            "name": "bambamboole/laravel-oidc",
-            "version": "v0.32.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/bambamboole/laravel-oidc.git",
-                "reference": "1848295fd239c23d39319f939c97b2696a9dc65e"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/bambamboole/laravel-oidc/zipball/1848295fd239c23d39319f939c97b2696a9dc65e",
-                "reference": "1848295fd239c23d39319f939c97b2696a9dc65e",
-                "shasum": ""
-            },
-            "require": {
-                "bacon/bacon-qr-code": "^3.1",
-                "ext-sodium": "*",
-                "illuminate/auth": "^13.0",
-                "illuminate/bus": "^13.0",
-                "illuminate/console": "^13.0",
-                "illuminate/contracts": "^13.0",
-                "illuminate/cookie": "^13.0",
-                "illuminate/database": "^13.0",
-                "illuminate/http": "^13.0",
-                "illuminate/queue": "^13.0",
-                "illuminate/session": "^13.0",
-                "illuminate/support": "^13.0",
-                "illuminate/validation": "^13.0",
-                "illuminate/view": "^13.0",
-                "laravel/passkeys": "^0.2.1",
-                "lattice-php/lattice": ">=0.77 <1.0",
-                "lcobucci/clock": "^3.2",
-                "lcobucci/jwt": "^5.0",
-                "php": "^8.4",
-                "phpseclib/phpseclib": "^3.0.15",
-                "pragmarx/google2fa": "^9.0"
-            },
-            "replace": {
-                "bambamboole/laravel-oidc-client": "self.version",
-                "bambamboole/laravel-oidc-server": "self.version",
-                "bambamboole/laravel-oidc-ui": "self.version"
-            },
-            "require-dev": {
-                "bambamboole/extended-testbench": "^0.6.1",
-                "larastan/larastan": "^3.0",
-                "laravel/boost": "^2.6",
-                "laravel/pint": "^1.16",
-                "mockery/mockery": "^1.6",
-                "orchestra/testbench": "^11.0",
-                "pestphp/pest": "^5.0",
-                "pestphp/pest-plugin-laravel": "^5.0",
-                "pestphp/pest-plugin-phpstan": "^5.0",
-                "rector/rector": "^2.4"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Bambamboole\\LaravelOidc\\Server\\OidcServiceProvider",
-                        "Bambamboole\\LaravelOidc\\Client\\OidcClientServiceProvider",
-                        "Bambamboole\\LaravelOidc\\Ui\\UiServiceProvider"
-                    ]
-                },
-                "lattice": {
-                    "icons": "packages/ui/resources/icons",
-                    "plugin": "packages/ui/resources/js/plugin.ts",
-                    "discover": [
-                        "packages/ui/src"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Bambamboole\\LaravelOidc\\Ui\\": "packages/ui/src/",
-                    "Bambamboole\\LaravelOidc\\Client\\": "packages/client/src/",
-                    "Bambamboole\\LaravelOidc\\Server\\": "packages/server/src/",
-                    "Bambamboole\\LaravelOidc\\Server\\Database\\Factories\\": "packages/server/database/factories/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Manuel Christlieb",
-                    "email": "manuel@christlieb.eu"
-                }
-            ],
-            "description": "OpenID Connect suite for Laravel — identity provider (server), relying party (client), and auth UI",
-            "homepage": "https://github.com/bambamboole/laravel-oidc",
-            "keywords": [
-                "SSO",
-                "laravel",
-                "oauth2",
-                "oauth2-server",
-                "oidc",
-                "openid-connect",
-                "relying-party"
-            ],
-            "support": {
-                "issues": "https://github.com/bambamboole/laravel-oidc/issues",
-                "source": "https://github.com/bambamboole/laravel-oidc"
-            },
-            "time": "2026-09-12T15:47:01+00:00"
         },
         {
             "name": "bambamboole/laravel-translation-dumper",
@@ -1324,27 +1218,26 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "8.2.0",
+            "version": "7.15.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "93939470950a9b11e2e84204166ef5e048c55fe4"
+                "reference": "ee80339fd9177ba44c49cdb653ff02a4d1106b9a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/93939470950a9b11e2e84204166ef5e048c55fe4",
-                "reference": "93939470950a9b11e2e84204166ef5e048c55fe4",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/ee80339fd9177ba44c49cdb653ff02a4d1106b9a",
+                "reference": "ee80339fd9177ba44c49cdb653ff02a4d1106b9a",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "guzzlehttp/promises": "^3.0.2",
-                "guzzlehttp/psr7": "^3.1",
-                "php": "^7.4 || ^8.0",
+                "guzzlehttp/promises": "^2.5.3",
+                "guzzlehttp/psr7": "^2.13.1",
+                "php": "^7.2.5 || ^8.0",
                 "psr/http-client": "^1.0",
-                "psr/http-factory": "^1.0",
-                "symfony/polyfill-php80": "^1.25",
-                "symfony/polyfill-php82": "^1.27"
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
+                "symfony/polyfill-php80": "^1.25"
             },
             "provide": {
                 "psr/http-client-implementation": "1.0"
@@ -1352,10 +1245,10 @@
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "ext-curl": "*",
-                "guzzle/client-integration-tests": "4.0.1",
-                "guzzlehttp/test-server": "^1.0.1",
+                "guzzle/client-integration-tests": "3.0.3",
+                "guzzlehttp/test-server": "^0.7",
                 "php-http/message-factory": "^1.1",
-                "phpunit/phpunit": "^9.6.34",
+                "phpunit/phpunit": "^8.5.52 || ^9.6.34",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
             },
             "suggest": {
@@ -1371,6 +1264,9 @@
                 }
             },
             "autoload": {
+                "files": [
+                    "src/functions_include.php"
+                ],
                 "psr-4": {
                     "GuzzleHttp\\": "src/"
                 }
@@ -1430,7 +1326,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/8.2.0"
+                "source": "https://github.com/guzzle/guzzle/tree/7.15.5"
             },
             "funding": [
                 {
@@ -1446,28 +1342,29 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-09-06T13:55:09+00:00"
+            "time": "2026-08-24T09:21:06+00:00"
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "3.0.2",
+            "version": "2.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "42118e66a53c492effaf92bc357e931985d5c6f9"
+                "reference": "cde49999552d185d64715fe9c1f77a2aadd2f9f1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/42118e66a53c492effaf92bc357e931985d5c6f9",
-                "reference": "42118e66a53c492effaf92bc357e931985d5c6f9",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/cde49999552d185d64715fe9c1f77a2aadd2f9f1",
+                "reference": "cde49999552d185d64715fe9c1f77a2aadd2f9f1",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.4 || ^8.0"
+                "php": "^7.2.5 || ^8.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0"
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
-                "phpunit/phpunit": "^9.6.34"
+                "phpunit/phpunit": "^8.5.52 || ^9.6.34"
             },
             "type": "library",
             "extra": {
@@ -1513,7 +1410,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/3.0.2"
+                "source": "https://github.com/guzzle/promises/tree/2.5.3"
             },
             "funding": [
                 {
@@ -1529,39 +1426,39 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-24T10:00:26+00:00"
+            "time": "2026-08-24T09:11:28+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "3.1.0",
+            "version": "2.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "a3059ba1a84c9139c4ae03cf0f45bea276c97c74"
+                "reference": "95e7828100de18b4e269fb1703be530082d5166d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/a3059ba1a84c9139c4ae03cf0f45bea276c97c74",
-                "reference": "a3059ba1a84c9139c4ae03cf0f45bea276c97c74",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/95e7828100de18b4e269fb1703be530082d5166d",
+                "reference": "95e7828100de18b4e269fb1703be530082d5166d",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.4 || ^8.0",
-                "psr/http-factory": "^1.1",
-                "psr/http-message": "^2.0",
-                "symfony/polyfill-php80": "^1.25",
-                "symfony/polyfill-php82": "^1.27"
+                "php": "^7.2.5 || ^8.0",
+                "psr/http-factory": "^1.0",
+                "psr/http-message": "^1.1 || ^2.0",
+                "ralouphie/getallheaders": "^3.0",
+                "symfony/deprecation-contracts": "^2.5 || ^3.0",
+                "symfony/polyfill-php80": "^1.25"
             },
             "provide": {
-                "psr/http-factory-implementation": "1.1",
-                "psr/http-message-implementation": "2.0"
+                "psr/http-factory-implementation": "1.0",
+                "psr/http-message-implementation": "1.0"
             },
             "require-dev": {
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "http-interop/http-factory-tests": "1.1.0",
                 "jshttp/mime-db": "1.54.0.1",
-                "php-http/psr7-integration-tests": "^1.5.1",
-                "phpunit/phpunit": "^9.6.34"
+                "phpunit/phpunit": "^8.5.52 || ^9.6.34"
             },
             "suggest": {
                 "laminas/laminas-httphandlerrunner": "Emit PSR-7 responses"
@@ -1632,7 +1529,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/3.1.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.13.1"
             },
             "funding": [
                 {
@@ -1648,7 +1545,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-24T11:02:13+00:00"
+            "time": "2026-08-24T09:13:11+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
@@ -5708,6 +5605,50 @@
             "time": "2026-06-29T15:41:09+00:00"
         },
         {
+            "name": "ralouphie/getallheaders",
+            "version": "3.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ralouphie/getallheaders.git",
+                "reference": "120b605dfeb996808c31b6477290a714d356e822"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ralouphie/getallheaders/zipball/120b605dfeb996808c31b6477290a714d356e822",
+                "reference": "120b605dfeb996808c31b6477290a714d356e822",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.1",
+                "phpunit/phpunit": "^5 || ^6.5"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/getallheaders.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ralph Khattar",
+                    "email": "ralph.khattar@gmail.com"
+                }
+            ],
+            "description": "A polyfill for getallheaders.",
+            "support": {
+                "issues": "https://github.com/ralouphie/getallheaders/issues",
+                "source": "https://github.com/ralouphie/getallheaders/tree/develop"
+            },
+            "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
             "name": "ramsey/collection",
             "version": "2.1.1",
             "source": {
@@ -8553,86 +8494,6 @@
             "time": "2026-04-10T16:19:22+00:00"
         },
         {
-            "name": "symfony/polyfill-php82",
-            "version": "v1.38.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/symfony/polyfill-php82.git",
-                "reference": "002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php82/zipball/002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b",
-                "reference": "002dc0cfe5fd4ed6033d48f27d4f19a486c4b04b",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.2"
-            },
-            "type": "library",
-            "extra": {
-                "thanks": {
-                    "url": "https://github.com/symfony/polyfill",
-                    "name": "symfony/polyfill"
-                }
-            },
-            "autoload": {
-                "files": [
-                    "bootstrap.php"
-                ],
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php82\\": ""
-                },
-                "classmap": [
-                    "Resources/stubs"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nicolas Grekas",
-                    "email": "p@tchwork.com"
-                },
-                {
-                    "name": "Symfony Community",
-                    "homepage": "https://symfony.com/contributors"
-                }
-            ],
-            "description": "Symfony polyfill backporting some PHP 8.2+ features to lower PHP versions",
-            "homepage": "https://symfony.com",
-            "keywords": [
-                "compatibility",
-                "polyfill",
-                "portable",
-                "shim"
-            ],
-            "support": {
-                "source": "https://github.com/symfony/polyfill-php82/tree/v1.38.1"
-            },
-            "funding": [
-                {
-                    "url": "https://symfony.com/sponsor",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/fabpot",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/nicolas-grekas",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2026-05-26T12:45:58+00:00"
-        },
-        {
             "name": "symfony/polyfill-php84",
             "version": "v1.38.1",
             "source": {
@@ -10251,6 +10112,307 @@
                 }
             ],
             "time": "2026-08-31T07:00:09+00:00"
+        },
+        {
+            "name": "use-lock/client-laravel",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../use-lock/client",
+                "reference": "3bc698b1d83e468df63ff032484f5296377ed9e8"
+            },
+            "require": {
+                "ext-openssl": "*",
+                "guzzlehttp/guzzle": "^7.9",
+                "illuminate/auth": "^13.0",
+                "illuminate/cache": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/http": "^13.0",
+                "illuminate/routing": "^13.0",
+                "illuminate/session": "^13.0",
+                "illuminate/support": "^13.0",
+                "lcobucci/jwt": "^5.0",
+                "php": "^8.5",
+                "phpseclib/phpseclib": "^3.0.15"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.16",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^5.0",
+                "pestphp/pest-plugin-laravel": "^5.0",
+                "pestphp/pest-plugin-phpstan": "^5.0",
+                "rector/rector": "^2.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Lock\\Laravel\\OidcClientServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Lock\\Laravel\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Lock\\Laravel\\Tests\\": "tests/",
+                    "Workbench\\App\\": "workbench/app/"
+                }
+            },
+            "scripts": {
+                "analyse": [
+                    "./vendor/bin/phpstan analyse && ./vendor/bin/phpstan analyse -c phpstan-tests.neon.dist"
+                ],
+                "check": [
+                    "@test:lint",
+                    "@analyse",
+                    "@rector:test",
+                    "@test:parallel"
+                ],
+                "lint:fix": [
+                    "./vendor/bin/pint"
+                ],
+                "test:lint": [
+                    "./vendor/bin/pint --test"
+                ],
+                "rector": [
+                    "./vendor/bin/rector process"
+                ],
+                "rector:test": [
+                    "./vendor/bin/rector process --dry-run"
+                ],
+                "fix": [
+                    "@rector",
+                    "@lint:fix"
+                ],
+                "test": [
+                    "./vendor/bin/pest"
+                ],
+                "test:feature": [
+                    "@test --testsuite=Feature"
+                ],
+                "test:parallel": [
+                    "./vendor/bin/pest --parallel"
+                ],
+                "post-autoload-dump": [
+                    "@clear",
+                    "@prepare"
+                ],
+                "clear": [
+                    "@php vendor/bin/testbench package:purge-skeleton --ansi"
+                ],
+                "prepare": [
+                    "@php vendor/bin/testbench package:discover --ansi"
+                ],
+                "serve": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "@php artisan serve --ansi"
+                ],
+                "test:unit": [
+                    "@test --testsuite=Unit"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Manuel Christlieb",
+                    "email": "manuel@christlieb.eu"
+                }
+            ],
+            "description": "OpenID Connect client for Laravel — log users in through any OIDC provider",
+            "homepage": "https://github.com/use-lock/client-laravel",
+            "keywords": [
+                "client",
+                "laravel",
+                "oauth2",
+                "oidc",
+                "openid-connect",
+                "sso"
+            ],
+            "support": {
+                "issues": "https://github.com/use-lock/client-laravel/issues",
+                "source": "https://github.com/use-lock/client-laravel"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "use-lock/server",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../use-lock/server",
+                "reference": "d63de665a5d3c32bf719140c502e2112db909108"
+            },
+            "require": {
+                "bacon/bacon-qr-code": "^3.1",
+                "ext-sodium": "*",
+                "illuminate/auth": "^13.0",
+                "illuminate/bus": "^13.0",
+                "illuminate/console": "^13.0",
+                "illuminate/contracts": "^13.0",
+                "illuminate/cookie": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/http": "^13.0",
+                "illuminate/queue": "^13.0",
+                "illuminate/session": "^13.0",
+                "illuminate/support": "^13.0",
+                "illuminate/validation": "^13.0",
+                "illuminate/view": "^13.0",
+                "laravel/passkeys": "^0.2.1",
+                "lattice-php/lattice": ">=0.77 <1.0",
+                "lcobucci/clock": "^3.2",
+                "lcobucci/jwt": "^5.0",
+                "php": "^8.5",
+                "phpseclib/phpseclib": "^3.0.15",
+                "pragmarx/google2fa": "^9.0"
+            },
+            "require-dev": {
+                "bambamboole/extended-testbench": "^0.6.1",
+                "larastan/larastan": "^3.0",
+                "laravel/boost": "^2.6",
+                "laravel/pint": "^1.16",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^5.0",
+                "pestphp/pest-plugin-laravel": "^5.0",
+                "pestphp/pest-plugin-phpstan": "^5.0",
+                "rector/rector": "^2.4"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Lock\\Server\\OidcServiceProvider"
+                    ]
+                },
+                "lattice": {
+                    "discover": [
+                        "src/Authentication/Ui",
+                        "src/Credentials/Ui",
+                        "src/Consents/Ui",
+                        "src/Protocol/Ui",
+                        "src/Shared/Ui"
+                    ],
+                    "plugin": "resources/js/plugin.ts",
+                    "icons": "resources/icons"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Lock\\Server\\Database\\Factories\\": "database/factories/",
+                    "Lock\\Server\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Lock\\Server\\Tests\\": "tests/",
+                    "Workbench\\App\\": "workbench/app/",
+                    "Workbench\\Database\\Factories\\": "workbench/database/factories/"
+                }
+            },
+            "scripts": {
+                "analyse": [
+                    "./vendor/bin/phpstan analyse && ./vendor/bin/phpstan analyse -c phpstan-tests.neon.dist"
+                ],
+                "check": [
+                    "@test:lint",
+                    "@analyse",
+                    "@rector:test",
+                    "@test:parallel"
+                ],
+                "lint:fix": [
+                    "./vendor/bin/pint"
+                ],
+                "test:lint": [
+                    "./vendor/bin/pint --test"
+                ],
+                "rector": [
+                    "./vendor/bin/rector process"
+                ],
+                "rector:test": [
+                    "./vendor/bin/rector process --dry-run"
+                ],
+                "fix": [
+                    "@rector",
+                    "@lint:fix"
+                ],
+                "test": [
+                    "./vendor/bin/pest"
+                ],
+                "test:unit": [
+                    "@test --testsuite=Unit"
+                ],
+                "test:feature": [
+                    "@test --testsuite=Feature"
+                ],
+                "test:parallel": [
+                    "./vendor/bin/pest --parallel"
+                ],
+                "post-autoload-dump": [
+                    "@clear",
+                    "@prepare"
+                ],
+                "post-install-cmd": [
+                    "@hooks:install"
+                ],
+                "post-update-cmd": [
+                    "@hooks:install"
+                ],
+                "hooks:install": [
+                    "git config core.hooksPath .githooks 2>/dev/null || true"
+                ],
+                "clear": [
+                    "@php vendor/bin/testbench package:purge-skeleton --ansi"
+                ],
+                "prepare": [
+                    "@php vendor/bin/testbench package:discover --ansi"
+                ],
+                "boost:refresh": [
+                    "@php vendor/bin/testbench boost:update --no-interaction"
+                ],
+                "serve": [
+                    "Composer\\Config::disableProcessTimeout",
+                    "@php artisan serve --ansi"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Manuel Christlieb",
+                    "email": "manuel@christlieb.eu"
+                }
+            ],
+            "description": "OpenID Connect provider and authentication UI for Laravel",
+            "homepage": "https://github.com/use-lock/server",
+            "keywords": [
+                "auth-ui",
+                "laravel",
+                "oauth2",
+                "oauth2-server",
+                "oidc",
+                "openid-connect"
+            ],
+            "support": {
+                "issues": "https://github.com/use-lock/server/issues",
+                "source": "https://github.com/use-lock/server"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "vlucas/phpdotenv",
@@ -16513,11 +16675,14 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "use-lock/client-laravel": 20,
+        "use-lock/server": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": "^8.4"
+        "php": "^8.5"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"

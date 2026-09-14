@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Clients\Data;
 
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 final readonly class ClientAttributes
 {

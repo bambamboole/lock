@@ -19,11 +19,11 @@ use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
 use App\Shared\Clients\Contracts\RotatesClientSecret;
 use App\Shared\Clients\Contracts\SetsClientRevocation;
 use App\Shared\Clients\Contracts\UpdatesClient;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Core\Support\Affix;
 use Lattice\Ui\Components\MenuItem;
+use Lock\Server\Clients\Models\Client;
 
 final class ClientsServiceProvider extends ServiceProvider
 {

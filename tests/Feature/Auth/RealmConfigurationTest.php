@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
 
 use function Tests\Helpers\createRealm;
 use function Tests\Helpers\realmUrl;

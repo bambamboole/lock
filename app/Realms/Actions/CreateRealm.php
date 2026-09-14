@@ -11,10 +11,10 @@ use App\Shared\Realms\Data\RealmSettings;
 use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Support\RealmConfiguration;
 use App\Shared\Realms\Support\RealmDomain;
-use Bambamboole\LaravelOidc\Server\Shared\SigningKeys\SigningKeyStore;
-use Bambamboole\LaravelOidc\Server\SigningKeys\SigningKeyGenerator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Lock\Server\SigningKeys\SigningKeyGenerator;
+use Lock\Server\SigningKeys\SigningKeyStore;
 use Spatie\LaravelData\Optional;
 
 final readonly class CreateRealm implements CreatesRealm

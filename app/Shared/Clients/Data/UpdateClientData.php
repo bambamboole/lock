@@ -5,9 +5,9 @@ namespace App\Shared\Clients\Data;
 
 use App\Shared\Clients\Support\AbsoluteUris;
 use App\Shared\Data\ApiData;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 use Spatie\LaravelData\Attributes\Validation\ArrayType;
 use Spatie\LaravelData\Attributes\Validation\In;
 use Spatie\LaravelData\Attributes\Validation\ListType;

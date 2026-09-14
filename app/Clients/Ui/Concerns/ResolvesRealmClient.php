@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace App\Clients\Ui\Concerns;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Lock\Server\Clients\Models\Client;
 
 /**
  * A client is only reachable through the realm it was created in: the

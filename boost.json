@@ -8,8 +8,7 @@
     "mcp": true,
     "nightwatch": false,
     "packages": [
-        "lattice-php/lattice",
-        "spatie/laravel-activitylog"
+        "lattice-php/lattice"
     ],
     "sail": false,
     "skills": [

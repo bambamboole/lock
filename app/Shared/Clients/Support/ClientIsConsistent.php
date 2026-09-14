@@ -3,10 +3,10 @@ declare(strict_types=1);
 
 namespace App\Shared\Clients\Support;
 
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
 use Closure;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 /**
  * Type, grant types and redirect URIs constrain each other, so none of it fits

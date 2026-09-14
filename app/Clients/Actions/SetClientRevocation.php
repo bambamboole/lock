@@ -7,14 +7,14 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\SetsClientRevocation;
 use App\Shared\Clients\Enums\ClientAdminEvent;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Clients\Models\Client;
 
 final class SetClientRevocation implements SetsClientRevocation
 {
     public function handle(Client $client, bool $revoked): void
     {
-        if ($client->isRevoked() === $revoked) {
+        if ($client->snapshot()->revoked === $revoked) {
             return;
         }
 

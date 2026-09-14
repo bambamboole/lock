@@ -7,8 +7,8 @@ use App\Audit\Enums\UserEventType;
 use App\Audit\Models\UserEvent;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Authentication\Events\LoginFailed;
-use Bambamboole\LaravelOidc\Server\Authentication\Events\LoginSucceeded;
+use Lock\Server\Authentication\Events\LoginFailed;
+use Lock\Server\Authentication\Events\LoginSucceeded;
 
 test('a security event raised inside a realm is recorded against that realm', function () {
     $realm = Realm::factory()->create();

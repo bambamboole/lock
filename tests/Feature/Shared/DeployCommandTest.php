@@ -3,13 +3,13 @@ declare(strict_types=1);
 
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementRoles;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Lattice\Core\Discovery\DiscoveryManifest;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\SigningKeys\Models\SigningKey;
 
 it('runs every deploy step and leaves the app state primed', function () {
     Realm::factory()->create(['slug' => 'partners']);

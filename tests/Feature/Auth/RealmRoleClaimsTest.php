@@ -5,12 +5,12 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentPrompt;
-use Bambamboole\LaravelOidc\Server\Consents\Views\ConsentView;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Shared\Consents\ConsentPrompt;
+use Lock\Server\Shared\Consents\ConsentView;
 
 use function Tests\Helpers\jwtClaims;
 

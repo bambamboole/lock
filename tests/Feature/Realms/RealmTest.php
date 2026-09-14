@@ -5,8 +5,8 @@ use App\Auth\Models\User;
 use App\Realms\Actions\DeleteRealm;
 use App\Realms\Models\Realm;
 use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\SigningKeys\Models\SigningKey;
 use Illuminate\Database\QueryException;
+use Lock\Server\SigningKeys\Models\SigningKey;
 
 use function Tests\Helpers\createRealm;
 use function Tests\Helpers\realmRoute;

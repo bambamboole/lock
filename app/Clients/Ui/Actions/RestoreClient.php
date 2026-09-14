@@ -6,13 +6,13 @@ namespace App\Clients\Ui\Actions;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\SetsClientRevocation;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
+use Lock\Server\Clients\Models\Client;
 
 #[AsAction('admin.clients.restore', can: Scope::ClientsWrite)]
 final class RestoreClient extends ActionDefinition
@@ -33,7 +33,7 @@ final class RestoreClient extends ActionDefinition
     {
         $client = $this->realmClientOrNull();
 
-        return $client instanceof Client && $client->isRevoked();
+        return $client instanceof Client && $client->snapshot()->revoked;
     }
 
     public function handle(Request $request): ActionResult

@@ -4,9 +4,9 @@ declare(strict_types=1);
 namespace App\Shared\Http\Middleware;
 
 use App\Shared\Api\ManagementApi;
-use Bambamboole\LaravelOidc\Server\Tokens\Http\Middleware\CheckAudience;
 use Closure;
 use Illuminate\Http\Request;
+use Lock\Server\Tokens\Http\Middleware\CheckAudience;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

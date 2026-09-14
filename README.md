@@ -7,12 +7,12 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
 ## Features
 
 - **OpenID Connect provider** — authorization code + PKCE, token exchange, consent, discovery, and
-  key rotation via [`laravel-oidc`](https://github.com/bambamboole/laravel-oidc), which owns the OAuth2 core
+  key rotation via [`use-lock/server`](https://github.com/use-lock/server), which owns the OAuth2 core
   and its client and token storage.
 - **Relying-party login** — the app signs its own users in through its own OIDC endpoints
-  (self-SSO), so the account console runs on the same flows external clients use.
+  (self-SSO) through `use-lock/client-laravel`, so the account console runs on the same flows external clients use.
 - **Authentication** — registration, password reset, email verification, **two-factor** (TOTP,
-  recovery codes) and **passkeys**, with the prebuilt Lattice auth UI from `laravel-oidc-ui`.
+  recovery codes) and **passkeys**, with the Lattice auth UI integrated into `use-lock/server`.
 - **Realms** — the identity boundary, Keycloak-style. A user belongs to exactly one realm, an address identifies
   a different person in each, and every realm has its own OIDC issuer, clients and authentication settings.
 - **Admin console** — the `admin` realm's first-party UI: realm CRUD and configuration, user administration,
@@ -24,10 +24,13 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
 
 ## Requirements
 
-- PHP 8.4+, Composer, Node.js 22+
+- PHP 8.5+, Composer, Node.js 22+
 - [Laravel Herd](https://herd.laravel.com)
 
 ## Getting started
+
+Composer links the local packages from `../use-lock/server` and `../use-lock/client`.
+Both checkouts must exist at those paths before installing dependencies.
 
 ```bash
 composer setup

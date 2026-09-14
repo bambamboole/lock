@@ -7,12 +7,12 @@ use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Shared\Tokens\AccessTokenMinter;
 use DateInterval;
 use Illuminate\Http\Request;
 use Lattice\Core\Attributes\AsRemoteSource;
 use Lattice\Core\Remote\BrowserToken;
 use Lattice\Remote\RemoteSourceDefinition;
+use Lock\Server\Shared\Tokens\AccessTokenMinter;
 use RuntimeException;
 
 /**

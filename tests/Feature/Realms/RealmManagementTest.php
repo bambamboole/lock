@@ -14,12 +14,12 @@ use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\RealmDomainStatus;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Sessions\Models\OidcSession;
+use Lock\Server\Shared\Realms\Settings\LoginMethod;
+use Lock\Server\Shared\Realms\Settings\MfaRequirement;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\domainReachesThisInstance;

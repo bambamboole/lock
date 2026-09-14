@@ -19,16 +19,16 @@ use App\Realms\Models\Realm;
 use App\Roles\Models\Role;
 use App\Shared\Auth\Enums\UserAdminEvent;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\SendBackChannelLogout;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
-use Bambamboole\LaravelOidc\Server\Tokens\Models\AccessToken;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Sessions\BackChannel\SendBackChannelLogout;
+use Lock\Server\Sessions\Models\OidcSession;
+use Lock\Server\Sessions\Models\SessionParticipant;
+use Lock\Server\Tokens\Models\AccessToken;
 
 use function Tests\Helpers\createPasskey;
 use function Tests\Helpers\globalAdmin;
@@ -314,7 +314,7 @@ test('a single session can be ended and the relying party is told', function () 
     expect($ended->refresh()->revoked_at)->not->toBeNull()
         ->and($kept->refresh()->revoked_at)->toBeNull()
         ->and(data_get(AdminEvent::global()->where('type', UserAdminEvent::UserSessionEnded->type())->sole()->context, 'sid'))->toBe($ended->id);
-    Bus::assertDispatched(SendBackChannelLogout::class, fn (SendBackChannelLogout $job): bool => $job->sid === $ended->id);
+    Bus::assertDispatched(SendBackChannelLogout::class, fn (SendBackChannelLogout $job): bool => $job->participantId === SessionParticipant::query()->where('session_id', $ended->id)->sole()->id && $job->realm === $this->realm->slug);
 
     $this->callAction(EndUserSessionAction::class, [], ['realm' => 'acme', 'user' => $target->id, 'sid' => $ended->id])->assertStatus(422);
 });

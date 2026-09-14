@@ -14,12 +14,6 @@ use App\Auth\Ui\Forms\PasswordForm;
 use App\Auth\Ui\Forms\TimezoneForm;
 use App\Auth\Ui\Tables\BrowserSessionsTable;
 use App\Shared\Concerns\ResolvesCurrentUser;
-use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
-use Bambamboole\LaravelOidc\Server\Authentication\PasswordConfirmation;
-use Bambamboole\LaravelOidc\Server\Credentials\FactorRegistry;
-use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
-use Bambamboole\LaravelOidc\Ui\Forms\TwoFactorSetupForm;
-use Bambamboole\LaravelOidc\Ui\Tables\TwoFactorMethodsTable;
 use Illuminate\Http\Request;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
@@ -47,6 +41,12 @@ use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
+use Lock\Server\Authentication\Http\Middleware\AuthenticateIdentity;
+use Lock\Server\Authentication\PasswordConfirmation;
+use Lock\Server\Credentials\FactorRegistry;
+use Lock\Server\Credentials\Ui\Forms\TwoFactorSetupForm;
+use Lock\Server\Credentials\Ui\Tables\TwoFactorMethodsTable;
+use Lock\Server\Realms\Http\Middleware\ResolveRealm;
 
 /**
  * The realm has to resolve before the session starts, and the identity guard,

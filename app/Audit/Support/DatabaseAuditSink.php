@@ -6,8 +6,8 @@ namespace App\Audit\Support;
 
 use App\Audit\Models\UserEvent;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Audit\AuditRecord;
-use Bambamboole\LaravelOidc\Server\Shared\Audit\AuditSink;
+use Lock\Server\Audit\Contracts\AuditSink;
+use Lock\Server\Shared\Audit\AuditRecord;
 
 /**
  * The package's listener swallows whatever this throws, so a failure here shows

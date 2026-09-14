@@ -6,7 +6,7 @@ namespace App\Auth\Actions;
 use App\Auth\Models\User;
 use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use Bambamboole\LaravelOidc\Server\Purge\PurgeUser;
+use App\Shared\Auth\Events\UserDeleting;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -17,7 +17,6 @@ final readonly class DeleteUser implements DeletesUser
 {
     public function __construct(
         private EndsUserSessions $endSessions,
-        private PurgeUser $purge,
     ) {}
 
     public function handle(User $user): void
@@ -25,7 +24,7 @@ final readonly class DeleteUser implements DeletesUser
         $this->endSessions->handle($user);
 
         DB::transaction(function () use ($user): void {
-            ($this->purge)($user);
+            event(new UserDeleting($user));
             $user->notifications()->delete();
             $user->delete();
         });

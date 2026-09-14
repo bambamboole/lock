@@ -10,8 +10,6 @@ use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Data\UpdateRealmData;
 use App\Shared\Realms\Enums\RealmSettingType;
 use App\Shared\Realms\Support\RealmConfiguration;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Lattice\Facades\Effects;
@@ -29,6 +27,8 @@ use Lattice\Form\FormDefinition;
 use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
+use Lock\Server\Shared\Realms\Settings\LoginMethod;
+use Lock\Server\Shared\Realms\Settings\MfaRequirement;
 
 /**
  * The input derives from the setting's declared type, so a new setting in

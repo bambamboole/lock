@@ -12,7 +12,6 @@ use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Pages\AdminPage;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -38,6 +37,7 @@ use Lattice\Ui\Enums\Orientation;
 use Lattice\Ui\Enums\Size;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
+use Lock\Server\Clients\Models\Client;
 
 #[AsPage(route: '/admin/realms/{realm}/clients/{client}', name: 'admin.realms.clients.show', can: Scope::ClientsRead)]
 final class ClientDetailPage extends AdminPage
@@ -58,11 +58,11 @@ final class ClientDetailPage extends AdminPage
                 heading: $client->name,
                 description: __('admin.clients.detail.description', ['realm' => $realm->name]),
                 headerActions: [
-                    ...($client->isRevoked() ? [Badge::make(__('admin.clients.status.blocked'))->color(ColorName::Danger)] : []),
+                    ...($client->snapshot()->revoked ? [Badge::make(__('admin.clients.status.blocked'))->color(ColorName::Danger)] : []),
                     ...$this->headerActions($client),
                 ],
                 schema: [
-                    ...($client->confidential() ? [$this->secretCard($client)] : []),
+                    ...($client->snapshot()->confidential ? [$this->secretCard($client)] : []),
                     $this->settingsCard($client),
                 ],
                 width: Width::Large,
@@ -79,9 +79,9 @@ final class ClientDetailPage extends AdminPage
     private function headerActions(Client $client): array
     {
         return ActionBar::make(
-            primary: $client->confidential() ? [Action::use(RotateClientSecret::class)] : [],
+            primary: $client->snapshot()->confidential ? [Action::use(RotateClientSecret::class)] : [],
             overflow: [
-                ...($client->isRevoked()
+                ...($client->snapshot()->revoked
                     ? [Action::use(RestoreClient::class)]
                     : [Action::use(RevokeClient::class)]),
                 Action::use(DeleteClient::class),
@@ -138,10 +138,10 @@ final class ClientDetailPage extends AdminPage
                     ->placeholder(__('common.value.none'))
                     ->disclosure([Form::use(UpdateClientForm::class, ['field' => 'backchannel_logout_uri'])]),
                 ComponentEntry::make('scopes', __('admin.clients.detail.scopes'), 'client-scopes')
-                    ->value($this->badges($client->assignedScopes())),
+                    ->value($this->badges($client->snapshot()->assignedScopes())),
                 BadgeEntry::make('status', __('admin.clients.columns.status'), 'client-status')
-                    ->value($client->isRevoked() ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
-                    ->color($client->isRevoked() ? ColorName::Danger : ColorName::Success),
+                    ->value($client->snapshot()->revoked ? __('admin.clients.status.blocked') : __('admin.clients.status.active'))
+                    ->color($client->snapshot()->revoked ? ColorName::Danger : ColorName::Success),
                 DateEntry::make('created_at', __('admin.clients.detail.created-at'), 'client-created-at')
                     ->value($client->created_at?->toIso8601String())
                     ->style(DateTimeStyle::Long),

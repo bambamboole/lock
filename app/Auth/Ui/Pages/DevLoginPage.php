@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Auth\Ui\Pages;
 
-use Bambamboole\LaravelOidc\Ui\Pages\LoginPage;
 use Lattice\Form\Components\PasswordInput;
 use Lattice\Form\Components\TextInput;
+use Lock\Server\Authentication\Ui\Pages\LoginPage;
 
 final class DevLoginPage extends LoginPage
 {

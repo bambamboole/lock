@@ -8,10 +8,10 @@ use App\Realms\Models\Realm;
 use App\Realms\Support\DomainCheckToken;
 use App\Shared\Realms\Contracts\CreatesRealm;
 use App\Shared\Realms\Data\CreateRealmData;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
 
 /**
  * @return array{0: array<string, mixed>, 1: array<string, string>}

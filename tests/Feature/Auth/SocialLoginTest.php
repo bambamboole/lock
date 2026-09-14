@@ -8,14 +8,14 @@ use App\Auth\Models\User;
 use App\Auth\Support\RealmUserProvider;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmSocialProvider;
-use Bambamboole\LaravelOidc\Server\Brokering\Exceptions\SocialAuthenticationException;
-use Bambamboole\LaravelOidc\Server\Brokering\Models\SocialAccount;
-use Bambamboole\LaravelOidc\Server\Brokering\SocialAccountManager;
-use Bambamboole\LaravelOidc\Server\Brokering\SocialProviderRegistry;
-use Bambamboole\LaravelOidc\Server\Shared\Brokering\CreateUserFromSocialAccount;
-use Bambamboole\LaravelOidc\Server\Shared\Brokering\SocialUser;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\UserProvider;
+use Lock\Server\Brokering\Models\SocialAccount;
+use Lock\Server\Brokering\SocialAccountManager;
+use Lock\Server\Brokering\SocialProviderRegistry;
+use Lock\Server\Shared\Brokering\CreateUserFromSocialAccount;
+use Lock\Server\Shared\Brokering\SocialAuthenticationException;
+use Lock\Server\Shared\Brokering\SocialUser;
 
 use function Tests\Helpers\realmRoute;
 

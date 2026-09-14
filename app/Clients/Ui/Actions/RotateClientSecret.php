@@ -6,13 +6,13 @@ namespace App\Clients\Ui\Actions;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\RotatesClientSecret;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\Variant;
+use Lock\Server\Clients\Models\Client;
 
 #[AsAction('admin.clients.rotate-secret', can: Scope::ClientsWrite)]
 final class RotateClientSecret extends ActionDefinition
@@ -33,7 +33,7 @@ final class RotateClientSecret extends ActionDefinition
     {
         $client = $this->realmClientOrNull();
 
-        return $client instanceof Client && $client->confidential();
+        return $client instanceof Client && $client->snapshot()->confidential;
     }
 
     public function handle(Request $request): ActionResult

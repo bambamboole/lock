@@ -4,8 +4,8 @@ declare(strict_types=1);
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\Hash;
+use Lock\Server\Clients\Models\Client;
 
 use function Tests\Helpers\realmRoute;
 

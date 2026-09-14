@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Auth\Ui\Forms;
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Ui\Actions\SendVerificationEmailAction;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Lattice\Actions\Components\Action;
@@ -18,6 +17,7 @@ use Lattice\Ui\Components\Stack;
 use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Gap;
 use Lattice\Ui\Enums\Orientation;
+use Lock\Server\Authentication\Ui\Actions\SendVerificationEmailAction;
 
 #[AsForm('profile.email')]
 final class EmailForm extends ProfileForm

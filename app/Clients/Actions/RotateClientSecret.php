@@ -7,9 +7,9 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\RotatesClientSecret;
 use App\Shared\Clients\Enums\ClientAdminEvent;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
 use LogicException;
 
 final readonly class RotateClientSecret implements RotatesClientSecret
@@ -18,7 +18,7 @@ final readonly class RotateClientSecret implements RotatesClientSecret
 
     public function handle(Client $client): void
     {
-        if (! $client->confidential()) {
+        if (! $client->snapshot()->confidential) {
             throw new LogicException('A public client has no secret to rotate.');
         }
 

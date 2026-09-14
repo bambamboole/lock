@@ -6,9 +6,9 @@ use App\Auth\Models\User;
 use App\Auth\Ui\Actions\SignOutBrowserSession;
 use App\Auth\Ui\Tables\BrowserSessionsTable;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Lock\Server\Sessions\Models\OidcSession;
 
 function browserSessionRow(User $user, string $id, string $userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36'): void
 {

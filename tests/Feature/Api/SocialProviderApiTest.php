@@ -6,8 +6,8 @@ use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Realms\Models\RealmSocialProvider;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Brokering\Models\SocialAccount;
 use Dedoc\Scramble\Generator;
+use Lock\Server\Brokering\Models\SocialAccount;
 
 use function Tests\Helpers\managementApiToken;
 use function Tests\Helpers\realmUrl;

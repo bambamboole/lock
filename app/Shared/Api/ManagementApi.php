@@ -12,8 +12,8 @@ use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Console\Enums\BootstrapOutcome;
 use App\Shared\Resources\Enums\ResourceAdminEvent;
 use App\Shared\Roles\Enums\RoleAdminEvent;
-use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Shared\Realms\RealmAudiences;
 
 /**
  * Lock's own management API as an OAuth protected resource: a resource row of

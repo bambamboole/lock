@@ -5,10 +5,10 @@ namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Lock\Server\Authentication\Contracts\CreateUser;
 
 final class CreateNewUser implements CreateUser
 {

@@ -4,10 +4,10 @@ declare(strict_types=1);
 use App\Auth\Actions\BlockUser;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
-use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
-use Bambamboole\LaravelOidc\Server\Shared\Authentication\DeviceRecognizer;
 use Illuminate\Http\Request;
+use Lock\Server\Authentication\Contracts\DeviceRecognizer;
+use Lock\Server\Authentication\Pipeline\LoginEvent;
+use Lock\Server\Authentication\Pipeline\PostLoginPipeline;
 
 function loginEventFor(User $user): LoginEvent
 {

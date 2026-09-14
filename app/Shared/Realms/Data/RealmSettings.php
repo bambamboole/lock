@@ -4,15 +4,15 @@ declare(strict_types=1);
 namespace App\Shared\Realms\Data;
 
 use App\Shared\Data\Data;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\AuthenticationSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\BrokeringSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ClientSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\CredentialSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\PasswordPolicy;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\SessionSettings;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\TokenSettings;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
+use Lock\Server\Shared\Realms\Settings\AuthenticationSettings;
+use Lock\Server\Shared\Realms\Settings\BrokeringSettings;
+use Lock\Server\Shared\Realms\Settings\ClientSettings;
+use Lock\Server\Shared\Realms\Settings\CredentialSettings;
+use Lock\Server\Shared\Realms\Settings\LoginMethod;
+use Lock\Server\Shared\Realms\Settings\PasswordPolicy;
+use Lock\Server\Shared\Realms\Settings\SessionSettings;
+use Lock\Server\Shared\Realms\Settings\TokenSettings;
 
 /**
  * A realm's whole policy, typed. The realm casts its `settings` column to this,

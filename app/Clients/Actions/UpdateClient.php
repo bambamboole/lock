@@ -9,10 +9,10 @@ use App\Shared\Clients\Contracts\UpdatesClient;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Clients\Enums\ClientAdminEvent;
 use App\Shared\Clients\Support\ClientIsConsistent;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
 
 final readonly class UpdateClient implements UpdatesClient
 {
@@ -24,7 +24,7 @@ final readonly class UpdateClient implements UpdatesClient
 
         DB::transaction(function () use ($client, $attributes): void {
             $before = $client->only(array_keys($attributes->toArray()));
-            $wasConfidential = $client->confidential();
+            $wasConfidential = $client->snapshot()->confidential;
 
             $client->forceFill($attributes->toArray());
 

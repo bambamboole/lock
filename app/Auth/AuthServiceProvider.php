@@ -25,29 +25,29 @@ use App\Shared\Auth\Contracts\DeletesUser;
 use App\Shared\Auth\Contracts\EndsUserSessions;
 use App\Shared\Auth\Contracts\ResetsUserMfa;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Authentication\Http\Middleware\AuthenticateIdentity;
-use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginApi;
-use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\LoginEvent;
-use Bambamboole\LaravelOidc\Server\Authentication\Pipeline\PostLoginPipeline;
-use Bambamboole\LaravelOidc\Server\Authentication\Views\LoginView;
-use Bambamboole\LaravelOidc\Server\Credentials\Views\FactorSetupView;
-use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
-use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
-use Bambamboole\LaravelOidc\Server\Shared\Brokering\CreateUserFromSocialAccount;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmRepository;
-use Bambamboole\LaravelOidc\Server\Shared\Users\CreateUser;
-use Bambamboole\LaravelOidc\Server\Shared\Users\ResetUserPassword as ResetUserPasswordContract;
-use Bambamboole\LaravelOidc\Server\Tokens\Pipeline\AccessTokenPipeline;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use Lattice\Core\Facades\Lattice;
 use Lattice\Core\Support\Affix;
 use Lattice\Ui\Components\MenuItem;
+use Lock\Server\Authentication\Contracts\CreateUser;
+use Lock\Server\Authentication\Contracts\ResetUserPassword as ResetUserPasswordContract;
+use Lock\Server\Authentication\Http\Middleware\AuthenticateIdentity;
+use Lock\Server\Authentication\Pipeline\LoginApi;
+use Lock\Server\Authentication\Pipeline\LoginEvent;
+use Lock\Server\Authentication\Pipeline\PostLoginPipeline;
+use Lock\Server\Authentication\Ui\Views\FactorSetupView;
+use Lock\Server\Authentication\Ui\Views\LoginView;
+use Lock\Server\Realms\Http\Middleware\ResolveRealm;
+use Lock\Server\Realms\RealmRepository;
+use Lock\Server\Shared\Brokering\CreateUserFromSocialAccount;
+use Lock\Server\Shared\Scopes\ClaimsResolver;
+use Lock\Server\Tokens\Pipeline\AccessTokenPipeline;
 
 final class AuthServiceProvider extends ServiceProvider
 {
     /**
-     * Package providers register first, so rebinding laravel-oidc-ui's
+     * Package providers register first, so rebinding the server's
      * LoginView here wins.
      */
     public function register(): void

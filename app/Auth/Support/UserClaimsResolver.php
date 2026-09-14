@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Auth\Support;
 
 use App\Auth\Models\User;
-use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimSet;
-use Bambamboole\LaravelOidc\Server\Scopes\Claims\ClaimsRequest;
-use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ClaimsResolver;
+use Lock\Server\Shared\Scopes\ClaimSet;
+use Lock\Server\Shared\Scopes\ClaimsRequest;
+use Lock\Server\Shared\Scopes\ClaimsResolver;
 
 /**
  * The realm roles ride along as a flat `roles` list without a scope of their

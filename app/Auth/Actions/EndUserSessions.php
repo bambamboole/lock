@@ -5,16 +5,14 @@ namespace App\Auth\Actions;
 
 use App\Auth\Models\User;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use Bambamboole\LaravelOidc\Server\Sessions\BackChannel\BackChannelLogoutNotifier;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
-use Bambamboole\LaravelOidc\Server\Sessions\OidcSessionRepository;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Sessions\Models\OidcSession;
+use Lock\Server\Sessions\OidcSessionRepository;
 
 final readonly class EndUserSessions implements EndsUserSessions
 {
     public function __construct(
         private OidcSessionRepository $sessions,
-        private BackChannelLogoutNotifier $notifier,
     ) {}
 
     public function handle(User $user, ?string $sid = null): int
@@ -26,7 +24,7 @@ final readonly class EndUserSessions implements EndsUserSessions
             ->when($sid !== null, fn ($query) => $query->whereKey($sid))
             ->pluck('id');
 
-        DB::transaction(function () use ($user, $sids, $sid): void {
+        $user->realm->runAsCurrent(fn () => DB::transaction(function () use ($user, $sids, $sid): void {
             foreach ($sids as $revoked) {
                 $this->sessions->revoke($revoked);
             }
@@ -34,17 +32,7 @@ final readonly class EndUserSessions implements EndsUserSessions
             if ($sid === null) {
                 $this->forgetBrowserSessions($user);
             }
-        });
-
-        /*
-         * The notifier looks the session up in the current realm, and an
-         * administrator acts from outside it.
-         */
-        $user->realm->runAsCurrent(function () use ($sids): void {
-            foreach ($sids as $notified) {
-                $this->notifier->notify($notified);
-            }
-        });
+        }));
 
         return $sids->count();
     }

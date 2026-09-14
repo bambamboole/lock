@@ -11,8 +11,6 @@ use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Ui\Components\ActionBar;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
 use Lattice\Actions\Components\Action;
@@ -22,6 +20,8 @@ use Lattice\Table\Columns\TextColumn;
 use Lattice\Table\Components\RowClick;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 /**
  * @extends EloquentTableDefinition<Client>

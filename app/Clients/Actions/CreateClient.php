@@ -8,9 +8,9 @@ use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\CreatesClient;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Clients\Enums\ClientAdminEvent;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
 
 final readonly class CreateClient implements CreatesClient
 {

@@ -8,12 +8,12 @@ use App\Shared\Realms\Data\RealmSetting;
 use App\Shared\Realms\Data\RealmSettings;
 use App\Shared\Realms\Enums\RealmSettingSection;
 use App\Shared\Realms\Enums\RealmSettingType;
-use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\LoginMethod;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\MfaRequirement;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
+use Lock\Server\Shared\Realms\Settings\LoginMethod;
+use Lock\Server\Shared\Realms\Settings\MfaRequirement;
+use Lock\Server\Shared\Scopes\ScopeRepository;
 
 final class RealmConfiguration
 {

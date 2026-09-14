@@ -6,30 +6,25 @@ namespace App\Realms\Actions;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
+use App\Shared\Auth\Events\UserDeleting;
 use App\Shared\Realms\Contracts\DeletesRealm;
 use App\Shared\Realms\Enums\RealmAdminEvent;
-use Bambamboole\LaravelOidc\Server\Purge\PurgeRealm;
-use Bambamboole\LaravelOidc\Server\Purge\PurgeUser;
+use App\Shared\Realms\Events\RealmDeleting;
 use Illuminate\Support\Facades\DB;
 
 final readonly class DeleteRealm implements DeletesRealm
 {
-    public function __construct(
-        private PurgeUser $purgeUser,
-        private PurgeRealm $purgeRealm,
-    ) {}
-
     /** The row goes for good, so a deleted realm's slug is free again. */
     public function handle(Realm $realm): void
     {
         DB::transaction(function () use ($realm): void {
             $realm->roles()->delete();
             $realm->users()->each(function (User $user): void {
-                ($this->purgeUser)($user);
+                event(new UserDeleting($user));
                 $user->delete();
             });
 
-            ($this->purgeRealm)($realm->slug);
+            event(new RealmDeleting($realm->slug));
 
             $realm->delete();
 

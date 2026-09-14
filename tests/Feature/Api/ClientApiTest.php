@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 use function Tests\Helpers\managementApiToken;
 use function Tests\Helpers\realmClient;

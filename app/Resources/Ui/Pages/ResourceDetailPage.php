@@ -12,7 +12,6 @@ use App\Resources\Ui\Tables\ResourceScopesTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
 use App\Shared\Ui\Pages\AdminPage;
-use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
 use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsPage;
 use Lattice\Core\Breadcrumb;
@@ -24,6 +23,7 @@ use Lattice\Ui\Components\Entries\TextEntry;
 use Lattice\Ui\Components\Text;
 use Lattice\Ui\Enums\Width;
 use Lattice\Ui\PageSchema;
+use Lock\Server\Shared\Realms\RealmAudiences;
 
 #[AsPage(route: '/admin/realms/{realm}/resources/{resource}', name: 'admin.realms.resources.show', can: Scope::ResourcesRead)]
 final class ResourceDetailPage extends AdminPage

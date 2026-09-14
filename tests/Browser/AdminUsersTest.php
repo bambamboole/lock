@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
+use Lock\Server\Sessions\Models\OidcSession;
 
 use function Tests\Helpers\globalAdmin;
 

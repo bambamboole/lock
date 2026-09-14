@@ -7,18 +7,15 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\DeletesClient;
 use App\Shared\Clients\Enums\ClientAdminEvent;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Purge\PurgeClient;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Clients\Models\Client;
 
 final readonly class DeleteClient implements DeletesClient
 {
-    public function __construct(private PurgeClient $purge) {}
-
     public function handle(Client $client): void
     {
         DB::transaction(function () use ($client): void {
-            ($this->purge)($client);
+            $client->delete();
 
             Audit::record(ClientAdminEvent::ClientDeleted, $client, Realm::ofClient($client), [
                 'realm' => $client->realm,

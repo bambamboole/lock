@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Realms\Support;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use Lock\Server\Realms\Http\Middleware\ResolveRealm;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**

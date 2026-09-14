@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\SigningKeys\SigningKeyStore;
-use Bambamboole\LaravelOidc\Server\SigningKeys\SigningKeyGenerator;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
+use Lock\Server\SigningKeys\SigningKeyGenerator;
+use Lock\Server\SigningKeys\SigningKeyStore;
 
 /**
  * @extends Factory<Realm>

@@ -6,8 +6,6 @@ namespace App\Clients\Ui\Concerns;
 use App\Shared\Clients\Data\ClientAttributes;
 use App\Shared\Clients\Support\AbsoluteUris;
 use App\Shared\Clients\Support\ClientIsConsistent;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Closure;
 use Illuminate\Validation\Rule;
 use Lattice\Form\Components\CheckboxGroup;
@@ -17,6 +15,8 @@ use Lattice\Form\Components\Select;
 use Lattice\Form\Components\TextInput;
 use Lattice\Form\Components\Toggle;
 use Lattice\Form\FormData;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 /**
  * Type, grant types and redirect URIs constrain each other, so each carries the

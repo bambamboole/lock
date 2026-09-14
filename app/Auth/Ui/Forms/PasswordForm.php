@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Auth\Ui\Forms;
 
-use Bambamboole\LaravelOidc\Server\Authentication\Actions\UpdatePassword;
 use Illuminate\Http\Request;
 use Lattice\Facades\Effects;
 use Lattice\Form\Attributes\AsForm;
@@ -13,6 +12,7 @@ use Lattice\Http\LatticeResponse;
 use Lattice\Ui\Components\Grid;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
+use Lock\Server\Authentication\Actions\UpdatePassword;
 
 #[AsForm('profile.password')]
 final class PasswordForm extends ProfileForm

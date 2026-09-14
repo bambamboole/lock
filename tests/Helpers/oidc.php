@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Helpers;
 
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Client\Facades\OidcClient;
-use Bambamboole\LaravelOidc\Client\Testing\OidcClientFake;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
 use Illuminate\Testing\TestResponse;
+use Lock\Laravel\Support\Facades\OidcClient;
+use Lock\Laravel\Support\Testing\OidcClientFake;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Realms\IssuerResolver;
 use PHPUnit\Framework\Assert;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;

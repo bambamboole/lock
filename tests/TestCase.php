@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace Tests;
 
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
-use Bambamboole\LaravelOidc\Server\Testing\InteractsWithOidc;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Lattice\Support\Testing\InteractsWithLatticeComponents;
+use Lock\Server\Support\Testing\InteractsWithOidc;
 
 abstract class TestCase extends BaseTestCase
 {

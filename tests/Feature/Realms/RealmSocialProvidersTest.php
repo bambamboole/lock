@@ -14,8 +14,8 @@ use App\Realms\Ui\Tables\SocialProvidersTable;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Realms\Enums\RealmAdminEvent;
 use App\Shared\Realms\Enums\SocialProviderDriver;
-use Bambamboole\LaravelOidc\Server\Brokering\Models\SocialAccount;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Brokering\Models\SocialAccount;
 
 use function Tests\Helpers\globalAdmin;
 use function Tests\Helpers\globalAdminWith;

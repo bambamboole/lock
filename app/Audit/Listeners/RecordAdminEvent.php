@@ -6,9 +6,9 @@ namespace App\Audit\Listeners;
 use App\Audit\Models\AdminEvent;
 use App\Shared\Audit\Events\AdminActionPerformed;
 use App\Shared\Auth\Support\RequestUser;
-use Bambamboole\LaravelOidc\Server\Shared\Authentication\AuthSessionState;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Http\Request;
+use Lock\Server\Shared\Audit\SessionContext;
 
 /**
  * Request and session state are resolved per event, never captured, so the
@@ -59,6 +59,6 @@ final readonly class RecordAdminEvent
             return null;
         }
 
-        return $this->app->make(AuthSessionState::class)->sid();
+        return $this->app->make(SessionContext::class)->sid();
     }
 }

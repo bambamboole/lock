@@ -8,10 +8,10 @@ use App\Shared\Audit\Audit;
 use App\Shared\Clients\Contracts\ProvisionsConsoleClient;
 use App\Shared\Clients\Enums\ClientAdminEvent;
 use App\Shared\Console\Enums\BootstrapOutcome;
-use Bambamboole\LaravelOidc\Server\Clients\Actions\ProvisionFirstPartyClient;
-use Bambamboole\LaravelOidc\Server\Clients\Exceptions\FirstPartyClientProvisioningException;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\ClientProvisioner;
+use Lock\Server\Shared\Clients\FirstPartyClientProvisioningException;
 use SensitiveParameter;
 
 final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
@@ -26,7 +26,7 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
     private const array GrantTypes = ['authorization_code', 'refresh_token', 'client_credentials'];
 
     public function __construct(
-        private ProvisionFirstPartyClient $provisioner,
+        private ClientProvisioner $provisioner,
     ) {}
 
     /**
@@ -54,14 +54,14 @@ final readonly class ProvisionConsoleClient implements ProvisionsConsoleClient
             $existing = $this->existingClient($realm, $clientId);
             $before = $existing instanceof Client ? $this->fingerprint($existing) : null;
 
-            $result = ($this->provisioner)(
+            $result = $this->provisioner->provision(
                 name: $name,
                 redirectUris: $redirectUris,
                 postLogoutRedirectUris: $postLogoutRedirectUris,
                 adoptClientId: $existing?->client_id,
             );
 
-            $client = $result->client;
+            $client = Client::query()->inRealm()->findOrFail($result->client->key);
             $client->forceFill([
                 'client_id' => $clientId,
                 'grant_types' => self::GrantTypes,

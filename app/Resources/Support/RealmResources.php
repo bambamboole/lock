@@ -7,8 +7,8 @@ use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
 use App\Resources\Models\ResourceScope;
 use App\Shared\Resources\Contracts\ProvidesRealmResources;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\Settings\ResourceSettings;
 use Illuminate\Database\Eloquent\Collection;
+use Lock\Server\Shared\Realms\Settings\ResourceSettings;
 
 /**
  * Scoped rather than cached: laravel-oidc builds a fresh realm model on every

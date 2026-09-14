@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Clients\Contracts;
 
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
+use Lock\Server\Clients\Models\Client;
 
 interface SetsClientRevocation
 {

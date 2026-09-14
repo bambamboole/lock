@@ -6,8 +6,8 @@ namespace App\Realms\Actions;
 use App\Realms\Models\RealmSocialProvider;
 use App\Shared\Audit\Audit;
 use App\Shared\Realms\Enums\RealmAdminEvent;
-use Bambamboole\LaravelOidc\Server\Brokering\Models\SocialAccount;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Brokering\Models\SocialAccount;
 
 final class DeleteSocialProvider
 {

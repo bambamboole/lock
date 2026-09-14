@@ -6,10 +6,10 @@ namespace App\Shared\Http\Middleware;
 use App\Auth\Models\User;
 use App\Shared\Auth\Support\RequestUser;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Shared\Protocol\OAuthServerException;
-use Bambamboole\LaravelOidc\Server\Tokens\Http\Middleware\CheckScopes;
 use Closure;
 use Illuminate\Http\Request;
+use Lock\Server\Shared\Protocol\OAuthServerException;
+use Lock\Server\Tokens\Http\Middleware\CheckScopes;
 use Symfony\Component\HttpFoundation\Response;
 
 /**

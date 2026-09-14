@@ -8,9 +8,9 @@ use App\Realms\Models\Realm;
 use App\Shared\Audit\Audit;
 use App\Shared\Auth\Contracts\CreatesRealmUser;
 use App\Shared\Auth\Enums\UserAdminEvent;
-use Bambamboole\LaravelOidc\Server\Authentication\Actions\SendPasswordResetLink;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Lock\Server\Authentication\Actions\SendPasswordResetLink;
 use SensitiveParameter;
 
 final readonly class CreateRealmUser implements CreatesRealmUser

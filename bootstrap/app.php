@@ -8,7 +8,6 @@ use App\Shared\Console\Commands\BootstrapCommand;
 use App\Shared\Console\Commands\DeployCommand;
 use App\Shared\Http\Middleware\HandleAppearance;
 use App\Shared\Http\Middleware\HandleInertiaRequests;
-use Bambamboole\LaravelOidc\Server\Realms\Http\Middleware\ResolveRealm;
 use Illuminate\Auth\Middleware\EnsureEmailIsVerified;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -17,6 +16,7 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Middleware\FrameGuard;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
+use Lock\Server\Realms\Http\Middleware\ResolveRealm;
 use Sentry\Laravel\Integration;
 
 return Application::configure(basePath: dirname(__DIR__))

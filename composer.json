@@ -11,9 +11,8 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "bambamboole/laravel-i18next": "^0.6.0",
-        "bambamboole/laravel-oidc": "^0.32.0",
         "bambamboole/spectacular": "^0.27.0",
         "inertiajs/inertia-laravel": "^3.3.4",
         "laravel/framework": "^13.31.0",
@@ -22,7 +21,9 @@
         "lattice-php/api-reference": "^0.77.0",
         "lattice-php/lattice": "^0.77.0",
         "sentry/sentry-laravel": "^4.27",
-        "spatie/laravel-data": "^4.23"
+        "spatie/laravel-data": "^4.23",
+        "use-lock/client-laravel": "dev-main",
+        "use-lock/server": "dev-main"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.6.2",
@@ -149,5 +150,21 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../use-lock/server",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "../use-lock/client",
+            "options": {
+                "symlink": true
+            }
+        }
+    ]
 }

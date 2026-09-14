@@ -6,7 +6,6 @@ namespace App\Clients\Ui\Actions;
 use App\Clients\Ui\Concerns\ResolvesRealmClient;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Clients\Contracts\DeletesClient;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Illuminate\Http\Request;
 use Lattice\Actions\ActionDefinition;
 use Lattice\Actions\ActionResult;
@@ -14,6 +13,7 @@ use Lattice\Actions\Components\Action;
 use Lattice\Core\Attributes\AsAction;
 use Lattice\Ui\Enums\HttpMethod;
 use Lattice\Ui\Enums\Variant;
+use Lock\Server\Clients\Models\Client;
 
 #[AsAction('admin.clients.delete', can: Scope::ClientsWrite)]
 final class DeleteClient extends ActionDefinition

@@ -4,10 +4,10 @@ declare(strict_types=1);
 namespace App\Clients\Http\Api\V1\Resources;
 
 use App\Shared\Data\Data;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
 use Bambamboole\Spectacular\Attributes\SpecProperty;
 use Carbon\CarbonImmutable;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
 
 /**
  * How a client reads on the wire. The version segment in the namespace is what
@@ -64,15 +64,15 @@ final class ClientData extends Data
             realm: $client->realm,
             name: $client->name,
             tokenEndpointAuthMethod: $client->token_endpoint_auth_method,
-            confidential: $client->confidential(),
+            confidential: $client->snapshot()->confidential,
             secret: $client->secret,
             grantTypes: array_values($client->grant_types),
             redirectUris: array_values($client->redirect_uris),
             postLogoutRedirectUris: array_values($client->post_logout_redirect_uris ?? []),
             consentRequired: $client->consent_required,
             backchannelLogoutUri: $client->backchannel_logout_uri,
-            scopes: $client->assignedScopes(),
-            revoked: $client->isRevoked(),
+            scopes: $client->snapshot()->assignedScopes(),
+            revoked: $client->snapshot()->revoked,
             revokedAt: $client->revoked_at?->toImmutable(),
             createdAt: $client->created_at?->toImmutable(),
             updatedAt: $client->updated_at?->toImmutable(),

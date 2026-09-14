@@ -6,10 +6,10 @@ namespace Database\Seeders;
 use App\Admin\Database\Seeders\GlobalRoleSeeder;
 use App\Auth\Models\User;
 use App\Realms\Models\Realm;
-use Bambamboole\LaravelOidc\Server\Shared\Installation\EnvironmentFile;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
+use Lock\Server\Support\Setup\EnvironmentFile;
 use RuntimeException;
 
 final class DatabaseSeeder extends Seeder

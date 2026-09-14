@@ -5,9 +5,9 @@ namespace App\Resources\Support;
 
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\RealmResolver;
-use Bambamboole\LaravelOidc\Server\Shared\Scopes\ScopeCatalog;
-use Bambamboole\LaravelOidc\Server\Shared\Tokens\RealmAudiences;
+use Lock\Server\Shared\Realms\RealmAudiences;
+use Lock\Server\Shared\Realms\RealmResolver;
+use Lock\Server\Shared\Scopes\ScopeCatalog;
 
 /**
  * Only the requested resource's scopes are served, which keeps the realm from

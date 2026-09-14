@@ -9,9 +9,6 @@ use App\Resources\Models\ResourceScope;
 use App\Roles\Models\Role;
 use App\Shared\Api\ManagementApi;
 use App\Shared\Authorization\Enums\Scope;
-use Bambamboole\LaravelOidc\Server\Credentials\Concerns\HasAuthenticationFactors;
-use Bambamboole\LaravelOidc\Server\Tokens\Concerns\HasAccessTokens;
-use Bambamboole\LaravelOidc\Server\Tokens\Contracts\OAuthenticatable;
 use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -30,6 +27,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection as SupportCollection;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkey;
+use Lock\Server\Credentials\Concerns\HasAuthenticationFactors;
+use Lock\Server\Shared\Authentication\RealmUser;
+use Lock\Server\Tokens\Concerns\HasAccessTokens;
 
 /**
  * @property string $id
@@ -70,7 +70,7 @@ use Laravel\Passkeys\Passkey;
  */
 #[Fillable(['name', 'email', 'password', 'realm_id', 'locale', 'timezone'])]
 #[Hidden(['password', 'remember_token'])]
-final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, OAuthenticatable, PasskeyUser
+final class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail, PasskeyUser, RealmUser
 {
     /** @use HasFactory<UserFactory> */
     use HasAccessTokens, HasAuthenticationFactors, HasFactory, HasUuids, Notifiable;

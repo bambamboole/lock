@@ -8,8 +8,6 @@ use App\Auth\Ui\Actions\EndUserSessionAction;
 use App\Realms\Models\Realm;
 use App\Shared\Authorization\Enums\Scope;
 use App\Shared\Ui\Components\ActionBar;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\OidcSession;
-use Bambamboole\LaravelOidc\Server\Sessions\Models\SessionParticipant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,6 +19,8 @@ use Lattice\Table\Columns\TextColumn;
 use Lattice\Table\Sources\Eloquent\EloquentTableDefinition;
 use Lattice\Table\TableQuery;
 use Lattice\Ui\Enums\DateTimeStyle;
+use Lock\Server\Sessions\Models\OidcSession;
+use Lock\Server\Sessions\Models\SessionParticipant;
 
 /**
  * @extends EloquentTableDefinition<OidcSession>

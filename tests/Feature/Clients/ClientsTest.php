@@ -14,11 +14,12 @@ use App\Clients\Ui\Tables\ClientsTable;
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementRoles;
 use App\Shared\Clients\Enums\ClientAdminEvent;
-use Bambamboole\LaravelOidc\Server\Clients\ClientRepository;
-use Bambamboole\LaravelOidc\Server\Clients\Enums\TokenEndpointAuthMethod;
-use Bambamboole\LaravelOidc\Server\Clients\Models\Client;
-use Bambamboole\LaravelOidc\Server\Tokens\Models\AccessToken;
 use Lattice\Support\Testing\ComponentNode;
+use Lock\Server\Clients\ClientRepository;
+use Lock\Server\Clients\Models\Client;
+use Lock\Server\Shared\Clients\Client as ClientSnapshot;
+use Lock\Server\Shared\Clients\TokenEndpointAuthMethod;
+use Lock\Server\Tokens\Models\AccessToken;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 use function Tests\Helpers\globalAdmin;
@@ -134,7 +135,7 @@ test('a client detail page opens under its own realm only', function () {
     $this->callDeniedAction(RevokeClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
     $this->callDeniedAction(DeleteClient::class, [], ['realm' => 'globex', 'client' => $client->id])->assertForbidden();
 
-    expect($client->refresh()->isRevoked())->toBeFalse()
+    expect($client->refresh()->snapshot()->revoked)->toBeFalse()
         ->and($client->name)->toBe('Existing app');
 });
 
@@ -173,7 +174,7 @@ test('a public client is created without a secret', function () {
 
     $client = Client::query()->where('name', 'Partner portal')->sole();
 
-    expect($client->confidential())->toBeFalse()
+    expect($client->snapshot()->confidential)->toBeFalse()
         ->and(revealedSecrets(latticeSchema($this->get("/admin/realms/acme/clients/{$client->id}")->assertOk())))->toBeEmpty();
 });
 
@@ -189,7 +190,7 @@ test('a machine client only needs the client credentials grant', function () {
 
     expect($client->grant_types)->toBe(['client_credentials'])
         ->and($client->redirect_uris)->toBeEmpty()
-        ->and($client->confidential())->toBeTrue();
+        ->and($client->snapshot()->confidential)->toBeTrue();
 });
 
 test('rejects inconsistent client settings on the matching field', function (array $overrides, string $field) {
@@ -225,7 +226,7 @@ test('each client row saves on its own and leaves the rest of the client alone',
         ->and($client->redirect_uris)->toBe(['https://rp.test/callback'])
         ->and($client->consent_required)->toBeFalse()
         ->and($client->backchannel_logout_uri)->toBe('https://rp.test/backchannel')
-        ->and($client->confidential())->toBeTrue();
+        ->and($client->snapshot()->confidential)->toBeTrue();
 
     $changes = AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientUpdated->type())->get()
         ->flatMap(fn (AdminEvent $event): array => (array) data_get($event->context, 'changes'));
@@ -246,7 +247,7 @@ test('a single client row is validated against the stored client', function () {
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))
         ->assertInvalid(['token_endpoint_auth_method' => __('admin.clients.validation.client-credentials-needs-secret')]);
 
-    expect($client->refresh()->confidential())->toBeTrue()
+    expect($client->refresh()->snapshot()->confidential)->toBeTrue()
         ->and($client->redirect_uris)->toBe(['https://rp.test/callback'])
         ->and($client->grant_types)->toBe(['authorization_code', 'client_credentials']);
 });
@@ -260,12 +261,12 @@ test('turning a public client confidential mints a secret and back again drops i
     $secrets = revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk()));
 
     expect($secrets)->toHaveCount(1)
-        ->and($client->refresh()->confidential())->toBeTrue()
+        ->and($client->refresh()->snapshot()->confidential)->toBeTrue()
         ->and($secrets[0])->toBe($client->secret);
 
     $this->submitForm(UpdateClientForm::class, ...clientSetting($client, 'token_endpoint_auth_method', 'none'))->assertRedirect();
 
-    expect($client->refresh()->confidential())->toBeFalse()
+    expect($client->refresh()->snapshot()->confidential)->toBeFalse()
         ->and(revealedSecrets(latticeSchema($this->get($detailUrl)->assertOk())))->toBeEmpty();
 });
 
@@ -296,20 +297,20 @@ test('a public client has no secret to rotate', function () {
 test('blocking a client stops it from being resolved as active until it is unblocked', function () {
     $client = realmClient($this->realm);
     $context = ['realm' => 'acme', 'client' => $client->id];
-    $active = fn (): ?Client => $this->realm->runAsCurrent(fn () => app(ClientRepository::class)->findActive($client->client_id));
+    $active = fn (): ?ClientSnapshot => $this->realm->runAsCurrent(fn () => app(ClientRepository::class)->findActive($client->client_id));
 
     $this->actingAs(globalAdmin());
     $this->callDeniedAction(RestoreClient::class, [], $context)->assertForbidden();
     $this->callAction(RevokeClient::class, [], $context)->assertReloadsPage();
 
-    expect($client->refresh()->isRevoked())->toBeTrue()
+    expect($client->refresh()->snapshot()->revoked)->toBeTrue()
         ->and($active())->toBeNull()
         ->and(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientRevoked->type())->sole()->subject_id)->toBe($client->id);
 
     $this->callDeniedAction(RevokeClient::class, [], $context)->assertForbidden();
     $this->callAction(RestoreClient::class, [], $context)->assertReloadsPage();
 
-    expect($client->refresh()->isRevoked())->toBeFalse()
+    expect($client->refresh()->snapshot()->revoked)->toBeFalse()
         ->and($active())->not->toBeNull()
         ->and(AdminEvent::forRealm($this->realm)->where('type', ClientAdminEvent::ClientRestored->type())->sole()->subject_id)->toBe($client->id);
 });

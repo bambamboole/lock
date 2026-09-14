@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Realms\Models\Realm;
 use App\Resources\Models\Resource;
-use Bambamboole\LaravelOidc\Server\Scopes\Contracts\ScopeRepository;
-use Bambamboole\LaravelOidc\Server\Scopes\Scope;
-use Bambamboole\LaravelOidc\Server\Shared\Realms\IssuerResolver;
+use Lock\Server\Shared\Realms\IssuerResolver;
+use Lock\Server\Shared\Scopes\Scope;
+use Lock\Server\Shared\Scopes\ScopeRepository;
 
 use function Tests\Helpers\clientCredentialsToken;
 use function Tests\Helpers\jwtClaims;

@@ -8,8 +8,8 @@ use App\Auth\Models\User;
 use App\Auth\Support\BrowserSession;
 use App\Auth\Support\BrowserSessions;
 use App\Shared\Auth\Contracts\EndsUserSessions;
-use Bambamboole\LaravelOidc\Server\Sessions\OidcSessionRepository;
 use Illuminate\Support\Facades\DB;
+use Lock\Server\Sessions\OidcSessionRepository;
 
 final readonly class EndBrowserSession
 {
