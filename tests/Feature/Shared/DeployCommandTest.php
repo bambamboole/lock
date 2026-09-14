@@ -4,12 +4,15 @@ declare(strict_types=1);
 use App\Realms\Models\Realm;
 use App\Shared\Api\ManagementRoles;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Lattice\Core\Discovery\DiscoveryManifest;
 use Lock\Server\Clients\Models\Client;
 use Lock\Server\SigningKeys\Models\SigningKey;
+
+beforeEach(function () {
+    config(['lattice.discovery.cache_path' => $this->app->bootstrapPath('cache/lattice-deploy-test-'.getmypid().'.php')]);
+});
 
 it('runs every deploy step and leaves the app state primed', function () {
     Realm::factory()->create(['slug' => 'partners']);
@@ -31,8 +34,6 @@ it('runs every deploy step and leaves the app state primed', function () {
             ->and(Realm::master()->users()->where('email', 'root@lock.test')->exists())->toBeTrue()
             ->and(app(DiscoveryManifest::class)->isCached())->toBeTrue();
     } finally {
-        // The discovery manifest is a real file under bootstrap/cache — left
-        // behind it would freeze local discovery long after the suite ran.
         Artisan::call('lattice:discover-clear');
     }
 });
