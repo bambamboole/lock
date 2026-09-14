@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f42c4b6f24980ed5a69b845dd4d456da",
+    "content-hash": "1ed74220f5b5d758f3d1ef159e7936c7",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -10115,11 +10115,17 @@
         },
         {
             "name": "use-lock/client-laravel",
-            "version": "dev-main",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/use-lock/client-laravel.git",
+                "reference": "d4f6199dbf3edb29a9835e7958313ef15ebe5d02"
+            },
             "dist": {
-                "type": "path",
-                "url": "../use-lock/client",
-                "reference": "3bc698b1d83e468df63ff032484f5296377ed9e8"
+                "type": "zip",
+                "url": "https://api.github.com/repos/use-lock/client-laravel/zipball/d4f6199dbf3edb29a9835e7958313ef15ebe5d02",
+                "reference": "d4f6199dbf3edb29a9835e7958313ef15ebe5d02",
+                "shasum": ""
             },
             "require": {
                 "ext-openssl": "*",
@@ -10159,65 +10165,7 @@
                     "Lock\\Laravel\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Lock\\Laravel\\Tests\\": "tests/",
-                    "Workbench\\App\\": "workbench/app/"
-                }
-            },
-            "scripts": {
-                "analyse": [
-                    "./vendor/bin/phpstan analyse && ./vendor/bin/phpstan analyse -c phpstan-tests.neon.dist"
-                ],
-                "check": [
-                    "@test:lint",
-                    "@analyse",
-                    "@rector:test",
-                    "@test:parallel"
-                ],
-                "lint:fix": [
-                    "./vendor/bin/pint"
-                ],
-                "test:lint": [
-                    "./vendor/bin/pint --test"
-                ],
-                "rector": [
-                    "./vendor/bin/rector process"
-                ],
-                "rector:test": [
-                    "./vendor/bin/rector process --dry-run"
-                ],
-                "fix": [
-                    "@rector",
-                    "@lint:fix"
-                ],
-                "test": [
-                    "./vendor/bin/pest"
-                ],
-                "test:feature": [
-                    "@test --testsuite=Feature"
-                ],
-                "test:parallel": [
-                    "./vendor/bin/pest --parallel"
-                ],
-                "post-autoload-dump": [
-                    "@clear",
-                    "@prepare"
-                ],
-                "clear": [
-                    "@php vendor/bin/testbench package:purge-skeleton --ansi"
-                ],
-                "prepare": [
-                    "@php vendor/bin/testbench package:discover --ansi"
-                ],
-                "serve": [
-                    "Composer\\Config::disableProcessTimeout",
-                    "@php artisan serve --ansi"
-                ],
-                "test:unit": [
-                    "@test --testsuite=Unit"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -10230,29 +10178,32 @@
             "description": "OpenID Connect client for Laravel — log users in through any OIDC provider",
             "homepage": "https://github.com/use-lock/client-laravel",
             "keywords": [
+                "SSO",
                 "client",
                 "laravel",
                 "oauth2",
                 "oidc",
-                "openid-connect",
-                "sso"
+                "openid-connect"
             ],
             "support": {
                 "issues": "https://github.com/use-lock/client-laravel/issues",
                 "source": "https://github.com/use-lock/client-laravel"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2026-09-14T11:56:56+00:00"
         },
         {
             "name": "use-lock/server",
-            "version": "dev-main",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/use-lock/server.git",
+                "reference": "9b45de624276cb61d8a523d972a95675eea646eb"
+            },
             "dist": {
-                "type": "path",
-                "url": "../use-lock/server",
-                "reference": "d63de665a5d3c32bf719140c502e2112db909108"
+                "type": "zip",
+                "url": "https://api.github.com/repos/use-lock/server/zipball/9b45de624276cb61d8a523d972a95675eea646eb",
+                "reference": "9b45de624276cb61d8a523d972a95675eea646eb",
+                "shasum": ""
             },
             "require": {
                 "bacon/bacon-qr-code": "^3.1",
@@ -10297,95 +10248,24 @@
                     ]
                 },
                 "lattice": {
+                    "icons": "resources/icons",
+                    "plugin": "resources/js/plugin.ts",
                     "discover": [
                         "src/Authentication/Ui",
                         "src/Credentials/Ui",
                         "src/Consents/Ui",
                         "src/Protocol/Ui",
                         "src/Shared/Ui"
-                    ],
-                    "plugin": "resources/js/plugin.ts",
-                    "icons": "resources/icons"
+                    ]
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Lock\\Server\\Database\\Factories\\": "database/factories/",
-                    "Lock\\Server\\": "src/"
+                    "Lock\\Server\\": "src/",
+                    "Lock\\Server\\Database\\Factories\\": "database/factories/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Lock\\Server\\Tests\\": "tests/",
-                    "Workbench\\App\\": "workbench/app/",
-                    "Workbench\\Database\\Factories\\": "workbench/database/factories/"
-                }
-            },
-            "scripts": {
-                "analyse": [
-                    "./vendor/bin/phpstan analyse && ./vendor/bin/phpstan analyse -c phpstan-tests.neon.dist"
-                ],
-                "check": [
-                    "@test:lint",
-                    "@analyse",
-                    "@rector:test",
-                    "@test:parallel"
-                ],
-                "lint:fix": [
-                    "./vendor/bin/pint"
-                ],
-                "test:lint": [
-                    "./vendor/bin/pint --test"
-                ],
-                "rector": [
-                    "./vendor/bin/rector process"
-                ],
-                "rector:test": [
-                    "./vendor/bin/rector process --dry-run"
-                ],
-                "fix": [
-                    "@rector",
-                    "@lint:fix"
-                ],
-                "test": [
-                    "./vendor/bin/pest"
-                ],
-                "test:unit": [
-                    "@test --testsuite=Unit"
-                ],
-                "test:feature": [
-                    "@test --testsuite=Feature"
-                ],
-                "test:parallel": [
-                    "./vendor/bin/pest --parallel"
-                ],
-                "post-autoload-dump": [
-                    "@clear",
-                    "@prepare"
-                ],
-                "post-install-cmd": [
-                    "@hooks:install"
-                ],
-                "post-update-cmd": [
-                    "@hooks:install"
-                ],
-                "hooks:install": [
-                    "git config core.hooksPath .githooks 2>/dev/null || true"
-                ],
-                "clear": [
-                    "@php vendor/bin/testbench package:purge-skeleton --ansi"
-                ],
-                "prepare": [
-                    "@php vendor/bin/testbench package:discover --ansi"
-                ],
-                "boost:refresh": [
-                    "@php vendor/bin/testbench boost:update --no-interaction"
-                ],
-                "serve": [
-                    "Composer\\Config::disableProcessTimeout",
-                    "@php artisan serve --ansi"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -10409,10 +10289,7 @@
                 "issues": "https://github.com/use-lock/server/issues",
                 "source": "https://github.com/use-lock/server"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2026-09-14T11:56:36+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -16675,10 +16552,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "use-lock/client-laravel": 20,
-        "use-lock/server": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

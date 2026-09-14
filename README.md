@@ -29,9 +29,6 @@ are defined in PHP and rendered as React components over [Inertia](https://inert
 
 ## Getting started
 
-Composer links the local packages from `../use-lock/server` and `../use-lock/client`.
-Both checkouts must exist at those paths before installing dependencies.
-
 ```bash
 composer setup
 ```

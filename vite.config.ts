@@ -8,7 +8,6 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
     resolve: {
-        preserveSymlinks: true,
         alias: {
             "@": path.resolve(import.meta.dirname, "resources/js"),
         },
