@@ -13,7 +13,7 @@
     "require": {
         "php": "^8.5",
         "bambamboole/laravel-i18next": "^0.6.0",
-        "bambamboole/spectacular": "^0.27.0",
+        "bambamboole/spectacular": "^0.30.0",
         "inertiajs/inertia-laravel": "^3.3.4",
         "laravel/framework": "^13.31.0",
         "laravel/octane": "^2.19.1",
@@ -22,8 +22,8 @@
         "lattice-php/lattice": "^0.77.0",
         "sentry/sentry-laravel": "^4.27",
         "spatie/laravel-data": "^4.23",
-        "use-lock/client-laravel": "^0.1.0",
-        "use-lock/server": "^0.1.0"
+        "use-lock/client-laravel": "^0.3.0",
+        "use-lock/server": "^0.3.0"
     },
     "require-dev": {
         "driftingly/rector-laravel": "^2.6.2",
